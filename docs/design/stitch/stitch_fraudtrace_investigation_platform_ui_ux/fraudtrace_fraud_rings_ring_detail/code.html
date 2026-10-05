@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FraudTrace Workstation - Fraud Rings &amp; Forensic Ring Dossier</title>
+<!-- Google Fonts: Inter & Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary": "#605e57",
+            "background": "#fbf9f4",
+            "on-surface-variant": "#42474c",
+            "on-secondary-container": "#66645d",
+            "on-tertiary-container": "#cda7ce",
+            "on-secondary": "#ffffff",
+            "surface-variant": "#e4e2dd",
+            "on-surface": "#1b1c19",
+            "secondary-container": "#e6e2d9",
+            "on-error": "#ffffff",
+            "tertiary-container": "#583b5c",
+            "on-primary-fixed": "#011e2d",
+            "on-tertiary-fixed-variant": "#5a3c5d",
+            "secondary-fixed-dim": "#cac6be",
+            "surface-bright": "#fbf9f4",
+            "primary-fixed-dim": "#b0cadd",
+            "surface-container-highest": "#e4e2dd",
+            "on-error-container": "#93000a",
+            "inverse-surface": "#30312e",
+            "tertiary-fixed": "#fed6ff",
+            "surface-container": "#f0eee9",
+            "inverse-primary": "#b0cadd",
+            "on-tertiary": "#ffffff",
+            "on-primary-container": "#9cb6c9",
+            "error": "#ba1a1a",
+            "on-secondary-fixed-variant": "#484740",
+            "on-secondary-fixed": "#1c1c16",
+            "surface-dim": "#dbdad5",
+            "on-tertiary-fixed": "#2b1130",
+            "primary": "#183241",
+            "outline": "#73787c",
+            "surface-container-lowest": "#ffffff",
+            "surface": "#fbf9f4",
+            "on-primary-fixed-variant": "#314a5a",
+            "primary-fixed": "#cce6fa",
+            "surface-container-high": "#eae8e3",
+            "tertiary-fixed-dim": "#e1bae2",
+            "on-background": "#1b1c19",
+            "surface-tint": "#486172",
+            "on-primary": "#ffffff",
+            "primary-container": "#2f4858",
+            "outline-variant": "#c2c7cc",
+            "inverse-on-surface": "#f2f1ec",
+            "secondary-fixed": "#e6e2d9",
+            "error-container": "#ffdad6",
+            "surface-container-low": "#f5f3ee",
+            "tertiary": "#402544"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-2xs": "0.25rem",
+            "gutter": "0.75rem",
+            "space-lg": "1rem",
+            "space-3xs": "0.125rem",
+            "space-xs": "0.375rem",
+            "space-sm": "0.5rem",
+            "space-md": "0.75rem",
+            "margin": "1rem",
+            "space-2xl": "2rem",
+            "space-xl": "1.5rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Inter"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "label-md": ["Inter"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "headline-xl": ["Plus Jakarta Sans"],
+            "label-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "code-sm": ["Inter"]
+          },
+          "fontSize": {
+            "body-lg": ["0.9375rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "headline-md": ["1.125rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-lg": ["1.375rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-md": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "headline-sm": ["0.9375rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "headline-xl": ["1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "label-sm": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.03em", "fontWeight": "600" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "0.005em", "fontWeight": "400" }],
+            "code-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-size: 16px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f0eee9;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #c2c7cc;
+      border-radius: 2px;
+    }
+    .grid-dots {
+      background-image: radial-gradient(#c2c7cc 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased font-body-md text-body-md h-screen overflow-hidden flex flex-col select-none">
+<!-- Top Navigation Shell (Shared Components JSON execution) -->
+<header class="flex justify-between items-center w-full px-space-md h-12 bg-surface-container-lowest border-b border-outline-variant z-30 shrink-0">
+<!-- Left: Product Brand & Breadcrumb Path -->
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs text-primary font-headline-sm text-headline-sm font-semibold tracking-tight">
+<span class="material-symbols-outlined text-primary" data-icon="hub">hub</span>
+<span>FraudTrace Workstation</span>
+</div>
+<div class="h-4 w-px bg-outline-variant"></div>
+<!-- Breadcrumb navigation hierarchy -->
+<nav class="flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant">
+<span class="hover:text-primary cursor-pointer transition-colors duration-150">FraudTrace</span>
+<span class="text-outline">/</span>
+<span class="hover:text-primary cursor-pointer transition-colors duration-150">Investigate</span>
+<span class="text-outline">/</span>
+<span class="hover:text-primary cursor-pointer transition-colors duration-150">Fraud Rings</span>
+<span class="text-outline">/</span>
+<span class="text-primary font-semibold bg-surface-container px-space-xs py-space-3xs rounded">RNG-8902 (Ring-Omega)</span>
+</nav>
+</div>
+<!-- Center/Right Search Bar & Operational Actions -->
+<div class="flex items-center gap-space-md">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-space-xs top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="w-full h-8 pl-7 pr-space-xs bg-surface text-on-surface placeholder:text-outline border border-outline-variant rounded font-body-sm text-body-sm focus:outline-none focus:border-primary transition-colors" placeholder="Search case graph, hash, device..." type="text"/>
+</div>
+<!-- Icon Actions -->
+<div class="flex items-center gap-space-xs border-r border-outline-variant pr-space-md">
+<button class="p-space-xs hover:bg-surface-container-high rounded text-on-surface-variant hover:text-on-surface transition-colors duration-150" title="Notifications">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-space-xs hover:bg-surface-container-high rounded text-on-surface-variant hover:text-on-surface transition-colors duration-150" title="Investigation Tuning">
+<span class="material-symbols-outlined" data-icon="tune">tune</span>
+</button>
+<button class="p-space-xs hover:bg-surface-container-high rounded text-on-surface-variant hover:text-on-surface transition-colors duration-150" title="System Help">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+</div>
+<!-- Trailing Action Buttons -->
+<div class="flex items-center gap-space-sm">
+<button class="h-8 px-space-md bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-container transition-colors duration-150 active:bg-surface-dim flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-outline" data-icon="ac_unit">ac_unit</span>
+<span>Freeze Accounts</span>
+</button>
+<button class="h-8 px-space-md bg-primary-container text-on-primary font-label-md text-label-md rounded hover:bg-primary transition-colors duration-150 active:opacity-90 flex items-center gap-space-xs">
+<span class="material-symbols-outlined" data-icon="gavel">gavel</span>
+<span>Adjudicate Case</span>
+</button>
+</div>
+<!-- Lead Investigator Portrait -->
+<div class="flex items-center pl-space-xs border-l border-outline-variant">
+<img class="w-7 h-7 rounded object-cover border border-outline-variant" data-alt="A dignified close-up photographic studio portrait of a senior forensic fraud investigator with spectacles and focused expression, lit by high-key soft archival lighting, natural skin tones against a calm neutral warm paper office background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7HWzEwlbLlJgZaXHrJxG6b3KYhsCDClre9L3q-4MPK5zpZg3OEcXrLW7i8XgDBOEKepmHcfvauzIB0mNN8XuIyMfOx-ciaHQ2tEiEKbHCUHBUtWwPMAZnB349mYcxNYlGsVtthP_Jo67whnWHApA10_9HotjFg9PkYSGRbtUMBhUULUp0rMFdAiowAWL3MeC_o2H928LLqmBXO6sTidUAIElN8WtTLayXEoqUFMVo9cXapUzxgDM"/>
+</div>
+</div>
+</header>
+<!-- Global Workspace: SideNav + Main Investigation Console -->
+<div class="flex flex-1 overflow-hidden">
+<!-- SideNavBar (Shared Components JSON execution) -->
+<aside class="flex flex-col justify-between h-full w-60 py-space-md px-space-sm bg-secondary-container border-r border-outline-variant shrink-0 z-20">
+<!-- Upper Section: Monogram Header, CTA & Nav Items -->
+<div class="flex flex-col gap-space-md">
+<!-- Brand Monogram Header -->
+<div class="flex items-center gap-space-sm px-space-xs">
+<div class="w-8 h-8 rounded bg-primary text-on-primary flex items-center justify-center font-headline-sm text-headline-sm font-bold tracking-tight">
+            FT
+          </div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm font-semibold tracking-tight text-on-surface">FraudTrace</span>
+<span class="font-label-sm text-label-sm text-secondary">Forensic Ledger Console</span>
+</div>
+</div>
+<!-- Primary CTA: New Investigation -->
+<button class="w-full h-8 px-space-md bg-primary-container text-on-primary rounded font-label-md text-label-md flex items-center justify-center gap-space-xs hover:bg-primary transition-colors duration-150 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+<span>New Investigation</span>
+</button>
+<!-- Navigation Tabs (8 Items from JSON) -->
+<nav class="flex flex-col gap-space-3xs">
+<!-- 1. Dashboard -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- 2. Alerts -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="notifications_active">notifications_active</span>
+<span>Alerts</span>
+</a>
+<!-- 3. Fraud Rings [MANDATORY ACTIVE ITEM] -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs bg-primary-container text-on-primary rounded-lg border-l-2 border-primary font-label-md text-label-md cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-semibold">Fraud Rings</span>
+</a>
+<!-- 4. Accounts -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+<span>Accounts</span>
+</a>
+<!-- 5. Graph Explorer -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+<span>Graph Explorer</span>
+</a>
+<!-- 6. Cases -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="folder_shared">folder_shared</span>
+<span>Cases</span>
+</a>
+<!-- 7. Data Management -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="database">database</span>
+<span>Data Management</span>
+</a>
+<!-- 8. Detection Rules -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="rule">rule</span>
+<span>Detection Rules</span>
+</a>
+</nav>
+</div>
+<!-- Footer Navigation Items (From JSON: Audit Log, Settings) -->
+<div class="flex flex-col gap-space-3xs border-t border-outline-variant pt-space-xs">
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span>Audit Log</span>
+</a>
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</div>
+</aside>
+<!-- Main Canvas Area: Two-Tier Layout (Queue Summary Top + Detail Dossier Bottom) -->
+<main class="flex-1 flex flex-col h-full bg-background overflow-hidden">
+<!-- TOP SECTION: Fraud Rings Queue Summary -->
+<section class="h-64 flex flex-col border-b border-outline-variant bg-surface-container-lowest shrink-0">
+<!-- Queue Filter Toolbar -->
+<div class="flex items-center justify-between px-space-lg py-space-xs border-b border-outline-variant bg-surface-container-low shrink-0">
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Fraud Rings Queue</span>
+<span class="px-space-xs py-space-3xs bg-surface-container text-on-surface font-label-sm text-label-sm rounded border border-outline-variant">3 Active Entities</span>
+</div>
+<div class="h-4 w-px bg-outline-variant"></div>
+<!-- Filters -->
+<div class="flex items-center gap-space-xs">
+<!-- Search Rings -->
+<div class="relative w-48">
+<span class="material-symbols-outlined absolute left-space-xs top-1/2 -translate-y-1/2 text-outline" data-icon="filter_list">filter_list</span>
+<input class="w-full h-7 pl-6 pr-space-xs bg-surface-container-lowest text-on-surface placeholder:text-outline border border-outline-variant rounded font-body-sm text-body-sm focus:outline-none focus:border-primary" placeholder="Filter rings &amp; tags..." type="text"/>
+</div>
+<!-- Risk Score Filter -->
+<select class="h-7 px-space-xs bg-surface-container-lowest border border-outline-variant rounded text-on-surface font-label-sm text-label-sm focus:outline-none focus:border-primary">
+<option>Risk Score: All &gt; 70</option>
+<option>Critical (90-100)</option>
+<option>High (80-89)</option>
+<option>Medium (70-79)</option>
+</select>
+<!-- Pattern Filter -->
+<select class="h-7 px-space-xs bg-surface-container-lowest border border-outline-variant rounded text-on-surface font-label-sm text-label-sm focus:outline-none focus:border-primary">
+<option>Pattern: All Patterns</option>
+<option>Merchant Cash-Out</option>
+<option>Circular Flow</option>
+<option>Layered Pass-Through</option>
+</select>
+<!-- Status Filter -->
+<select class="h-7 px-space-xs bg-surface-container-lowest border border-outline-variant rounded text-on-surface font-label-sm text-label-sm focus:outline-none focus:border-primary">
+<option>Status: All Active</option>
+<option>Active Syndicate</option>
+<option>Under Injunction</option>
+<option>Adjudicated</option>
+</select>
+</div>
+</div>
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-outline">
+<span>Showing 3 of 42 Detected Syndicates</span>
+<button class="p-space-3xs hover:text-on-surface">
+<span class="material-symbols-outlined" data-icon="refresh">refresh</span>
+</button>
+</div>
+</div>
+<!-- Compact Rings Table -->
+<div class="flex-1 overflow-y-auto custom-scroll">
+<table class="w-full border-collapse text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container border-b border-outline-variant font-label-sm text-label-sm text-secondary uppercase sticky top-0 z-10 h-7">
+<th class="px-space-md py-space-3xs font-semibold w-56">Ring Identifier</th>
+<th class="px-space-md py-space-3xs font-semibold w-28">Risk Score</th>
+<th class="px-space-md py-space-3xs font-semibold">Identified Patterns</th>
+<th class="px-space-md py-space-3xs font-semibold text-right w-24">Members</th>
+<th class="px-space-md py-space-3xs font-semibold text-right w-24">Txns</th>
+<th class="px-space-md py-space-3xs font-semibold text-right w-36">Total Flow</th>
+<th class="px-space-md py-space-3xs font-semibold w-32">Status</th>
+<th class="px-space-md py-space-3xs font-semibold text-center w-24">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant bg-surface-container-lowest">
+<!-- Row 1: RNG-8902 (Ring-Omega) [Selected] -->
+<tr class="bg-surface-container-low border-l-4 border-l-primary hover:bg-surface-container transition-colors duration-100 cursor-pointer">
+<td class="px-space-md py-space-xs font-semibold text-primary">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-base" data-icon="radio_button_checked">radio_button_checked</span>
+<span>RNG-8902 (Ring-Omega)</span>
+</div>
+</td>
+<td class="px-space-md py-space-xs">
+<span class="inline-flex items-center px-space-xs py-space-3xs font-label-sm text-label-sm rounded" style="background-color: #EFE4E6; color: #54151D; border: 1px solid #DBBFC3;">
+                    96 CRITICAL
+                  </span>
+</td>
+<td class="px-space-md py-space-xs">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="px-space-xs py-space-3xs bg-surface-container-high border border-outline-variant font-label-sm text-label-sm rounded text-on-surface">Merchant Cash-Out</span>
+<span class="px-space-xs py-space-3xs bg-surface-container-high border border-outline-variant font-label-sm text-label-sm rounded text-on-surface">Shared Device</span>
+</div>
+</td>
+<td class="px-space-md py-space-xs text-right tabular-nums font-medium text-on-surface">27</td>
+<td class="px-space-md py-space-xs text-right tabular-nums font-medium text-on-surface">148</td>
+<td class="px-space-md py-space-xs text-right tabular-nums font-semibold text-primary">$1,420,000</td>
+<td class="px-space-md py-space-xs">
+<span class="inline-flex items-center px-space-xs py-space-3xs font-label-sm text-label-sm rounded" style="background-color: #F6E9E6; color: #802B1B; border: 1px solid #E7C6C0;">
+                    Active Syndicate
+                  </span>
+</td>
+<td class="px-space-md py-space-xs text-center">
+<span class="font-label-sm text-label-sm text-primary font-semibold bg-surface-container-highest px-space-xs py-space-3xs rounded border border-outline-variant">Active Dossier</span>
+</td>
+</tr>
+<!-- Row 2: RNG-7714 (Ring-Delta) -->
+<tr class="hover:bg-surface-container transition-colors duration-100 cursor-pointer">
+<td class="px-space-md py-space-xs font-semibold text-on-surface">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-outline text-base" data-icon="radio_button_unchecked">radio_button_unchecked</span>
+<span>RNG-7714 (Ring-Delta)</span>
+</div>
+</td>
+<td class="px-space-md py-space-xs">
+<span class="inline-flex items-center px-space-xs py-space-3xs font-label-sm text-label-sm rounded" style="background-color: #F6E9E6; color: #802B1B; border: 1px solid #E7C6C0;">
+                    88 HIGH
+                  </span>
+</td>
+<td class="px-space-md py-space-xs">
+<span class="px-space-xs py-space-3xs bg-surface-container-high border border-outline-variant font-label-sm text-label-sm rounded text-on-surface">Circular Flow</span>
+</td>
+<td class="px-space-md py-space-xs text-right tabular-nums text-on-surface-variant">14</td>
+<td class="px-space-md py-space-xs text-right tabular-nums text-on-surface-variant">62</td>
+<td class="px-space-md py-space-xs text-right tabular-nums text-on-surface font-medium">$640,000</td>
+<td class="px-space-md py-space-xs">
+<span class="inline-flex items-center px-space-xs py-space-3xs font-label-sm text-label-sm rounded" style="background-color: #F8F1E2; color: #7E570D; border: 1px solid #EAD7B2;">
+                    Active
+                  </span>
+</td>
+<td class="px-space-md py-space-xs text-center">
+<button class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary underline">Inspect</button>
+</td>
+</tr>
+<!-- Row 3: RNG-6502 (Ring-Epsilon) -->
+<tr class="hover:bg-surface-container transition-colors duration-100 cursor-pointer">
+<td class="px-space-md py-space-xs font-semibold text-on-surface">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-outline text-base" data-icon="radio_button_unchecked">radio_button_unchecked</span>
+<span>RNG-6502 (Ring-Epsilon)</span>
+</div>
+</td>
+<td class="px-space-md py-space-xs">
+<span class="inline-flex items-center px-space-xs py-space-3xs font-label-sm text-label-sm rounded" style="background-color: #F8F1E2; color: #7E570D; border: 1px solid #EAD7B2;">
+                    74 MEDIUM
+                  </span>
+</td>
+<td class="px-space-md py-space-xs">
+<span class="px-space-xs py-space-3xs bg-surface-container-high border border-outline-variant font-label-sm text-label-sm rounded text-on-surface">Fan-In / Fan-Out</span>
+</td>
+<td class="px-space-md py-space-xs text-right tabular-nums text-on-surface-variant">8</td>
+<td class="px-space-md py-space-xs text-right tabular-nums text-on-surface-variant">31</td>
+<td class="px-space-md py-space-xs text-right tabular-nums text-on-surface font-medium">$280,000</td>
+<td class="px-space-md py-space-xs">
+<span class="inline-flex items-center px-space-xs py-space-3xs font-label-sm text-label-sm rounded" style="background-color: #EAEFE7; color: #46573C; border: 1px solid #D2DDD0;">
+                    Under Review
+                  </span>
+</td>
+<td class="px-space-md py-space-xs text-center">
+<button class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary underline">Inspect</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- BOTTOM SECTION: Dedicated Fraud Ring Detail Dossier for RNG-8902 -->
+<section class="flex-1 flex flex-col overflow-y-auto custom-scroll bg-surface p-space-lg gap-space-md">
+<!-- Dossier Header & Command Strip -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-space-md flex justify-between items-start">
+<div class="flex flex-col gap-space-2xs">
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">Ring Summary: RNG-8902 (Ring-Omega)</span>
+<!-- Status Badge -->
+<span class="inline-flex items-center px-space-xs py-space-3xs font-label-sm text-label-sm rounded" style="background-color: #EFE4E6; color: #54151D; border: 1px solid #DBBFC3;">
+                Coordinated Liquidation Syndicate
+              </span>
+<span class="text-outline font-label-sm text-label-sm">Class-A Commercial Fraud Pattern</span>
+</div>
+<div class="flex items-center gap-space-lg text-body-sm text-on-surface-variant pt-space-3xs">
+<div>
+<span class="text-secondary font-label-sm text-label-sm uppercase">Total Forensic Exposure:</span>
+<span class="font-bold text-primary tabular-nums ml-1">$1,420,000.00 USD</span>
+</div>
+<div class="h-3 w-px bg-outline-variant"></div>
+<div>
+<span class="text-secondary font-label-sm text-label-sm uppercase">Syndicate Diameter:</span>
+<span class="font-medium text-on-surface tabular-nums ml-1">4 Network Hops</span>
+</div>
+<div class="h-3 w-px bg-outline-variant"></div>
+<div>
+<span class="text-secondary font-label-sm text-label-sm uppercase">First Activity Recorded:</span>
+<span class="font-medium text-on-surface tabular-nums ml-1">2024-09-14 02:18:41 UTC</span>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-space-xs">
+<button class="h-8 px-space-md bg-surface border border-outline-variant text-on-surface rounded font-label-md text-label-md hover:bg-surface-container flex items-center gap-space-xs transition-colors">
+<span class="material-symbols-outlined text-outline" data-icon="download">download</span>
+<span>Export Ring Dossier</span>
+</button>
+<button class="h-8 px-space-md bg-surface border border-outline-variant text-error rounded font-label-md text-label-md hover:bg-error-container hover:border-error flex items-center gap-space-xs transition-colors">
+<span class="material-symbols-outlined text-error" data-icon="block">block</span>
+<span>Freeze Connected Accounts</span>
+</button>
+<button class="h-8 px-space-md bg-primary-container text-on-primary rounded font-label-md text-label-md hover:bg-primary flex items-center gap-space-xs transition-colors">
+<span class="material-symbols-outlined" data-icon="post_add">post_add</span>
+<span>Attach Entire Ring to Case</span>
+</button>
+</div>
+</div>
+<!-- Risk Explanation Brief (Evidence-Backed AI Dossier Card) -->
+<div class="bg-surface-container-lowest border border-outline-variant border-l-4 border-l-primary-container rounded p-space-md">
+<div class="flex items-center justify-between pb-space-xs border-b border-outline-variant mb-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary" data-icon="policy">policy</span>
+<span class="font-headline-sm text-headline-sm font-semibold text-primary">Automated Synthesis Summary</span>
+<span class="text-outline font-label-sm text-label-sm">| Engine v4.12 Forensic Core (Confidence: 99.4%)</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary tabular-nums">Generated: 2024-10-24 16:42:09 UTC</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed">
+            High-density cyclic structuring between 4 proxy commercial accounts and 2 merchant terminals sharing hardware fingerprint <span class="font-code-sm text-code-sm bg-surface-container px-space-2xs py-space-3xs border border-outline-variant rounded font-mono font-semibold text-primary cursor-pointer hover:bg-surface-variant">[DEV-993821]</span>. Rapid velocity layering observed with average funds dwell time under 4 minutes prior to point-of-sale extraction <span class="font-code-sm text-code-sm bg-surface-container px-space-2xs py-space-3xs border border-outline-variant rounded font-mono font-semibold text-primary cursor-pointer hover:bg-surface-variant">[Ev-01]</span>.
+          </p>
+</div>
+<!-- 2-Column Analytical Bento: Topology Visualizer + Coordinated Members Table -->
+<div class="grid grid-cols-12 gap-space-md">
+<!-- Left Column: Detected Patterns & Structural Topology (4-stage laundering cycle) -->
+<div class="col-span-5 flex flex-col bg-surface-container-lowest border border-outline-variant rounded p-space-md">
+<div class="flex items-center justify-between pb-space-xs border-b border-outline-variant mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary" data-icon="schema">schema</span>
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Structural Topology</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary">4-Stage Laundering Cycle</span>
+</div>
+<!-- Cytoscape-styled Topology Canvas -->
+<div class="relative flex-1 min-h-[260px] bg-surface-container-low border border-outline-variant rounded grid-dots flex flex-col justify-between p-space-md overflow-hidden">
+<!-- Stage 1: Placement / Inflow Smurfs -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs bg-surface-container-lowest border border-outline-variant px-space-xs py-space-3xs rounded shadow-none">
+<div class="w-3.5 h-3.5 rounded-full bg-primary flex items-center justify-center text-[9px] text-on-primary font-mono">1</div>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Placement (Smurfs)</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary tabular-nums">$227,000 Multi-wire</span>
+</div>
+<!-- Directed Vector Flow Indicator 1 -->
+<div class="flex items-center justify-center my-space-3xs">
+<div class="flex items-center gap-space-xs text-outline font-label-sm text-label-sm">
+<span class="w-16 h-px bg-outline-variant"></span>
+<span class="material-symbols-outlined text-xs" data-icon="arrow_downward">arrow_downward</span>
+<span class="w-16 h-px bg-outline-variant"></span>
+</div>
+</div>
+<!-- Stage 2: Hardware Conduit Device Nexus -->
+<div class="flex items-center justify-center">
+<div class="flex items-center gap-space-xs bg-surface-container-lowest border-2 border-primary-container px-space-md py-space-xs rounded">
+<span class="material-symbols-outlined text-primary text-base" data-icon="phone_android">phone_android</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm font-bold text-primary">DEV-993821</span>
+<span class="font-label-sm text-label-sm text-secondary">Shared Hardware Fingerprint</span>
+</div>
+</div>
+</div>
+<!-- Directed Vector Flow Indicator 2 -->
+<div class="flex items-center justify-center my-space-3xs">
+<div class="flex items-center gap-space-xs text-outline font-label-sm text-label-sm">
+<span class="w-16 h-px bg-outline-variant"></span>
+<span class="material-symbols-outlined text-xs" data-icon="arrow_downward">arrow_downward</span>
+<span class="w-16 h-px bg-outline-variant"></span>
+</div>
+</div>
+<!-- Stage 3: Layering Funnel Pass-Through -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs bg-surface-container-lowest border border-outline-variant px-space-xs py-space-3xs rounded">
+<div class="w-3.5 h-3.5 rounded-full bg-primary-container flex items-center justify-center text-[9px] text-on-primary font-mono">3</div>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Funnel Node (ACC-992102)</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary tabular-nums">4-Minute Velocity</span>
+</div>
+<!-- Directed Vector Flow Indicator 3 (Flagged Red Edge) -->
+<div class="flex items-center justify-center my-space-3xs">
+<div class="flex items-center gap-space-xs text-error font-label-sm text-label-sm">
+<span class="w-16 h-0.5" style="background-color: #B3402A;"></span>
+<span class="material-symbols-outlined text-xs" data-icon="arrow_downward" style="color: #B3402A;">arrow_downward</span>
+<span class="w-16 h-0.5" style="background-color: #B3402A;"></span>
+</div>
+</div>
+<!-- Stage 4: Integration / Liquidation Merchant POS -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs bg-surface-container-lowest border-2 rounded px-space-xs py-space-3xs" style="border-color: #7A1F2B;">
+<span class="w-3 h-3 bg-tertiary rounded-sm"></span>
+<span class="font-label-sm text-label-sm font-bold" style="color: #7A1F2B;">Integration: Apex Electronics POS</span>
+</div>
+<span class="font-label-sm text-label-sm font-semibold tabular-nums" style="color: #7A1F2B;">$142,000 Liquidated</span>
+</div>
+</div>
+<div class="mt-space-sm pt-space-xs border-t border-outline-variant flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span>Projection: 2D Directed Graph Layout</span>
+<button class="hover:text-primary underline flex items-center gap-space-3xs">
+<span class="material-symbols-outlined text-xs" data-icon="open_in_new">open_in_new</span>
+<span>Open in Graph Explorer</span>
+</button>
+</div>
+</div>
+<!-- Right Column: Coordinated Members Table (Accounts, Devices, Merchants) -->
+<div class="col-span-7 flex flex-col bg-surface-container-lowest border border-outline-variant rounded p-space-md">
+<div class="flex items-center justify-between pb-space-xs border-b border-outline-variant mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary" data-icon="badge">badge</span>
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Coordinated Members Matrix</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary">3 Core Identified Entities</span>
+</div>
+<!-- Table of Members -->
+<div class="overflow-x-auto">
+<table class="w-full border-collapse text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container border-b border-outline-variant font-label-sm text-label-sm text-secondary uppercase h-7">
+<th class="px-space-sm py-space-3xs font-semibold">Entity / ID</th>
+<th class="px-space-sm py-space-3xs font-semibold">Assigned Role</th>
+<th class="px-space-sm py-space-3xs font-semibold text-right">Inflow / Volume</th>
+<th class="px-space-sm py-space-3xs font-semibold text-center">Risk</th>
+<th class="px-space-sm py-space-3xs font-semibold">Linked Devices</th>
+<th class="px-space-sm py-space-3xs font-semibold text-center">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Member 1: ACC-992102 -->
+<tr class="hover:bg-surface-container transition-colors duration-100">
+<td class="px-space-sm py-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-base" data-icon="account_balance">account_balance</span>
+<span class="font-mono font-semibold text-primary">ACC-992102</span>
+</div>
+</td>
+<td class="px-space-sm py-space-xs">
+<span class="font-medium text-on-surface">Primary Funnel</span>
+</td>
+<td class="px-space-sm py-space-xs text-right tabular-nums font-semibold text-primary">
+                      $184,500
+                    </td>
+<td class="px-space-sm py-space-xs text-center">
+<span class="inline-flex items-center px-space-xs py-space-3xs font-label-sm text-label-sm rounded" style="background-color: #EFE4E6; color: #54151D; border: 1px solid #DBBFC3;">
+                        94
+                      </span>
+</td>
+<td class="px-space-sm py-space-xs">
+<span class="font-mono text-outline font-medium text-xs bg-surface-container px-space-2xs py-space-3xs rounded border border-outline-variant">DEV-993821</span>
+</td>
+<td class="px-space-sm py-space-xs text-center">
+<span class="inline-block w-2 h-2 rounded-full" style="background-color: #7A1F2B;" title="Active Participant"></span>
+</td>
+</tr>
+<!-- Member 2: ACC-440181 -->
+<tr class="hover:bg-surface-container transition-colors duration-100">
+<td class="px-space-sm py-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-base" data-icon="account_balance">account_balance</span>
+<span class="font-mono font-semibold text-primary">ACC-440181</span>
+</div>
+</td>
+<td class="px-space-sm py-space-xs">
+<span class="font-medium text-on-surface">Inflow Smurf</span>
+</td>
+<td class="px-space-sm py-space-xs text-right tabular-nums font-semibold text-on-surface">
+                      $42,500
+                    </td>
+<td class="px-space-sm py-space-xs text-center">
+<span class="inline-flex items-center px-space-xs py-space-3xs font-label-sm text-label-sm rounded" style="background-color: #F6E9E6; color: #802B1B; border: 1px solid #E7C6C0;">
+                        89
+                      </span>
+</td>
+<td class="px-space-sm py-space-xs">
+<span class="font-mono text-outline font-medium text-xs bg-surface-container px-space-2xs py-space-3xs rounded border border-outline-variant">DEV-993821</span>
+</td>
+<td class="px-space-sm py-space-xs text-center">
+<span class="inline-block w-2 h-2 rounded-full" style="background-color: #B3402A;" title="High Risk"></span>
+</td>
+</tr>
+<!-- Member 3: MCH-3092 (Apex Electronics) -->
+<tr class="hover:bg-surface-container transition-colors duration-100">
+<td class="px-space-sm py-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-base" data-icon="store">store</span>
+<div class="flex flex-col">
+<span class="font-mono font-semibold text-primary">MCH-3092</span>
+<span class="font-label-sm text-label-sm text-secondary">Apex Electronics</span>
+</div>
+</div>
+</td>
+<td class="px-space-sm py-space-xs">
+<span class="font-medium text-on-surface">Liquidation POS</span>
+</td>
+<td class="px-space-sm py-space-xs text-right tabular-nums font-bold" style="color: #7A1F2B;">
+                      $142,000
+                    </td>
+<td class="px-space-sm py-space-xs text-center">
+<span class="inline-flex items-center px-space-xs py-space-3xs font-label-sm text-label-sm rounded" style="background-color: #EFE4E6; color: #54151D; border: 1px solid #DBBFC3;">
+                        96
+                      </span>
+</td>
+<td class="px-space-sm py-space-xs">
+<span class="text-outline text-xs italic">Terminal Direct</span>
+</td>
+<td class="px-space-sm py-space-xs text-center">
+<span class="inline-block w-2 h-2 rounded-full" style="background-color: #7A1F2B;" title="Critical Risk"></span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Ledger Footnote / Action Bar -->
+<div class="mt-auto pt-space-sm border-t border-outline-variant flex items-center justify-between">
+<span class="text-outline font-label-sm text-label-sm">Audited against 148 total transactions across 4 jurisdictional clearance layers.</span>
+<button class="font-label-sm text-label-sm text-primary font-semibold hover:underline">View All 27 Members</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+</body></html>

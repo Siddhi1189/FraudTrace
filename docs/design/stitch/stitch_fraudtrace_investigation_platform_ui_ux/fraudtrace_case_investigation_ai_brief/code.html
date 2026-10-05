@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FraudTrace Workstation - Case FT-1002 Investigation Dossier</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary": "#605e57",
+            "background": "#fbf9f4",
+            "on-surface-variant": "#42474c",
+            "on-secondary-container": "#66645d",
+            "on-tertiary-container": "#cda7ce",
+            "on-secondary": "#ffffff",
+            "surface-variant": "#e4e2dd",
+            "on-surface": "#1b1c19",
+            "secondary-container": "#e6e2d9",
+            "on-error": "#ffffff",
+            "tertiary-container": "#583b5c",
+            "on-primary-fixed": "#011e2d",
+            "on-tertiary-fixed-variant": "#5a3c5d",
+            "secondary-fixed-dim": "#cac6be",
+            "surface-bright": "#fbf9f4",
+            "primary-fixed-dim": "#b0cadd",
+            "surface-container-highest": "#e4e2dd",
+            "on-error-container": "#93000a",
+            "inverse-surface": "#30312e",
+            "tertiary-fixed": "#fed6ff",
+            "surface-container": "#f0eee9",
+            "inverse-primary": "#b0cadd",
+            "on-tertiary": "#ffffff",
+            "on-primary-container": "#9cb6c9",
+            "error": "#ba1a1a",
+            "on-secondary-fixed-variant": "#484740",
+            "on-secondary-fixed": "#1c1c16",
+            "surface-dim": "#dbdad5",
+            "on-tertiary-fixed": "#2b1130",
+            "primary": "#183241",
+            "outline": "#73787c",
+            "surface-container-lowest": "#ffffff",
+            "surface": "#fbf9f4",
+            "on-primary-fixed-variant": "#314a5a",
+            "primary-fixed": "#cce6fa",
+            "surface-container-high": "#eae8e3",
+            "tertiary-fixed-dim": "#e1bae2",
+            "on-background": "#1b1c19",
+            "surface-tint": "#486172",
+            "on-primary": "#ffffff",
+            "primary-container": "#2f4858",
+            "outline-variant": "#c2c7cc",
+            "inverse-on-surface": "#f2f1ec",
+            "secondary-fixed": "#e6e2d9",
+            "error-container": "#ffdad6",
+            "surface-container-low": "#f5f3ee",
+            "tertiary": "#402544"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-2xs": "0.25rem",
+            "gutter": "0.75rem",
+            "space-lg": "1rem",
+            "space-3xs": "0.125rem",
+            "space-xs": "0.375rem",
+            "space-sm": "0.5rem",
+            "space-md": "0.75rem",
+            "margin": "1rem",
+            "space-2xl": "2rem",
+            "space-xl": "1.5rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Inter"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "label-md": ["Inter"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "headline-xl": ["Plus Jakarta Sans"],
+            "label-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "code-sm": ["Inter"]
+          },
+          "fontSize": {
+            "body-lg": ["0.9375rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "headline-md": ["1.125rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-lg": ["1.375rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-md": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "headline-sm": ["0.9375rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "headline-xl": ["1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "label-sm": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.03em", "fontWeight": "600" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "0.005em", "fontWeight": "400" }],
+            "code-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+      font-size: 1.125rem;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .citation-token {
+      transition: all 120ms ease;
+    }
+    .citation-token:hover {
+      background-color: #2F4858;
+      color: #ffffff;
+      border-color: #2F4858;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body-sm antialiased h-screen flex flex-col overflow-hidden select-none">
+<!-- TOP APP BAR -->
+<header class="flex justify-between items-center w-full px-space-md h-12 border-b border-outline-variant dark:border-outline bg-surface-container-lowest dark:bg-surface-container-low shrink-0 z-30">
+<!-- Left Cluster: Search & Product ID -->
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="text-headline-sm font-headline-sm text-primary dark:text-inverse-primary font-semibold tracking-tight">FraudTrace Workstation</span>
+<span class="text-label-sm font-label-sm text-outline px-1.5 py-0.5 border border-outline-variant bg-surface-container-high rounded">v4.8.2</span>
+</div>
+<div class="h-4 w-px bg-outline-variant mx-1"></div>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-2 text-outline text-sm" data-icon="search">search</span>
+<input class="w-64 h-7 pl-7 pr-space-sm bg-surface text-on-surface text-body-sm border border-outline-variant rounded focus:outline-none focus:border-primary-container" placeholder="Search entity, account, rule, or case hash..." type="text"/>
+</div>
+</div>
+<!-- Center Navigation Breadcrumb trail -->
+<div class="hidden md:flex items-center gap-space-xs">
+<span class="text-on-surface-variant dark:text-outline font-label-md text-label-md">Cases / FT-2024-9082</span>
+<span class="text-outline-variant font-label-md">/</span>
+<span class="text-primary dark:text-inverse-primary font-label-md text-label-md font-semibold">Forensic Dossier</span>
+</div>
+<!-- Right Trailing Controls -->
+<div class="flex items-center gap-space-sm">
+<button class="flex items-center gap-1.5 h-7 px-space-sm bg-surface border border-outline-variant hover:bg-surface-container-high text-on-surface font-label-md text-label-md rounded transition-colors duration-150 cursor-pointer">
+<span class="material-symbols-outlined text-sm" data-icon="ac_unit">ac_unit</span>
+<span>Freeze Accounts</span>
+</button>
+<button class="flex items-center gap-1.5 h-7 px-space-sm bg-primary-container text-on-primary hover:opacity-90 font-label-md text-label-md rounded transition-opacity duration-100 cursor-pointer">
+<span class="material-symbols-outlined text-sm" data-icon="gavel">gavel</span>
+<span>Adjudicate Case</span>
+</button>
+<div class="h-4 w-px bg-outline-variant mx-1"></div>
+<div class="flex items-center gap-1">
+<button class="p-1 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors" title="Notifications">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-1 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors" title="Help &amp; Reference Documentation">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<button class="p-1 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors" title="Workspace Density &amp; Tuning">
+<span class="material-symbols-outlined" data-icon="tune">tune</span>
+</button>
+</div>
+<div class="h-4 w-px bg-outline-variant mx-1"></div>
+<div class="flex items-center gap-space-xs pl-1">
+<img class="w-6 h-6 rounded-full border border-outline-variant object-cover" data-alt="Close up archival photographic portrait of a lead financial fraud investigator looking directly at the camera with sharp analytical focus, natural high-key neutral studio lighting, warm gray background, hyper-realistic fine forensic detail." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC19gctdOjnu6g5NDvaGsP8DSb6GmrlpS4N92-wzBKqCEl-3BCr2ogy6REuZ_v6isCgNT6sRgz7tEIlHNl6tZ5mvzDAqx2Sdp7tgK5UKk_AysPoULs6gvpYRKchsGb6pRSCdpccWm_nuMT-IN1KaspfDI1UzKkb-OPcBP3itSq5r3DoLtRTCbJ97abKxD6TWtzQAZh3CVG-2H1eMh8kIhZYyQttKgZkYdEPw-irNFW9AEvgwcSrQJI"/>
+<span class="text-label-sm font-label-sm text-on-surface font-medium">M. Vance</span>
+</div>
+</div>
+</header>
+<!-- MAIN VIEWPORT CONTAINER (SIDEBAR + WORKSPACE) -->
+<div class="flex-1 flex overflow-hidden">
+<!-- LEFT GLOBAL SIDEBAR NAV -->
+<aside class="flex flex-col justify-between h-full w-60 py-space-md px-space-sm bg-secondary-container dark:bg-surface-container border-r border-outline-variant dark:border-outline shrink-0">
+<!-- Top Brand Anchor & CTA -->
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center gap-space-sm px-space-sm pb-space-xs border-b border-outline-variant">
+<div class="w-7 h-7 bg-primary text-on-primary flex items-center justify-center font-bold text-headline-sm rounded">
+            FT
+          </div>
+<div class="flex flex-col">
+<span class="text-headline-md font-headline-md text-on-surface dark:text-inverse-on-surface tracking-tight uppercase leading-none">FraudTrace</span>
+<span class="text-label-sm font-label-sm text-on-secondary-container mt-0.5">Forensic Ledger Console</span>
+</div>
+</div>
+<button class="mt-space-xs flex items-center justify-center gap-space-xs w-full py-1.5 px-space-sm bg-primary-container text-on-primary rounded font-label-md text-label-md hover:opacity-90 active:bg-surface-dim transition-colors duration-100">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+<span>New Investigation</span>
+</button>
+<!-- Primary Navigation List -->
+<nav class="flex flex-col gap-0.5 mt-space-xs">
+<!-- 1. Dashboard -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface transition-colors duration-150 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- 2. Alerts -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface transition-colors duration-150 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="notifications_active">notifications_active</span>
+<span>Alerts</span>
+</a>
+<!-- 3. Fraud Rings -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface transition-colors duration-150 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span>Fraud Rings</span>
+</a>
+<!-- 4. Accounts -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface transition-colors duration-150 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+<span>Accounts</span>
+</a>
+<!-- 5. Graph Explorer -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface transition-colors duration-150 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+<span>Graph Explorer</span>
+</a>
+<!-- 6. Cases (ACTIVE TAB) -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs bg-primary-container dark:bg-primary text-on-primary rounded-lg border-l-2 border-primary font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="folder_shared">folder_shared</span>
+<span>Cases</span>
+</a>
+<!-- 7. Data Management -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface transition-colors duration-150 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="database">database</span>
+<span>Data Management</span>
+</a>
+<!-- 8. Detection Rules -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface transition-colors duration-150 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="rule">rule</span>
+<span>Detection Rules</span>
+</a>
+</nav>
+</div>
+<!-- Footer Tab Links -->
+<div class="flex flex-col gap-0.5 border-t border-outline-variant pt-space-xs">
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span>Audit Log</span>
+</a>
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</div>
+</aside>
+<!-- MAIN CASE INVESTIGATION WORKSPACE CANVAS -->
+<main class="flex-1 flex flex-col min-w-0 bg-background overflow-hidden">
+<!-- TOP CASE DOSSIER HEADER -->
+<section class="bg-surface-container-lowest border-b border-outline-variant px-space-lg py-2.5 shrink-0">
+<!-- Breadcrumb & Top Actions Bar -->
+<div class="flex justify-between items-center mb-1">
+<div class="flex items-center gap-1.5 text-label-sm font-label-sm text-outline">
+<span>FraudTrace</span>
+<span>/</span>
+<span>Investigate</span>
+<span>/</span>
+<span>Cases</span>
+<span>/</span>
+<span class="text-on-surface font-semibold">FT-1002</span>
+</div>
+<div class="flex items-center gap-1.5">
+<button class="h-6 px-2.5 bg-surface border border-outline-variant hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm rounded transition-colors">
+              Update Investigation
+            </button>
+<button class="h-6 px-2.5 bg-surface border border-outline-variant hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm rounded transition-colors">
+              Export Dossier
+            </button>
+<button class="h-6 px-2.5 bg-[#7A1F2B] text-on-primary hover:opacity-90 font-label-sm text-label-sm rounded transition-opacity">
+              Close Case
+            </button>
+</div>
+</div>
+<!-- Case Title & Status Badges Row -->
+<div class="flex flex-wrap items-center justify-between gap-y-2 mt-1">
+<div class="flex items-center gap-3">
+<h1 class="text-headline-lg font-headline-lg text-primary tracking-tight font-bold">
+              Case FT-1002: Merchant Cash-Out &amp; Circular Flow Syndicate
+            </h1>
+<div class="flex items-center gap-1.5">
+<span class="bg-primary-container text-on-primary px-2 py-0.5 text-label-sm font-label-sm font-semibold rounded">
+                INVESTIGATING
+              </span>
+<span class="bg-[#F8F1E2] text-[#7E570D] border border-[#EAD7B2] px-2 py-0.5 text-label-sm font-label-sm font-semibold rounded">
+                Pending Review
+              </span>
+<span class="bg-[#7A1F2B] text-white px-2 py-0.5 text-label-sm font-label-sm font-semibold rounded">
+                CRITICAL
+              </span>
+</div>
+</div>
+</div>
+<!-- Forensic Metadata Bar -->
+<div class="flex flex-wrap items-center gap-x-6 gap-y-1 mt-2 pt-2 border-t border-surface-container text-label-sm font-label-sm text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="text-outline">Lead Investigator:</span>
+<span class="text-on-surface font-medium">M. Vance</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-outline">Opened:</span>
+<span class="text-on-surface font-medium font-code-sm">Oct 14, 2024 · 08:31 UTC</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-outline">Attached Alerts:</span>
+<span class="text-on-surface font-medium">6</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-outline">Total Exposure:</span>
+<span class="text-on-surface font-bold text-primary font-code-sm tracking-tight">$342,800.00 USD</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-outline">Syndicate Ring:</span>
+<span class="px-1.5 py-0.2 border border-outline-variant bg-surface-container font-code-sm font-semibold text-primary rounded">Ring-Omega</span>
+</div>
+</div>
+</section>
+<!-- WORKSPACE NAVIGATION TABS -->
+<div class="bg-surface-container border-b border-outline-variant px-space-lg flex items-center gap-1 shrink-0 overflow-x-auto">
+<button class="px-3 py-2 text-label-sm font-label-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border-b-2 border-transparent transition-colors">
+          Evidence (14)
+        </button>
+<button class="px-3 py-2 text-label-sm font-label-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border-b-2 border-transparent transition-colors">
+          Alerts (6)
+        </button>
+<button class="px-3 py-2 text-label-sm font-label-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border-b-2 border-transparent transition-colors">
+          Analyst Notes (4)
+        </button>
+<button class="px-3 py-2 text-label-sm font-label-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border-b-2 border-transparent transition-colors">
+          Timeline (22)
+        </button>
+<button class="px-3 py-2 text-label-sm font-label-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border-b-2 border-transparent transition-colors">
+          Audit Trail (18)
+        </button>
+<!-- ACTIVE TAB -->
+<button class="px-3 py-2 text-label-sm font-label-sm text-primary font-semibold border-b-2 border-primary bg-surface-container-lowest flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span>AI Copilot (Active)</span>
+</button>
+</div>
+<!-- MAIN INVESTIGATION SPLIT VIEW (58% / 42%) -->
+<div class="flex-1 flex overflow-hidden">
+<!-- LEFT COLUMN: Structured AI Investigation Brief (58% Width) -->
+<section class="w-[58%] border-r border-outline-variant overflow-y-auto bg-surface p-space-lg flex flex-col gap-space-lg">
+<!-- Dossier Header & Grounding Banner -->
+<div class="border border-outline-variant bg-surface-container-lowest p-space-md rounded">
+<div class="flex justify-between items-center pb-2 border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="description">description</span>
+<h2 class="text-headline-sm font-headline-sm text-primary font-bold">
+                  AI Investigation Brief · Case FT-1002
+                </h2>
+</div>
+<div class="flex items-center gap-2 text-label-sm font-label-sm text-outline">
+<span>Model: ForensiSynth-v3</span>
+<span>·</span>
+<span>Generated: Oct 14, 2024 09:45:12 UTC</span>
+</div>
+</div>
+<!-- Grounding Banner -->
+<div class="mt-2.5 py-1.5 px-space-sm bg-[#EAEFE7] border border-[#D2DDD0] rounded flex items-center justify-between text-label-sm font-label-sm">
+<div class="flex items-center gap-1.5 text-[#46573C] font-medium">
+<span class="material-symbols-outlined text-sm font-bold" data-icon="verified_user">verified_user</span>
+<span>Evidence Analyzed: 6 Alerts · 1 Fraud Ring · 34 Transactions · 8 Entities · 100% Provenance Grounded</span>
+</div>
+<span class="text-[#46573C] font-code-sm font-semibold tracking-wider uppercase">Hash: 8f92a10</span>
+</div>
+</div>
+<!-- SECTION 1: Executive Summary -->
+<div class="border-l-2 border-primary-container bg-surface-container-lowest border-y border-r border-outline-variant p-space-md rounded">
+<div class="flex items-center gap-1.5 mb-1.5 text-label-sm font-label-sm text-primary font-bold uppercase tracking-wide">
+<span class="material-symbols-outlined text-sm" data-icon="summarize">summarize</span>
+<span>Section 1: Executive Summary</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface leading-relaxed font-normal">
+              Systemic rapid fund dispersion pattern detected across three intermediary deposit accounts funneling into merchant terminal <span class="font-code-sm font-semibold text-primary bg-surface-container-high px-1 rounded">MCH-3092</span>. Behavioral telemetry confirms device collusion across <span class="font-code-sm font-semibold text-primary bg-surface-container-high px-1 rounded">DEV-993821</span>, characterized by anomalous layer-hop routing and synchronized withdrawal intervals typical of syndicate liquidation funnels.
+            </p>
+</div>
+<!-- SECTION 2: Key Findings -->
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-label-sm font-label-sm text-primary font-bold uppercase tracking-wide">
+<span class="material-symbols-outlined text-sm" data-icon="fact_check">fact_check</span>
+<span>Section 2: Key Evidentiary Findings</span>
+</div>
+<span class="text-label-sm font-label-sm text-outline">2 High-Confidence Discoveries</span>
+</div>
+<!-- Finding 01 Card -->
+<div class="border border-outline-variant bg-surface-container-lowest p-space-md rounded">
+<div class="flex items-start justify-between">
+<div>
+<span class="text-label-sm font-label-sm text-outline font-code-sm">FINDING 01</span>
+<h3 class="text-headline-sm font-headline-sm text-on-surface font-semibold mt-0.5">
+                    Synchronized Pass-Through Transfers
+                  </h3>
+</div>
+<span class="bg-[#F6E9E6] text-[#802B1B] border border-[#E7C6C0] px-2 py-0.5 text-label-sm font-label-sm font-semibold rounded">
+                  High Risk (94%)
+                </span>
+</div>
+<!-- Evidence Citations Cluster -->
+<div class="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-surface-container">
+<span class="text-label-sm font-label-sm text-outline">Evidence Citations:</span>
+<button class="citation-token h-5 px-1.5 border border-outline-variant bg-surface-container font-code-sm text-label-sm font-semibold text-primary rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="link">link</span>
+<span>[E-ALERT-8921]</span>
+</button>
+<button class="citation-token h-5 px-1.5 border border-outline-variant bg-surface-container font-code-sm text-label-sm font-semibold text-primary rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="link">link</span>
+<span>[E-TX-109]</span>
+</button>
+<button class="citation-token h-5 px-1.5 border border-outline-variant bg-surface-container font-code-sm text-label-sm font-semibold text-primary rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="link">link</span>
+<span>[E-TX-114]</span>
+</button>
+</div>
+<div class="mt-2 text-body-sm font-body-sm text-on-surface-variant bg-surface-container-low p-2 rounded border border-surface-container-highest">
+<span class="font-semibold text-on-surface">Finding Notes:</span> Inflow deposited via 4 fast ACH routes and liquidated within 32 minutes across multiple sub-ledgers.
+              </div>
+</div>
+<!-- Finding 02 Card -->
+<div class="border border-outline-variant bg-surface-container-lowest p-space-md rounded">
+<div class="flex items-start justify-between">
+<div>
+<span class="text-label-sm font-label-sm text-outline font-code-sm">FINDING 02</span>
+<h3 class="text-headline-sm font-headline-sm text-on-surface font-semibold mt-0.5">
+                    Shared Hardware Fingerprint Collocation
+                  </h3>
+</div>
+<span class="bg-[#EFE4E6] text-[#54151D] border border-[#DBBFC3] px-2 py-0.5 text-label-sm font-label-sm font-semibold rounded">
+                  Critical Collusion (99%)
+                </span>
+</div>
+<!-- Evidence Citations Cluster -->
+<div class="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-surface-container">
+<span class="text-label-sm font-label-sm text-outline">Evidence Citations:</span>
+<button class="citation-token h-5 px-1.5 border border-outline-variant bg-surface-container font-code-sm text-label-sm font-semibold text-primary rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="link">link</span>
+<span>[E-DEV-993821]</span>
+</button>
+<button class="citation-token h-5 px-1.5 border border-outline-variant bg-surface-container font-code-sm text-label-sm font-semibold text-primary rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="link">link</span>
+<span>[E-ACC-440181]</span>
+</button>
+<button class="citation-token h-5 px-1.5 border border-outline-variant bg-surface-container font-code-sm text-label-sm font-semibold text-primary rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="link">link</span>
+<span>[E-ACC-992102]</span>
+</button>
+</div>
+<div class="mt-2 text-body-sm font-body-sm text-on-surface-variant bg-surface-container-low p-2 rounded border border-surface-container-highest">
+<span class="font-semibold text-on-surface">Finding Notes:</span> Same browser canvas and hardware UUID authenticated two distinct account holders simultaneously from IP range 194.26.29.0/24.
+              </div>
+</div>
+</div>
+<!-- SECTION 3: Limitations & Unverified Context -->
+<div class="border border-outline-variant bg-surface-container-low p-space-md rounded">
+<div class="flex items-center gap-1.5 mb-1 text-label-sm font-label-sm text-[#7E570D] font-bold uppercase tracking-wide">
+<span class="material-symbols-outlined text-sm" data-icon="warning">warning</span>
+<span>Section 3: Limitations &amp; Unverified Context</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant leading-relaxed">
+              External merchant beneficiary tax ID could not be matched against current AML registry. International wire intermediary remains pending SWIFT confirmation (MT-103 broadcast awaiting correspondent acknowledgement).
+            </p>
+</div>
+<!-- SECTION 4: Analyst Adjudication Bar -->
+<div class="sticky bottom-0 bg-surface-container border border-outline-variant p-space-md rounded flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="rate_review">rate_review</span>
+<div>
+<span class="text-label-md font-label-md text-on-surface font-semibold block">Analyst Decision Required</span>
+<span class="text-label-sm font-label-sm text-outline">Attest evidentiary brief for case record</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="h-8 px-3 bg-surface border border-outline-variant hover:bg-surface-container-high text-on-surface font-label-md text-label-md rounded transition-colors cursor-pointer">
+                Discard
+              </button>
+<button class="h-8 px-3 bg-surface border border-outline-variant hover:bg-surface-container-high text-on-surface font-label-md text-label-md rounded transition-colors cursor-pointer">
+                Edit Findings
+              </button>
+<button class="h-8 px-4 bg-[#2F4858] text-on-primary hover:bg-[#223541] active:bg-[#1B2A34] font-label-md text-label-md rounded transition-colors font-medium flex items-center gap-1.5 cursor-pointer">
+<span class="material-symbols-outlined text-sm" data-icon="check">check</span>
+<span>Accept Brief</span>
+</button>
+</div>
+</div>
+</section>
+<!-- RIGHT COLUMN: Investigation Q&A and Evidence Provenance Inspector (42% Width) -->
+<section class="w-[42%] bg-surface-container-low overflow-y-auto p-space-lg flex flex-col gap-space-lg">
+<!-- Q&A Module Box -->
+<div class="border border-outline-variant bg-surface-container-lowest p-space-md rounded">
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="psychology">psychology</span>
+<h3 class="text-headline-sm font-headline-sm text-primary font-bold">
+                  Ask About This Investigation
+                </h3>
+</div>
+<span class="text-label-sm font-label-sm text-outline bg-surface-container px-1.5 py-0.5 rounded font-code-sm">FT-1002 Vector Index</span>
+</div>
+<!-- Operational Query Input -->
+<div class="mt-space-sm flex flex-col gap-1.5">
+<label class="text-label-sm font-label-sm text-on-surface-variant font-medium">Investigative Prompt</label>
+<div class="flex gap-1.5">
+<input class="flex-1 h-8 px-space-sm bg-surface text-on-surface text-body-sm border border-outline-variant rounded focus:outline-none focus:border-primary-container" type="text" value="Why is merchant terminal MCH-3092 categorized as high-risk?"/>
+<button class="h-8 px-3 bg-[#2F4858] text-on-primary hover:bg-[#223541] font-label-md text-label-md rounded flex items-center gap-1 transition-colors">
+<span>Ask</span>
+<span class="material-symbols-outlined text-xs" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Grounded Response Card -->
+<div class="mt-space-md border border-outline-variant bg-surface p-space-md rounded">
+<div class="flex items-center justify-between pb-2 border-b border-surface-container">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#46573C]"></span>
+<span class="text-label-sm font-label-sm font-bold text-[#46573C] tracking-wide">
+                    GROUNDED (High Evidence Density)
+                  </span>
+</div>
+<span class="text-label-sm font-label-sm font-code-sm text-outline">Confidence Score: 0.98</span>
+</div>
+<div class="mt-2.5 text-body-sm font-body-sm text-on-surface leading-relaxed">
+                Terminal <span class="font-code-sm font-bold text-primary">MCH-3092</span> exhibits an immediate cash-out ratio of <strong class="text-primary font-semibold">98.7%</strong> within 2 hours of peer inbound transfers, exceeding normal retail velocity thresholds by 14x. The terminal has processed zero return or chargeback requests despite 100% round-number payments.
+              </div>
+<!-- Linked Evidence Citations -->
+<div class="flex items-center gap-1.5 mt-3 pt-2 border-t border-surface-container">
+<span class="text-label-sm font-label-sm text-outline">Linked Evidence Citations:</span>
+<button class="citation-token h-5 px-1.5 border border-outline-variant bg-surface-container font-code-sm text-label-sm font-semibold text-primary rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="dataset">dataset</span>
+<span>[E-MCH-3092]</span>
+</button>
+<button class="citation-token h-5 px-1.5 border border-outline-variant bg-surface-container font-code-sm text-label-sm font-semibold text-primary rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="gavel">gavel</span>
+<span>[E-RULE-R104]</span>
+</button>
+</div>
+</div>
+<!-- Context Exploration Shortcuts -->
+<div class="mt-space-sm pt-space-xs flex items-center gap-2 text-label-sm font-label-sm text-outline">
+<span>Suggested Inquiries:</span>
+<button class="hover:text-primary underline">Show all linked devices</button>
+<span>·</span>
+<button class="hover:text-primary underline">Verify ACH clearing speed</button>
+</div>
+</div>
+<!-- Chronological Analyst Notes & Audit Trail Snippet -->
+<div class="border border-outline-variant bg-surface-container-lowest p-space-md rounded flex-1 flex flex-col">
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="timeline">timeline</span>
+<h3 class="text-headline-sm font-headline-sm text-primary font-bold">
+                  Chronological Analyst Notes &amp; Audit Trail
+                </h3>
+</div>
+<span class="text-label-sm font-label-sm text-outline">Immutable Log</span>
+</div>
+<!-- Timeline Spine Container -->
+<div class="relative pl-5 mt-4 space-y-4 before:content-[''] before:absolute before:left-2 before:top-1.5 before:bottom-1.5 before:w-px before:bg-outline-variant">
+<!-- Entry 1 -->
+<div class="relative">
+<!-- Milestone Node -->
+<div class="absolute -left-[1.3125rem] top-1 w-2 h-2 bg-primary rounded-none border border-primary"></div>
+<div class="flex flex-col">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-label-sm font-semibold text-primary">10:14 AM UTC</span>
+<span class="text-label-sm font-label-sm bg-surface-container px-1 rounded text-on-surface-variant font-medium">Analyst Attestation</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface mt-1">
+<strong class="font-medium">M. Vance:</strong> Attached Ring-Omega cluster after verifying shared device fingerprint across account records.
+                  </p>
+<span class="text-label-sm font-label-sm text-outline mt-0.5 font-code-sm">Sig: 0x9b11…c4a0 · Node Verified</span>
+</div>
+</div>
+<!-- Entry 2 -->
+<div class="relative">
+<!-- Milestone Node -->
+<div class="absolute -left-[1.3125rem] top-1 w-2 h-2 bg-surface-container-lowest rounded-none border border-outline"></div>
+<div class="flex flex-col">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-label-sm font-semibold text-outline">09:45 AM UTC</span>
+<span class="text-label-sm font-label-sm bg-surface-container px-1 rounded text-outline font-medium">Automated Trigger</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-1">
+<strong class="font-medium text-on-surface">System:</strong> AI Investigation Brief generated with 6 verified citations. Model ForensiSynth-v3 confirmed 100% provenance anchoring.
+                  </p>
+<span class="text-label-sm font-label-sm text-outline mt-0.5 font-code-sm">Checksum: sha256:d8c01...741</span>
+</div>
+</div>
+<!-- Entry 3 -->
+<div class="relative">
+<!-- Milestone Node -->
+<div class="absolute -left-[1.3125rem] top-1 w-2 h-2 bg-surface-container-lowest rounded-none border border-outline"></div>
+<div class="flex flex-col">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-label-sm font-semibold text-outline">08:31 AM UTC</span>
+<span class="text-label-sm font-label-sm bg-surface-container px-1 rounded text-outline font-medium">Ingestion Rule</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-1">
+<strong class="font-medium text-on-surface">Detection Engine:</strong> Rule <span class="font-code-sm text-primary font-semibold">R-104 (Velocity Circular Dispersion)</span> triggered alert bundle. Case FT-1002 instantiated.
+                  </p>
+</div>
+</div>
+</div>
+<!-- Append Log Micro-Action -->
+<div class="mt-auto pt-3 border-t border-surface-container flex items-center justify-between">
+<span class="text-label-sm font-label-sm text-outline">Authorized Key: Vance_SecToken_89</span>
+<button class="text-label-sm font-label-sm text-primary hover:underline font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="add_comment">add_comment</span>
+<span>Append Note</span>
+</button>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+</body></html>

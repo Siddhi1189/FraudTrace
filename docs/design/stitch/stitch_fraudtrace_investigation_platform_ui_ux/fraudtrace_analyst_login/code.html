@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FraudTrace - Analyst Sign In</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Inter & Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary": "#605e57",
+            "background": "#fbf9f4",
+            "on-surface-variant": "#42474c",
+            "on-secondary-container": "#66645d",
+            "on-tertiary-container": "#cda7ce",
+            "on-secondary": "#ffffff",
+            "surface-variant": "#e4e2dd",
+            "on-surface": "#1b1c19",
+            "secondary-container": "#e6e2d9",
+            "on-error": "#ffffff",
+            "tertiary-container": "#583b5c",
+            "on-primary-fixed": "#011e2d",
+            "on-tertiary-fixed-variant": "#5a3c5d",
+            "secondary-fixed-dim": "#cac6be",
+            "surface-bright": "#fbf9f4",
+            "primary-fixed-dim": "#b0cadd",
+            "surface-container-highest": "#e4e2dd",
+            "on-error-container": "#93000a",
+            "inverse-surface": "#30312e",
+            "tertiary-fixed": "#fed6ff",
+            "surface-container": "#f0eee9",
+            "inverse-primary": "#b0cadd",
+            "on-tertiary": "#ffffff",
+            "on-primary-container": "#9cb6c9",
+            "error": "#ba1a1a",
+            "on-secondary-fixed-variant": "#484740",
+            "on-secondary-fixed": "#1c1c16",
+            "surface-dim": "#dbdad5",
+            "on-tertiary-fixed": "#2b1130",
+            "primary": "#183241",
+            "outline": "#73787c",
+            "surface-container-lowest": "#ffffff",
+            "surface": "#fbf9f4",
+            "on-primary-fixed-variant": "#314a5a",
+            "primary-fixed": "#cce6fa",
+            "surface-container-high": "#eae8e3",
+            "tertiary-fixed-dim": "#e1bae2",
+            "on-background": "#1b1c19",
+            "surface-tint": "#486172",
+            "on-primary": "#ffffff",
+            "primary-container": "#2f4858",
+            "outline-variant": "#c2c7cc",
+            "inverse-on-surface": "#f2f1ec",
+            "secondary-fixed": "#e6e2d9",
+            "error-container": "#ffdad6",
+            "surface-container-low": "#f5f3ee",
+            "tertiary": "#402544"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-2xs": "0.25rem",
+            "gutter": "0.75rem",
+            "space-lg": "1rem",
+            "space-3xs": "0.125rem",
+            "space-xs": "0.375rem",
+            "space-sm": "0.5rem",
+            "space-md": "0.75rem",
+            "margin": "1rem",
+            "space-2xl": "2rem",
+            "space-xl": "1.5rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Inter"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "label-md": ["Inter"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "headline-xl": ["Plus Jakarta Sans"],
+            "label-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "code-sm": ["Inter"]
+          },
+          "fontSize": {
+            "body-lg": ["0.9375rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "headline-md": ["1.125rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-lg": ["1.375rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-md": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "headline-sm": ["0.9375rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "headline-xl": ["1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "label-sm": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.03em", "fontWeight": "600" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "0.005em", "fontWeight": "400" }],
+            "code-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col md:flex-row select-none">
+<!-- Left Column: Dossier Context & Institutional Standards (45% Width) -->
+<aside class="w-full md:w-[45%] bg-surface-container border-b md:border-b-0 md:border-r border-outline-variant flex flex-col justify-between p-space-xl md:p-space-2xl min-h-[520px] md:min-h-screen">
+<div class="flex flex-col gap-space-xl">
+<!-- Brand & Classification Unit -->
+<div class="flex items-center justify-between border-b border-outline-variant pb-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 bg-primary flex items-center justify-center rounded text-on-primary">
+<span class="material-symbols-outlined text-[16px]">account_balance</span>
+</div>
+<span class="font-headline-md text-headline-md text-on-surface tracking-tight font-bold">FRAUDTRACE</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container-highest px-space-sm py-space-3xs rounded border border-outline-variant tracking-wider uppercase">
+          Forensic Ledger Console
+        </span>
+</div>
+<!-- Core Analytical Thesis -->
+<div class="flex flex-col gap-space-md mt-space-lg">
+<div class="inline-flex items-center gap-space-xs text-primary font-label-sm text-label-sm tracking-widest uppercase">
+<span class="material-symbols-outlined text-[14px]">shield</span>
+          Restricted Institutional Access
+        </div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight leading-tight">
+          Evidence-First Fraud Investigation.
+        </h1>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed max-w-lg">
+          A deterministic investigation workstation engineered for financial intelligence units, AML teams, and forensic analysts to disassemble coordinated fraud syndicates.
+        </p>
+</div>
+<!-- Verified Forensic Standards Badges -->
+<div class="flex flex-col gap-space-sm mt-space-sm">
+<span class="font-label-sm text-label-sm text-on-secondary-container tracking-wider uppercase">Institutional Compliance Badges</span>
+<div class="flex flex-wrap gap-space-xs">
+<div class="inline-flex items-center gap-space-xs px-space-sm py-space-xs bg-surface-container-lowest border border-outline-variant rounded">
+<span class="material-symbols-outlined text-[14px] text-primary">verified</span>
+<span class="font-label-sm text-label-sm text-on-surface">SOC 2 Type II Certified</span>
+</div>
+<div class="inline-flex items-center gap-space-xs px-space-sm py-space-xs bg-surface-container-lowest border border-outline-variant rounded">
+<span class="material-symbols-outlined text-[14px] text-primary">gavel</span>
+<span class="font-label-sm text-label-sm text-on-surface">FINRA/SEC Traceable</span>
+</div>
+<div class="inline-flex items-center gap-space-xs px-space-sm py-space-xs bg-surface-container-lowest border border-outline-variant rounded">
+<span class="material-symbols-outlined text-[14px] text-primary">hub</span>
+<span class="font-label-sm text-label-sm text-on-surface">Zero-Hallucination Traversal</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Archival Machine & Build Signature -->
+<div class="pt-space-xl border-t border-outline-variant flex flex-col gap-space-2xs font-code-sm text-code-sm text-outline">
+<div class="flex justify-between items-center">
+<span>GATEWAY: <strong class="text-on-surface-variant font-medium">us-east-sec-node-04</strong></span>
+<span>CIPHER: <strong class="text-on-surface-variant font-medium">AES-256-GCM</strong></span>
+</div>
+<div class="flex justify-between items-center">
+<span>CORE BUILD: <strong class="text-on-surface-variant font-medium">v4.19.8-rel</strong></span>
+<span>LATENCY: <strong class="text-on-surface-variant font-medium">12ms (Direct)</strong></span>
+</div>
+</div>
+</aside>
+<!-- Right Column: Authentication Console Form (55% Width) -->
+<main class="w-full md:w-[55%] bg-background flex flex-col items-center justify-center p-space-md md:p-space-xl">
+<div class="w-full max-w-md bg-surface-container-lowest border border-outline-variant rounded p-space-xl shadow-none">
+<!-- Card Header -->
+<div class="mb-space-lg">
+<h2 class="font-headline-md text-headline-md text-on-surface">Analyst Sign In</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-3xs">
+          Enter your institutional credentials and security key.
+        </p>
+</div>
+<!-- Authentication Form -->
+<form class="flex flex-col gap-space-md" onsubmit="event.preventDefault();">
+<!-- Institutional Email -->
+<div class="flex flex-col gap-space-2xs">
+<label class="font-label-sm text-label-sm text-on-surface font-semibold" for="email">Institutional Email</label>
+<div class="relative">
+<input class="w-full h-8 px-space-sm bg-surface-container-lowest border border-outline-variant text-on-surface text-body-sm font-body-sm rounded focus:ring-0 focus:border-primary-container outline-none" id="email" name="email" placeholder="analyst@institution.bank" required="" type="email" value="j.vance@treasury-intel.fed.us"/>
+<span class="material-symbols-outlined absolute right-space-sm top-2 text-[16px] text-outline pointer-events-none">mail</span>
+</div>
+</div>
+<!-- Security Credential / Password -->
+<div class="flex flex-col gap-space-2xs">
+<div class="flex justify-between items-center">
+<label class="font-label-sm text-label-sm text-on-surface font-semibold" for="password">Security Credential / Password</label>
+<a class="font-label-sm text-label-sm text-primary hover:underline" href="#">Forgot key?</a>
+</div>
+<div class="relative">
+<input class="w-full h-8 px-space-sm bg-surface-container-lowest border border-outline-variant text-on-surface text-body-sm font-body-sm rounded focus:ring-0 focus:border-primary-container outline-none" id="password" name="password" placeholder="••••••••••••••••••••" required="" type="password"/>
+<span class="material-symbols-outlined absolute right-space-sm top-2 text-[16px] text-outline pointer-events-none">lock</span>
+</div>
+</div>
+<!-- Hardware Security Key / PIV Token Status -->
+<div class="flex flex-col gap-space-2xs">
+<label class="font-label-sm text-label-sm text-on-surface font-semibold">Hardware Security Key / PIV Token</label>
+<div class="flex items-center justify-between px-space-sm py-space-xs bg-surface-container-low border border-outline-variant rounded">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px] text-primary" data-weight="fill" style="font-variation-settings: 'FILL' 1;">usb</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">YubiKey 5 FIPS (PIV Enrolled)</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">SERIAL: #YK-9844-01-SEC</span>
+</div>
+</div>
+<!-- Nominal Active Tag -->
+<div class="inline-flex items-center gap-space-3xs px-space-xs py-space-3xs bg-[#EAEFE7] border border-[#D2DDD0] rounded text-[#46573C] font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-[#46573C]"></span>
+              Linked
+            </div>
+</div>
+</div>
+<!-- Session Scope Selector -->
+<div class="flex flex-col gap-space-2xs">
+<label class="font-label-sm text-label-sm text-on-surface font-semibold" for="scope">Session Scope</label>
+<div class="relative">
+<select class="w-full h-8 pl-space-sm pr-space-xl bg-surface-container-lowest border border-outline-variant text-on-surface text-body-sm font-body-sm rounded focus:ring-0 focus:border-primary-container outline-none appearance-none" id="scope" name="scope">
+<option selected="" value="forensic_triage">Forensic Triage &amp; Adjudication</option>
+<option value="sar_review">Regulatory Reporting &amp; SAR Review</option>
+<option value="graph_analysis">Graph Network Syndicate Mapping</option>
+<option value="audit_observer">Read-Only Immutable Audit Log</option>
+</select>
+<span class="material-symbols-outlined absolute right-space-sm top-2 text-[16px] text-outline pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Primary Action Button -->
+<button class="w-full h-8 mt-space-xs bg-primary-container hover:bg-primary active:bg-primary-container text-on-primary font-label-md text-label-md rounded flex items-center justify-center gap-space-xs transition-colors duration-150 cursor-pointer" type="submit">
+<span class="material-symbols-outlined text-[16px]">fingerprint</span>
+          Sign In to Workstation
+        </button>
+<!-- Cryptographic Audit Callout Note -->
+<div class="flex items-start gap-space-xs p-space-sm bg-surface-container-low border-l-2 border-primary-container border-y border-r border-outline-variant rounded">
+<span class="material-symbols-outlined text-[16px] text-primary flex-shrink-0 mt-0.5">verified_user</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-snug">
+            All terminal sessions are cryptographically signed and permanently recorded in the immutable audit log.
+          </p>
+</div>
+</form>
+</div>
+<!-- Institutional Footer Links -->
+<footer class="mt-space-lg flex flex-wrap items-center justify-center gap-x-space-md gap-y-space-xs font-label-sm text-label-sm text-on-surface-variant">
+<a class="hover:text-primary transition-colors underline-offset-2 hover:underline" href="#">Security Policy</a>
+<span class="text-outline-variant">·</span>
+<a class="hover:text-primary transition-colors underline-offset-2 hover:underline" href="#">FIPS 140-3 Hardware Key Support</a>
+<span class="text-outline-variant">·</span>
+<a class="hover:text-primary transition-colors underline-offset-2 hover:underline" href="#">Contact System Administrator</a>
+</footer>
+</main>
+</body></html>

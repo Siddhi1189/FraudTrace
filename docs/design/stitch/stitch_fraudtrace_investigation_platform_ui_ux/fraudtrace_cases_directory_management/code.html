@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cases Management &amp; Formal Investigation Queue | FraudTrace Workstation</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts: Inter & Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS with Forms and Container Queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration verbatim from Design System -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary": "#605e57",
+            "background": "#fbf9f4",
+            "on-surface-variant": "#42474c",
+            "on-secondary-container": "#66645d",
+            "on-tertiary-container": "#cda7ce",
+            "on-secondary": "#ffffff",
+            "surface-variant": "#e4e2dd",
+            "on-surface": "#1b1c19",
+            "secondary-container": "#e6e2d9",
+            "on-error": "#ffffff",
+            "tertiary-container": "#583b5c",
+            "on-primary-fixed": "#011e2d",
+            "on-tertiary-fixed-variant": "#5a3c5d",
+            "secondary-fixed-dim": "#cac6be",
+            "surface-bright": "#fbf9f4",
+            "primary-fixed-dim": "#b0cadd",
+            "surface-container-highest": "#e4e2dd",
+            "on-error-container": "#93000a",
+            "inverse-surface": "#30312e",
+            "tertiary-fixed": "#fed6ff",
+            "surface-container": "#f0eee9",
+            "inverse-primary": "#b0cadd",
+            "on-tertiary": "#ffffff",
+            "on-primary-container": "#9cb6c9",
+            "error": "#ba1a1a",
+            "on-secondary-fixed-variant": "#484740",
+            "on-secondary-fixed": "#1c1c16",
+            "surface-dim": "#dbdad5",
+            "on-tertiary-fixed": "#2b1130",
+            "primary": "#183241",
+            "outline": "#73787c",
+            "surface-container-lowest": "#ffffff",
+            "surface": "#fbf9f4",
+            "on-primary-fixed-variant": "#314a5a",
+            "primary-fixed": "#cce6fa",
+            "surface-container-high": "#eae8e3",
+            "tertiary-fixed-dim": "#e1bae2",
+            "on-background": "#1b1c19",
+            "surface-tint": "#486172",
+            "on-primary": "#ffffff",
+            "primary-container": "#2f4858",
+            "outline-variant": "#c2c7cc",
+            "inverse-on-surface": "#f2f1ec",
+            "secondary-fixed": "#e6e2d9",
+            "error-container": "#ffdad6",
+            "surface-container-low": "#f5f3ee",
+            "tertiary": "#402544"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-2xs": "0.25rem",
+            "gutter": "0.75rem",
+            "space-lg": "1rem",
+            "space-3xs": "0.125rem",
+            "space-xs": "0.375rem",
+            "space-sm": "0.5rem",
+            "space-md": "0.75rem",
+            "margin": "1rem",
+            "space-2xl": "2rem",
+            "space-xl": "1.5rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Inter"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "label-md": ["Inter"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "headline-xl": ["Plus Jakarta Sans"],
+            "label-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "code-sm": ["Inter"]
+          },
+          "fontSize": {
+            "body-lg": ["0.9375rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "headline-md": ["1.125rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-lg": ["1.375rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-md": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "headline-sm": ["0.9375rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "headline-xl": ["1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "label-sm": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.03em", "fontWeight": "600" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "0.005em", "fontWeight": "400" }],
+            "code-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+      font-size: 1.125rem;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    /* Tabular figures for forensic ledger values */
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+    /* Hairline dividers & crisp borders adhering to archival guidelines */
+    .hairline-border {
+      border: 1px solid #E3DED3;
+    }
+    .hairline-b {
+      border-bottom: 1px solid #E3DED3;
+    }
+    .hairline-r {
+      border-right: 1px solid #E3DED3;
+    }
+    .hairline-t {
+      border-top: 1px solid #E3DED3;
+    }
+    /* Custom non-intrusive scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #EFEBE2;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #C2C7CC;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased overflow-hidden flex h-screen select-none font-body-md text-body-md">
+<!-- ========================================================================= -->
+<!-- 1. LEFT DOCKED APPLICATION SHELL (Shared Component: SideNavBar)           -->
+<!-- ========================================================================= -->
+<aside class="docked full-height left-0 w-60 bg-secondary-container border-r border-outline-variant flex flex-col justify-between h-full py-space-md px-space-sm shrink-0 z-20">
+<!-- Brand / Console Header -->
+<div>
+<div class="flex items-center gap-space-sm px-space-sm pb-space-md hairline-b">
+<div class="w-8 h-8 rounded bg-primary-container text-on-primary flex items-center justify-center font-headline-sm font-semibold tracking-tight shadow-sm">
+          FT
+        </div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-md text-headline-sm text-on-surface tracking-tight uppercase font-semibold truncate leading-none">
+            FraudTrace
+          </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant truncate mt-1">
+            Forensic Ledger Console
+          </span>
+</div>
+</div>
+<!-- Action: CTA -->
+<div class="mt-space-md mb-space-sm px-space-2xs">
+<button class="w-full h-8 px-space-md bg-primary-container hover:bg-primary active:bg-primary-container text-on-primary rounded font-label-md text-label-md flex items-center justify-center gap-space-xs transition-colors duration-150 shadow-none cursor-pointer" onclick="toggleModal(true)">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+<span>New Investigation</span>
+</button>
+</div>
+<!-- Navigation Tabs: Autonomously marked "Cases" as ACTIVE match -->
+<nav aria-label="Investigation Navigation" class="space-y-space-3xs mt-space-sm">
+<!-- Dashboard -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- Alerts -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded" href="#">
+<span class="material-symbols-outlined" data-icon="notifications_active">notifications_active</span>
+<span>Alerts</span>
+</a>
+<!-- Fraud Rings -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span>Fraud Rings</span>
+</a>
+<!-- Accounts -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+<span>Accounts</span>
+</a>
+<!-- Graph Explorer -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded" href="#">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+<span>Graph Explorer</span>
+</a>
+<!-- Cases (EXACT ACTIVE MATCH -> style_active_navigation) -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs bg-primary-container text-on-primary rounded border-l-2 border-primary font-label-md text-label-md shadow-none cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="folder_shared" data-weight="fill" style="font-variation-settings: 'FILL' 1;">folder_shared</span>
+<span class="flex-1">Cases</span>
+<span class="font-label-sm text-label-sm bg-surface-container-lowest/20 px-1.5 py-0.5 rounded text-white">24</span>
+</a>
+<!-- Data Management -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded" href="#">
+<span class="material-symbols-outlined" data-icon="database">database</span>
+<span>Data Management</span>
+</a>
+<!-- Detection Rules -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded" href="#">
+<span class="material-symbols-outlined" data-icon="rule">rule</span>
+<span>Detection Rules</span>
+</a>
+</nav>
+</div>
+<!-- Secondary Utilities / Footer Tabs -->
+<div class="hairline-t pt-space-sm space-y-space-3xs">
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span>Audit Log</span>
+</a>
+<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+<!-- Active Investigator Identity Brief -->
+<div class="px-space-md py-space-xs mt-space-xs flex items-center gap-space-sm bg-surface-container-low rounded border border-outline-variant/60">
+<img class="w-6 h-6 rounded-full object-cover shrink-0 border border-outline-variant" data-alt="Official photographic identification portrait of a seasoned female financial fraud senior investigator, dressed in tailored corporate attire against an archival slate grey background with soft studio forensic lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAE11ZwZHCOKfXdEKiGQiV2xTL756AJa_KcVHriC4YofSlJydCOog9iITT-4xo6N3xgUbStt2kraxXnE3-fMdXshTmT-qXvnY3ovFJ5xmDD1FlV9meO3aTs4iKkDLBwIj4hJebuF0fUDG4AXuWjPRfzsqseQLhpHPZlyMOYshXGjKxbPS2-oj180tzvxyQt4Z6dXy3yTXSotAdUuwUxyb2bCNc8NffYRl6kLc6m2Sx5dXaUvWMBmfM"/>
+<div class="truncate">
+<div class="font-label-sm text-label-sm font-semibold text-primary leading-tight truncate">M. Vance (Lead)</div>
+<div class="text-[10px] text-secondary tabular-nums">ID #INV-8821</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- ========================================================================= -->
+<!-- 2. MAIN APPLICATION WORKSPACE CANVAS                                      -->
+<!-- ========================================================================= -->
+<div class="flex-1 flex flex-col h-full min-w-0 bg-background overflow-hidden">
+<!-- Top Bar: Shared Component Adapted for Contextual Breadcrumb Path -->
+<header class="h-12 bg-surface-container-lowest hairline-b px-space-lg flex items-center justify-between shrink-0 z-10">
+<!-- Breadcrumb Navigation & Search -->
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-1.5 font-label-md text-label-md text-secondary">
+<span class="font-headline-sm text-headline-sm text-primary font-semibold tracking-tight">FraudTrace</span>
+<span class="text-outline-variant">/</span>
+<span class="hover:text-primary cursor-pointer transition-colors">Investigate</span>
+<span class="text-outline-variant">/</span>
+<span class="text-primary font-semibold">Cases</span>
+</div>
+<div class="h-4 w-px bg-outline-variant"></div>
+<!-- Global Search Input in Header -->
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline text-[16px]" data-icon="search">search</span>
+<input class="w-full h-7 pl-8 pr-space-sm text-body-sm font-body-sm bg-surface-container-low border border-outline-variant/80 rounded focus:border-primary focus:ring-0 focus:outline-none placeholder:text-outline/70" placeholder="Global evidence locator..." type="text"/>
+</div>
+</div>
+<!-- Action Cluster & Secondary Controls -->
+<div class="flex items-center gap-space-sm">
+<!-- Quick Filter Dropdowns -->
+<div class="flex items-center gap-space-xs">
+<select class="h-7 pl-space-sm pr-7 py-0 text-label-sm font-label-sm bg-surface-container-lowest border border-outline-variant rounded focus:ring-0 focus:border-primary text-on-surface cursor-pointer">
+<option>Status: All Queues</option>
+<option>Status: Investigating</option>
+<option>Status: Pending Review</option>
+<option>Status: Closed</option>
+</select>
+<select class="h-7 pl-space-sm pr-7 py-0 text-label-sm font-label-sm bg-surface-container-lowest border border-outline-variant rounded focus:ring-0 focus:border-primary text-on-surface cursor-pointer">
+<option>Disposition: All</option>
+<option>Disposition: Confirmed Fraud</option>
+<option>Disposition: False Positive</option>
+<option>Disposition: Suspicious Activity</option>
+<option>Disposition: Quarantined</option>
+</select>
+</div>
+<div class="h-4 w-px bg-outline-variant mx-1"></div>
+<!-- Utility Icon Actions from JSON -->
+<div class="flex items-center space-x-1 text-on-surface-variant">
+<button class="w-7 h-7 flex items-center justify-center hover:bg-surface-container-high rounded text-secondary hover:text-primary transition-colors cursor-pointer" title="Notifications">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center hover:bg-surface-container-high rounded text-secondary hover:text-primary transition-colors cursor-pointer" title="Forensic Ledger Guide">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center hover:bg-surface-container-high rounded text-secondary hover:text-primary transition-colors cursor-pointer" title="Queue Calibration">
+<span class="material-symbols-outlined" data-icon="tune">tune</span>
+</button>
+</div>
+<!-- Primary CTA: Create New Case -->
+<button class="h-7 px-space-md bg-primary-container hover:bg-primary active:bg-primary-container text-on-primary font-label-sm text-label-sm rounded flex items-center gap-1.5 transition-colors cursor-pointer shadow-none" onclick="toggleModal(true)">
+<span class="material-symbols-outlined text-[15px]" data-icon="add_circle">add_circle</span>
+<span>Create New Case</span>
+</button>
+</div>
+</header>
+<!-- Main Scrollable Operational Body -->
+<main class="flex-1 overflow-y-auto px-space-lg py-space-md space-y-space-md">
+<!-- Section 1: Operational Case Summary Metrics (4 Compact Blocks) -->
+<section aria-label="Investigation Queue Metrics" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Metric 1: Active Cases -->
+<div class="bg-surface-container-lowest p-space-md rounded hairline-border flex flex-col justify-between h-24">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Active Cases</span>
+<span class="material-symbols-outlined text-primary text-[18px]" data-icon="folder">folder</span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<div class="font-headline-xl text-headline-xl font-headline-xl font-bold text-primary tabular-nums tracking-tight">24</div>
+<div class="flex items-center text-[11px] text-primary bg-surface-container-low px-1.5 py-0.5 rounded border border-outline-variant/50">
+<span class="tabular-nums">+3 this week</span>
+</div>
+</div>
+<div class="font-body-sm text-[11px] text-secondary flex items-center gap-1 mt-1 truncate">
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+            Across 14 investigative clusters
+          </div>
+</div>
+<!-- Metric 2: In Adjudication -->
+<div class="bg-surface-container-lowest p-space-md rounded hairline-border flex flex-col justify-between h-24">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">In Adjudication</span>
+<span class="material-symbols-outlined text-[#7E570D] text-[18px]" data-icon="gavel">gavel</span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<div class="font-headline-xl text-headline-xl font-headline-xl font-bold text-primary tabular-nums tracking-tight">7</div>
+<div class="flex items-center text-[11px] text-[#7E570D] bg-[#F8F1E2] px-1.5 py-0.5 rounded border border-[#EAD7B2]">
+<span class="font-label-sm">High Priority</span>
+</div>
+</div>
+<div class="font-body-sm text-[11px] text-secondary flex items-center gap-1 mt-1 truncate">
+<span class="w-1.5 h-1.5 rounded-full bg-[#C48A1A] inline-block"></span>
+            Avg deliberation: 3.2 days
+          </div>
+</div>
+<!-- Metric 3: Pending Regulatory SAR Filing -->
+<div class="bg-surface-container-lowest p-space-md rounded hairline-border flex flex-col justify-between h-24">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Pending SAR Filing</span>
+<span class="material-symbols-outlined text-[#802B1B] text-[18px]" data-icon="assignment_late">assignment_late</span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<div class="font-headline-xl text-headline-xl font-headline-xl font-bold text-primary tabular-nums tracking-tight">5</div>
+<div class="flex items-center text-[11px] text-[#802B1B] bg-[#F6E9E6] px-1.5 py-0.5 rounded border border-[#E7C6C0]">
+<span class="font-label-sm">FinCEN Target</span>
+</div>
+</div>
+<div class="font-body-sm text-[11px] text-secondary flex items-center gap-1 mt-1 truncate">
+<span class="w-1.5 h-1.5 rounded-full bg-[#B3402A] inline-block"></span>
+            Strict 30-day compliance SLA
+          </div>
+</div>
+<!-- Metric 4: Total Quarantined Exposure -->
+<div class="bg-surface-container-lowest p-space-md rounded hairline-border flex flex-col justify-between h-24">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Quarantined Exposure</span>
+<span class="material-symbols-outlined text-[#46573C] text-[18px]" data-icon="lock">lock</span>
+</div>
+<div class="flex items-baseline justify-between mt-1">
+<div class="font-headline-lg text-headline-lg font-headline-lg font-bold text-primary tabular-nums tracking-tight">
+              $3,840,000 <span class="text-xs font-normal text-secondary">USD</span>
+</div>
+<div class="flex items-center text-[11px] text-[#46573C] bg-[#EAEFE7] px-1.5 py-0.5 rounded border border-[#D2DDD0]">
+<span class="font-label-sm">Escrowed</span>
+</div>
+</div>
+<div class="font-body-sm text-[11px] text-secondary flex items-center gap-1 mt-1 truncate">
+<span class="w-1.5 h-1.5 rounded-full bg-[#46573C] inline-block"></span>
+            Secured across 18 ledger nodes
+          </div>
+</div>
+</section>
+<!-- Section 2: Filter & Forensic Controls Bar -->
+<section class="bg-surface-container-lowest p-space-sm rounded hairline-border flex flex-wrap items-center justify-between gap-space-sm">
+<!-- Live Text Filter -->
+<div class="flex-1 min-w-[300px] flex items-center gap-space-sm">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline text-[16px]" data-icon="manage_search">manage_search</span>
+<input class="w-full h-8 pl-8 pr-space-sm text-body-sm font-body-sm bg-surface-container-low border border-outline-variant/80 rounded focus:border-primary focus:ring-0 focus:outline-none placeholder:text-outline" placeholder="Search case reference, investigator, syndicate..." type="text"/>
+</div>
+<div class="h-6 w-px bg-outline-variant/60 hidden sm:block"></div>
+<!-- Status Segmented Controller -->
+<div class="flex items-center bg-surface-container-low p-0.5 rounded border border-outline-variant/60 text-label-sm font-label-sm">
+<button class="px-2.5 py-1 rounded bg-surface-container-lowest text-primary font-semibold shadow-none border border-outline-variant/40">All (24)</button>
+<button class="px-2.5 py-1 text-on-surface-variant hover:text-primary transition-colors">Investigating (12)</button>
+<button class="px-2.5 py-1 text-on-surface-variant hover:text-primary transition-colors">Pending Review (7)</button>
+<button class="px-2.5 py-1 text-on-surface-variant hover:text-primary transition-colors">Closed (5)</button>
+</div>
+</div>
+<!-- Disposition Filter Chips & Density Tools -->
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="text-label-sm font-label-sm text-secondary uppercase tracking-wider mr-1">Disposition:</span>
+<button class="h-6 px-2 text-[11px] font-label-sm rounded border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-high transition-colors">
+            Confirmed Fraud
+          </button>
+<button class="h-6 px-2 text-[11px] font-label-sm rounded border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-high transition-colors">
+            False Positive
+          </button>
+<button class="h-6 px-2 text-[11px] font-label-sm rounded border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-high transition-colors">
+            Suspicious Activity (SAR)
+          </button>
+<button class="h-6 px-2 text-[11px] font-label-sm rounded border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-high transition-colors">
+            Quarantined
+          </button>
+<div class="h-4 w-px bg-outline-variant/60 mx-1"></div>
+<!-- Table View Micro Controls -->
+<button class="h-7 w-7 flex items-center justify-center border border-outline-variant rounded bg-surface-container-lowest text-secondary hover:text-primary" title="Export Ledger CSV">
+<span class="material-symbols-outlined text-[16px]" data-icon="download">download</span>
+</button>
+<button class="h-7 w-7 flex items-center justify-center border border-outline-variant rounded bg-surface-container-lowest text-secondary hover:text-primary" title="Refresh Table Feed">
+<span class="material-symbols-outlined text-[16px]" data-icon="refresh">refresh</span>
+</button>
+</div>
+</section>
+<!-- Section 3: Dense Formal Cases Table -->
+<section class="bg-surface-container-lowest rounded hairline-border overflow-hidden shadow-none">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-secondary-container/60 hairline-b h-7 font-label-sm text-label-sm text-secondary uppercase">
+<th class="w-10 px-space-md py-1 text-center">
+<input class="w-3.5 h-3.5 rounded-none border-outline text-primary focus:ring-0 focus:outline-none" type="checkbox"/>
+</th>
+<th class="px-space-md py-1 font-semibold tracking-wider">Case Reference</th>
+<th class="px-space-md py-1 font-semibold tracking-wider">Investigation Title &amp; Syndicate Flow</th>
+<th class="px-space-md py-1 font-semibold tracking-wider">Status</th>
+<th class="px-space-md py-1 font-semibold tracking-wider">Disposition</th>
+<th class="px-space-md py-1 font-semibold tracking-wider text-center">Alerts</th>
+<th class="px-space-md py-1 font-semibold tracking-wider text-right">Exposure (USD)</th>
+<th class="px-space-md py-1 font-semibold tracking-wider">Assigned</th>
+<th class="px-space-md py-1 font-semibold tracking-wider">Opened</th>
+<th class="px-space-md py-1 font-semibold tracking-wider text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#E3DED3] text-body-sm font-body-sm">
+<!-- Case Row 1: FT-2024-9082 -->
+<tr class="hover:bg-surface-container-high transition-colors duration-100 group">
+<td class="px-space-md py-space-xs text-center">
+<input class="w-3.5 h-3.5 rounded-none border-outline text-primary focus:ring-0 focus:outline-none" type="checkbox"/>
+</td>
+<td class="px-space-md py-space-xs whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="font-code-sm text-code-sm font-semibold text-primary font-mono tabular-nums">FT-2024-9082</span>
+<button class="opacity-0 group-hover:opacity-100 text-outline hover:text-primary transition-opacity" title="Copy Reference">
+<span class="material-symbols-outlined text-[13px]" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+</td>
+<td class="px-space-md py-space-xs">
+<div class="flex items-center gap-2">
+<span class="font-semibold text-on-surface hover:text-primary cursor-pointer truncate max-w-xs md:max-w-md">Merchant Cash-Out &amp; Circular Flow Syndicate</span>
+<span class="text-[10px] px-1 bg-surface-container text-secondary rounded font-mono border border-outline-variant/60">SYN-41</span>
+</div>
+</td>
+<td class="px-space-md py-space-xs whitespace-nowrap">
+<span class="inline-flex items-center px-2 py-0.5 text-[11px] font-medium bg-[#F8F1E2] text-[#7E570D] border border-[#EAD7B2] rounded">
+                    INVESTIGATING
+                  </span>
+</td>
+<td class="px-space-md py-space-xs whitespace-nowrap">
+<span class="text-body-sm text-on-surface">Pending Review</span>
+</td>
+<td class="px-space-md py-space-xs text-center whitespace-nowrap">
+<span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-surface-container text-primary font-code-sm text-[11px] font-semibold tabular-nums">
+                    6
+                  </span>
+</td>
+<td class="px-space-md py-space-xs text-right whitespace-nowrap font-code-sm text-code-sm font-semibold tabular-nums text-primary">
+                  $342,800.00
+                </td>
+<td class="px-space-md py-space-xs whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<div class="w-4 h-4 rounded-full bg-primary-container text-white text-[9px] flex items-center justify-center font-bold">MV</div>
+<span class="text-on-surface font-medium">M. Vance</span>
+</div>
+</td>
+<td class="px-space-md py-space-xs whitespace-nowrap text-secondary tabular-nums text-label-sm">
+                  2024-10-14
+                </td>
+<td class="px-space-md py-space-xs text-right whitespace-nowrap">
+<a class="inline-flex items-center gap-1 h-6 px-2.5 bg-primary-container hover:bg-primary text-on-primary font-label-sm text-[11px] rounded transition-colors cursor-pointer shadow-none" href="#">
+<span>Open Workspace</span>
+<span class="material-symbols-outlined text-[13px]" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</td>
+</tr>
+<!-- Case Row 2: FT-2024-8991 -->
+<tr class="hover:bg-surface-container-high transition-colors duration-100 group">
+<td class="px-space-md py-space-xs text-center">
+<input class="w-3.5 h-3.5 rounded-none border-outline text-primary focus:ring-0 focus:outline-none" type="checkbox"/>
+</td>
+<td class="px-space-md py-space-xs whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="font-code-sm text-code-sm font-semibold text-primary font-mono tabular-nums">FT-2024-8991</span>
+<button class="opacity-0 group-hover:opacity-100 text-outline hover:text-primary transition-opacity" title="Copy Reference">
+<span class="material-symbols-outlined text-[13px]" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+</td>
+<td class="px-space-md py-space-xs">
+<div class="flex items-center gap-2">
+<span class="font-semibold text-on-surface hover:text-primary cursor-pointer truncate max-w-xs md:max-w-md">Layered Rapid Wire Dispersal (ACC-4018)</span>
+<span class="text-[10px] px-1 bg-surface-container text-secondary rounded font-mono border border-outline-variant/60">WIRE-SWIFT</span>
+</div>
+</td>
+<td class="px-space-md py-space-xs whitespace-nowrap">
+<span class="inline-flex items-center px-2 py-0.5 text-[11px] font-medium bg-[#F8F1E2] text-[#7E570D] border border-[#EAD7B2] rounded">
+                    INVESTIGATING
+                  </span>
+</td>
+<td class="px-space-md py-space-xs whitespace-nowrap">
+<span class="text-body-sm text-on-surface">Evidence Compilation</span>
+</td>
+<td class="px-space-md py-space-xs text-center whitespace-nowrap">
+<span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-surface-container text-primary font-code-sm text-[11px] font-semibold tabular-nums">
+                    4
+                  </span>
+</td>
+<td class="px-space-md py-space-xs text-right whitespace-nowrap font-code-sm text-code-sm font-semibold tabular-nums text-primary">
+                  $724,500.00
+                </td>
+<td class="px-space-md py-space-xs whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<div class="w-4 h-4 rounded-full bg-[#583b5c] text-white text-[9px] flex items-center justify-center font-bold">RC</div>
+<span class="text-on-surface font-medium">R. Chen</span>
+</div>
+</td>
+<td class="px-space-md py-space-xs whitespace-nowrap text-secondary tabular-nums text-label-sm">
+                  2024-10-12
+                </td>
+<td class="px-space-md py-space-xs text-right whitespace-nowrap">
+<a class="inline-flex items-center gap-1 h-6 px-2.5 bg-primary-container hover:bg-primary text-on-primary font-label-sm text-[11px] rounded transition-colors cursor-pointer shadow-none" href="#">
+<span>Open Workspace</span>
+<span class="material-symbols-outlined text-[13px]" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</td>
+</tr>
+<!-- Case Row 3: FT-2024-8714 -->
+<tr class="hover:bg-surface-container-high transition-colors duration-100 group">
+<td class="px-space-md py-space-xs text-center">
+<input class="w-3.5 h-3.5 rounded-none border-outline text-primary focus:ring-0 focus:outline-none" type="checkbox"/>
+</td>
+<td class="px-space-md py-space-xs whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="font-code-sm text-code-sm font-semibold text-primary font-mono tabular-nums">FT-2024-8714</span>
+<button class="opacity-0 group-hover:opacity-100 text-outline hover:text-primary transition-opacity" title="Copy Reference">
+<span class="material-symbols-outlined text-[13px]" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+</td>
+<td class="px-space-md py-space-xs">
+<div class="flex items-center gap-2">
+<span class="font-semibold text-on-surface hover:text-primary cursor-pointer truncate max-w-xs md:max-w-md">Smurfing Cluster on Terminal MCH-8199</span>
+<span class="text-[10px] px-1 bg-surface-container text-secondary rounded font-mono border border-outline-variant/60">POS-MICRO</span>
+</div>
+</td>
+<td class="px-space-md py-space-xs whitespace-nowrap">
+<span class="inline-flex items-center px-2 py-0.5 text-[11px] font-medium bg-[#F6E9E6] text-[#802B1B] border border-[#E7C6C0] rounded">
+                    PENDING REVIEW
+                  </span>
+</td>
+<td class="px-space-md py-space-xs whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#B3402A]"></span>
+<span class="text-body-sm font-medium text-[#802B1B]">SAR Filing Pending</span>
+</div>
+</td>
+<td class="px-space-md py-space-xs text-center whitespace-nowrap">
+<span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-surface-container text-primary font-code-sm text-[11px] font-semibold tabular-nums">
+                    9
+                  </span>
+</td>
+<td class="px-space-md py-space-xs text-right whitespace-nowrap font-code-sm text-code-sm font-semibold tabular-nums text-primary">
+                  $392,100.00
+                </td>
+<td class="px-space-md py-space-xs whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<div class="w-4 h-4 rounded-full bg-[#486172] text-white text-[9px] flex items-center justify-center font-bold">DM</div>
+<span class="text-on-surface font-medium">D. Miller</span>
+</div>
+</td>
+<td class="px-space-md py-space-xs whitespace-nowrap text-secondary tabular-nums text-label-sm">
+                  2024-10-08
+                </td>
+<td class="px-space-md py-space-xs text-right whitespace-nowrap">
+<a class="inline-flex items-center gap-1 h-6 px-2.5 bg-primary-container hover:bg-primary text-on-primary font-label-sm text-[11px] rounded transition-colors cursor-pointer shadow-none" href="#">
+<span>Open Workspace</span>
+<span class="material-symbols-outlined text-[13px]" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</td>
+</tr>
+<!-- Case Row 4: FT-2024-8520 -->
+<tr class="hover:bg-surface-container-high transition-colors duration-100 group">
+<td class="px-space-md py-space-xs text-center">
+<input class="w-3.5 h-3.5 rounded-none border-outline text-primary focus:ring-0 focus:outline-none" type="checkbox"/>
+</td>
+<td class="px-space-md py-space-xs whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="font-code-sm text-code-sm font-semibold text-primary font-mono tabular-nums">FT-2024-8520</span>
+<button class="opacity-0 group-hover:opacity-100 text-outline hover:text-primary transition-opacity" title="Copy Reference">
+<span class="material-symbols-outlined text-[13px]" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+</td>
+<td class="px-space-md py-space-xs">
+<div class="flex items-center gap-2">
+<span class="font-semibold text-on-surface hover:text-primary cursor-pointer truncate max-w-xs md:max-w-md">Account Takeover via Multi-Device Proxy</span>
+<span class="text-[10px] px-1 bg-surface-container text-secondary rounded font-mono border border-outline-variant/60">ATO-TOR</span>
+</div>
+</td>
+<td class="px-space-md py-space-xs whitespace-nowrap">
+<span class="inline-flex items-center px-2 py-0.5 text-[11px] font-medium bg-[#EAEFE7] text-[#46573C] border border-[#D2DDD0] rounded">
+                    CLOSED
+                  </span>
+</td>
+<td class="px-space-md py-space-xs whitespace-nowrap">
+<span class="text-body-sm text-secondary font-medium">Confirmed Fraud (Funds Frozen)</span>
+</td>
+<td class="px-space-md py-space-xs text-center whitespace-nowrap">
+<span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-surface-container text-primary font-code-sm text-[11px] font-semibold tabular-nums">
+                    3
+                  </span>
+</td>
+<td class="px-space-md py-space-xs text-right whitespace-nowrap font-code-sm text-code-sm font-semibold tabular-nums text-secondary">
+                  $184,000.00
+                </td>
+<td class="px-space-md py-space-xs whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<div class="w-4 h-4 rounded-full bg-primary-container text-white text-[9px] flex items-center justify-center font-bold">MV</div>
+<span class="text-on-surface font-medium">M. Vance</span>
+</div>
+</td>
+<td class="px-space-md py-space-xs whitespace-nowrap text-secondary tabular-nums text-label-sm">
+                  2024-09-28
+                </td>
+<td class="px-space-md py-space-xs text-right whitespace-nowrap">
+<a class="inline-flex items-center gap-1 h-6 px-2.5 bg-surface-container-lowest hairline-border hover:bg-surface-container text-primary font-label-sm text-[11px] rounded transition-colors cursor-pointer shadow-none" href="#">
+<span>View Dossier</span>
+<span class="material-symbols-outlined text-[13px]" data-icon="description">description</span>
+</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Pagination & Record Audit Footer -->
+<div class="h-9 px-space-md bg-secondary-container/40 hairline-t flex items-center justify-between font-label-sm text-label-sm text-secondary">
+<div class="flex items-center gap-2">
+<span>Showing <span class="font-semibold text-primary tabular-nums">1-4</span> of <span class="font-semibold text-primary tabular-nums">24</span> formal cases</span>
+<span class="text-outline-variant">|</span>
+<span class="tabular-nums">Ledger Sync: Real-time (2.4s ago)</span>
+</div>
+<div class="flex items-center gap-1">
+<button class="h-6 px-2 hairline-border bg-surface-container-lowest text-secondary rounded hover:text-primary disabled:opacity-40" disabled="">
+              Prev
+            </button>
+<span class="px-2 font-mono text-primary font-semibold">1</span>
+<button class="h-6 px-2 hairline-border bg-surface-container-lowest text-secondary rounded hover:text-primary">
+              2
+            </button>
+<button class="h-6 px-2 hairline-border bg-surface-container-lowest text-secondary rounded hover:text-primary">
+              3
+            </button>
+<button class="h-6 px-2 hairline-border bg-surface-container-lowest text-secondary rounded hover:text-primary">
+              Next
+            </button>
+</div>
+</div>
+</section>
+<!-- Section 5: Evidentiary Dossier Quick Reference Brief (Swiss Archival Style) -->
+<section class="bg-[#FDFCFB] rounded hairline-border p-space-md border-l-4 border-l-primary-container">
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-semibold text-primary">Automated Synthesis Summary • Regulatory Ledger Hook</span>
+<span class="text-[10px] font-mono bg-surface-container px-1.5 py-0.5 rounded text-secondary border border-outline-variant/60">SYNTH-v4.1.2</span>
+</div>
+<p class="text-body-sm font-body-sm text-secondary mt-1 max-w-4xl leading-relaxed">
+              Forensic analysis of the 4 active cases identified high-frequency cross-pollination between syndicate cluster 
+              <span class="text-primary font-semibold font-mono hover:underline cursor-pointer">[Ev-01]</span> and terminal node ACC-4018 
+              <span class="text-primary font-semibold font-mono hover:underline cursor-pointer">[Tx-892]</span>. Cumulative high-velocity structuring exceeds standard CTR thresholds across all instances. Immediate disposition recommended for FinCEN SAR filing on FT-2024-8714 prior to next compliance settlement cycle.
+            </p>
+</div>
+<div class="text-right text-[11px] text-secondary font-mono shrink-0 pl-4">
+<div>CONFIDENCE: 98.4%</div>
+<div>VERIFIED CITATIONS: 14</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- ========================================================================= -->
+<!-- 4. CASE CREATION MODAL / FAST-TRIGGER DRAWER                               -->
+<!-- ========================================================================= -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-[#1F2328]/35 hidden" id="case-modal">
+<!-- Modal Card with Hairline Borders and Archival Tone -->
+<div class="w-full max-w-2xl bg-surface-container-lowest rounded hairline-border shadow-xl overflow-hidden flex flex-col max-h-[921px]">
+<!-- Modal Header -->
+<div class="px-space-lg py-space-md hairline-b bg-surface-container-low flex items-center justify-between">
+<div>
+<div class="flex items-center gap-2">
+<span class="font-headline-md text-headline-md font-semibold text-primary">Initialize Formal Investigation</span>
+<span class="text-[11px] font-mono px-1.5 py-0.5 bg-primary-container text-white rounded">NEW DOCKET</span>
+</div>
+<p class="font-body-sm text-body-sm text-secondary mt-0.5">Assign evidentiary weight, attached alert cluster, and regulatory ledger jurisdiction.</p>
+</div>
+<button class="text-secondary hover:text-primary transition-colors cursor-pointer" onclick="toggleModal(false)">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<!-- Modal Body (Compact Forms) -->
+<form class="p-space-lg overflow-y-auto space-y-space-md" onsubmit="event.preventDefault(); toggleModal(false);">
+<!-- Field Row 1: Title & Reference Generation -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm font-semibold uppercase text-secondary tracking-wider">Investigation Title</label>
+<input class="w-full h-8 px-space-sm text-body-md font-body-md bg-surface-container-lowest border border-outline-variant rounded focus:border-primary focus:ring-0 focus:outline-none" type="text" value="Cross-Border Shell Entity Swift Surge"/>
+</div>
+<div class="grid grid-cols-2 gap-space-md">
+<!-- Reference Code Auto-assigned -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm font-semibold uppercase text-secondary tracking-wider">System Reference</label>
+<input class="w-full h-8 px-space-sm text-code-sm font-code-sm font-mono bg-surface-container border border-outline-variant/60 rounded text-secondary cursor-not-allowed" readonly="" type="text" value="FT-2024-9104"/>
+</div>
+<!-- Lead Investigator -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm font-semibold uppercase text-secondary tracking-wider">Lead Adjudicator</label>
+<select class="w-full h-8 px-space-sm py-0 text-body-sm font-body-sm bg-surface-container-lowest border border-outline-variant rounded focus:border-primary focus:ring-0 focus:outline-none">
+<option selected="">M. Vance (Lead Forensics)</option>
+<option>R. Chen (Financial Crimes)</option>
+<option>D. Miller (Syndicate Analyst)</option>
+</select>
+</div>
+</div>
+<!-- Field Row 2: Severity, Estimated Exposure, Initial Disposition -->
+<div class="grid grid-cols-3 gap-space-md">
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm font-semibold uppercase text-secondary tracking-wider">Initial Severity</label>
+<select class="w-full h-8 px-space-sm py-0 text-body-sm font-body-sm bg-surface-container-lowest border border-outline-variant rounded focus:border-primary focus:ring-0 focus:outline-none">
+<option>High Severity</option>
+<option>Critical</option>
+<option>Medium</option>
+<option>Nominal</option>
+</select>
+</div>
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm font-semibold uppercase text-secondary tracking-wider">Initial Exposure ($)</label>
+<input class="w-full h-8 px-space-sm text-body-sm font-body-sm tabular-nums bg-surface-container-lowest border border-outline-variant rounded focus:border-primary focus:ring-0 focus:outline-none" placeholder="e.g. 520,000" type="text" value="520,000"/>
+</div>
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm font-semibold uppercase text-secondary tracking-wider">Queue Routing</label>
+<select class="w-full h-8 px-space-sm py-0 text-body-sm font-body-sm bg-surface-container-lowest border border-outline-variant rounded focus:border-primary focus:ring-0 focus:outline-none">
+<option>Priority Expedited</option>
+<option>Routine Adjudication</option>
+<option>Regulatory Compliance Hold</option>
+</select>
+</div>
+</div>
+<!-- Attached Alerts Pre-linking -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm font-semibold uppercase text-secondary tracking-wider">Link Existing Alert Cluster</label>
+<div class="p-space-sm bg-surface-container-low rounded border border-outline-variant/60 space-y-1.5 text-body-sm">
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="w-3.5 h-3.5 rounded-none border-outline text-primary focus:ring-0" type="checkbox"/>
+<span class="font-mono text-xs text-primary font-semibold">ALT-9821</span>
+<span class="truncate text-secondary">Structuring via 14 micro-merchant accounts ($114,200)</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="w-3.5 h-3.5 rounded-none border-outline text-primary focus:ring-0" type="checkbox"/>
+<span class="font-mono text-xs text-primary font-semibold">ALT-9824</span>
+<span class="truncate text-secondary">VPN Anomaly: Dual concurrent IP login from Frankfurt &amp; Singapore</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="w-3.5 h-3.5 rounded-none border-outline text-primary focus:ring-0" type="checkbox"/>
+<span class="font-mono text-xs text-primary font-semibold">ALT-9770</span>
+<span class="truncate text-secondary">Mule Pattern detected: High velocity pass-through &lt; 10 mins</span>
+</label>
+</div>
+</div>
+<!-- Investigation Dossier Scope & Briefing Notes -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm font-semibold uppercase text-secondary tracking-wider">Preliminary Ledger Notes</label>
+<textarea class="w-full p-space-sm text-body-sm font-body-sm bg-surface-container-lowest border border-outline-variant rounded focus:border-primary focus:ring-0 focus:outline-none" placeholder="Provide audit trail summary, observed transaction chains, or counterparty entity metadata..." rows="3"></textarea>
+</div>
+</form>
+<!-- Modal Footer -->
+<div class="px-space-lg py-space-sm hairline-t bg-surface-container-low flex items-center justify-between">
+<button class="h-8 px-space-md hairline-border bg-surface-container-lowest text-primary hover:bg-surface-container font-label-md text-label-md rounded transition-colors cursor-pointer" onclick="toggleModal(false)" type="button">
+          Cancel Docket
+        </button>
+<button class="h-8 px-space-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md rounded flex items-center gap-1.5 transition-colors cursor-pointer" onclick="toggleModal(false)">
+<span class="material-symbols-outlined text-[16px]" data-icon="check_circle">check_circle</span>
+<span>Open Formal Investigation</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Inline Script for UI Micro-Interactions -->
+<script>
+    function toggleModal(show) {
+      const modal = document.getElementById('case-modal');
+      if (show) {
+        modal.classList.remove('hidden');
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+  </script>
+</body></html>
