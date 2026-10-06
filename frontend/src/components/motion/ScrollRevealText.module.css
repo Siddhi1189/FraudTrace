@@ -1,0 +1,12 @@
+.container {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.28em;
+  line-height: 1.4;
+}
+
+.word {
+  display: inline-block;
+  transition: opacity 120ms ease, color 120ms ease;
+  will-change: opacity, color;
+}

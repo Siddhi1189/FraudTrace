@@ -1,0 +1,51 @@
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  box-shadow: var(--shadow-card);
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 220px;
+  background-color: var(--surface);
+  color: var(--text-3);
+}
+
+.searchInput {
+  background: transparent;
+  border: none;
+  font-size: var(--text-sm);
+  color: var(--text);
+  width: 100%;
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: var(--text-3);
+}
+
+.filtersGroup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.select {
+  height: 32px;
+  padding: 0 10px;
+  font-size: var(--text-sm);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+}

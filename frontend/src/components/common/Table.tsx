@@ -15,7 +15,9 @@ interface TableProps<T> {
   keyExtractor: (item: T, index: number) => string;
   onRowClick?: (item: T) => void;
   emptyMessage?: string;
+  emptyText?: string;
   className?: string;
+  rowClassName?: (item: T) => string | undefined;
 }
 
 export function Table<T>({
@@ -23,9 +25,12 @@ export function Table<T>({
   data,
   keyExtractor,
   onRowClick,
-  emptyMessage = 'No records found.',
+  emptyMessage,
+  emptyText = 'No records found.',
   className = '',
+  rowClassName,
 }: TableProps<T>) {
+  const finalEmpty = emptyMessage || emptyText;
   return (
     <div className={`${styles.tableWrapper} ${className}`}>
       <table className={styles.table}>
@@ -53,14 +58,14 @@ export function Table<T>({
                 className={styles.td}
                 style={{ textAlign: 'center', padding: '24px', color: 'var(--text-3)' }}
               >
-                {emptyMessage}
+                {finalEmpty}
               </td>
             </tr>
           ) : (
             data.map((row, idx) => (
               <tr
                 key={keyExtractor(row, idx)}
-                className={styles.tr}
+                className={`${styles.tr} ${rowClassName ? rowClassName(row) || '' : ''}`}
                 onClick={() => onRowClick && onRowClick(row)}
                 style={{ cursor: onRowClick ? 'pointer' : 'default' }}
               >

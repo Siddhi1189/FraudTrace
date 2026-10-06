@@ -12,6 +12,8 @@ interface CytoscapeGraphProps {
   onEdgeClick?: (edge: GraphEdgeData) => void;
   height?: string | number;
   highlightNodeId?: string;
+  selectedNodeId?: string;
+  selectedEdgeId?: string;
 }
 
 export const CytoscapeGraph: React.FC<CytoscapeGraphProps> = ({
@@ -21,6 +23,8 @@ export const CytoscapeGraph: React.FC<CytoscapeGraphProps> = ({
   onEdgeClick,
   height = '500px',
   highlightNodeId,
+  selectedNodeId,
+  selectedEdgeId,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<Core | null>(null);
@@ -140,7 +144,7 @@ export const CytoscapeGraph: React.FC<CytoscapeGraphProps> = ({
             width: 'data(size)',
             height: 'data(size)',
             label: 'data(label)',
-            'font-family': 'Inter, sans-serif',
+            'font-family': graphTokens.fontUi || 'Poppins, sans-serif',
             'font-size': '10px',
             'font-weight': 500,
             color: textPrimaryColor,
@@ -207,6 +211,22 @@ export const CytoscapeGraph: React.FC<CytoscapeGraphProps> = ({
       }
     };
   }, [nodes, edges, highlightNodeId]);
+
+  useEffect(() => {
+    if (!cyRef.current) return;
+    if (selectedNodeId) {
+      const node = cyRef.current.getElementById(selectedNodeId);
+      if (node && node.length > 0) {
+        node.select();
+      }
+    }
+    if (selectedEdgeId) {
+      const edge = cyRef.current.getElementById(selectedEdgeId);
+      if (edge && edge.length > 0) {
+        edge.select();
+      }
+    }
+  }, [selectedNodeId, selectedEdgeId]);
 
   const handleZoomIn = () => {
     if (cyRef.current) {

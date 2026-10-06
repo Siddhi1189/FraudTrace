@@ -1,0 +1,26 @@
+.revealWrapper {
+  opacity: 0;
+  transform: translateY(16px);
+  transition-property: opacity, transform;
+  transition-timing-function: var(--ease-out);
+  will-change: opacity, transform;
+}
+
+.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .revealWrapper {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+:global([data-motion="reduced"]) .revealWrapper {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}

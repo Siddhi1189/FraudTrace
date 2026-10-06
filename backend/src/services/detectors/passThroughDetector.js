@@ -14,7 +14,7 @@ export function runPassThroughDetector(graph, customConfig = {}) {
       .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
     const outTransfers = (graph.adjacency.get(accKey) || [])
-      .filter((e) => e.type === 'TRANSFER' && (e.targetKey.startsWith('ACCOUNT:') || e.targetKey.startsWith('MERCHANT:')))
+      .filter((e) => (e.type === 'TRANSFER' && e.targetKey.startsWith('ACCOUNT:')) || (e.type === 'PAYMENT' && e.targetKey.startsWith('MERCHANT:')))
       .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
     if (inTransfers.length === 0 || outTransfers.length === 0) continue;

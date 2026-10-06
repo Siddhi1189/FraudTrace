@@ -2,10 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { fetchDataBatches, simulateData, uploadCSV, UploadCSVResponse, DataBatch } from '../../api/dataApi';
 import { runAnalysis, AnalysisRunSummary } from '../../api/analysisApi';
 import { Button } from '../../components/common/Button';
+import buttonStyles from '../../components/common/Button.module.css';
 import { Table, Column } from '../../components/common/Table';
 import { StateView } from '../../components/common/StateView';
+import { PageHeader } from '../../components/PageHeader';
+import { Card } from '../../components/Card';
+import { Banner } from '../../components/Banner';
 import { Icon } from '../../components/common/Icons';
+import { CountUpText } from '../../components/motion/CountUpText';
 import { getSocket, AnalysisProgressPayload, AnalysisCompletedPayload } from '../../lib/socket';
+import { formatDateTime } from '../../lib/format';
 import styles from './DataManagementPage.module.css';
 
 export const DataManagementPage: React.FC = () => {
@@ -175,7 +181,9 @@ export const DataManagementPage: React.FC = () => {
       title: 'Batch ID',
       width: '180px',
       render: (item) => (
-        <span className="entity-id">{item._id}</span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-2)' }}>
+          {item._id}
+        </span>
       ),
     },
     {
@@ -183,7 +191,7 @@ export const DataManagementPage: React.FC = () => {
       title: 'Source',
       width: '120px',
       render: (item) => (
-        <span style={{ fontWeight: 600, color: 'var(--text)' }}>
+        <span style={{ fontWeight: 500, color: 'var(--text)' }}>
           {item.source === 'SIMULATION' ? 'Simulation' : 'CSV Upload'}
         </span>
       ),
@@ -193,7 +201,11 @@ export const DataManagementPage: React.FC = () => {
       title: 'Total Records',
       width: '110px',
       align: 'right',
-      render: (item) => <span className="tabular-nums">{item.recordCount}</span>,
+      render: (item) => (
+        <span className="tabular-nums" style={{ fontFamily: 'var(--font-mono)' }}>
+          {item.acceptedRows ?? item.recordCount ?? item.totalRows ?? 0}
+        </span>
+      ),
     },
     {
       key: 'validCount',
@@ -201,8 +213,8 @@ export const DataManagementPage: React.FC = () => {
       width: '110px',
       align: 'right',
       render: (item) => (
-        <span className="tabular-nums" style={{ color: 'var(--sev-low-text)' }}>
-          {item.validCount}
+        <span className="tabular-nums" style={{ color: 'var(--sev-low)', fontFamily: 'var(--font-mono)' }}>
+          {item.acceptedRows ?? item.validCount ?? 0}
         </span>
       ),
     },
@@ -211,20 +223,18 @@ export const DataManagementPage: React.FC = () => {
       title: 'Duplicates',
       width: '100px',
       align: 'right',
-      render: (item) => <span className="tabular-nums">{item.duplicateCount}</span>,
+      render: (item) => (
+        <span className="tabular-nums" style={{ fontFamily: 'var(--font-mono)' }}>
+          {item.duplicateRows ?? item.duplicateCount ?? 0}
+        </span>
+      ),
     },
     {
       key: 'createdAt',
       title: 'Timestamp',
       render: (item) => (
-        <span className="tabular-nums" style={{ color: 'var(--text-2)' }}>
-          {new Date(item.createdAt).toLocaleString(undefined, {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
+        <span className="tabular-nums" style={{ color: 'var(--text-2)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+          {formatDateTime(item.createdAt)}
         </span>
       ),
     },
@@ -240,57 +250,45 @@ export const DataManagementPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      {/* Header */}
-      <div className={styles.headerRow}>
-        <div className={styles.titleArea}>
-          <h1 className={styles.title}>Data Management &amp; Ingestion</h1>
-          <p className={styles.subtitle}>
-            Review ingested transaction batches, synthetic evaluation generators, and provenance records.
-          </p>
-        </div>
+      <PageHeader
+        kicker="07 — DATA MANAGEMENT"
+        title="Data Management & Ingestion"
+        subtitle="Review ingested transaction batches, synthetic evaluation generators, and provenance records."
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleSimulate}
+              disabled={generating}
+            >
+              <Icon name="plus" size={13} />
+              <span>{generating ? 'Generating...' : 'Generate demo data'}</span>
+            </Button>
 
-        <div className={styles.actionsArea}>
-          <Button
-            variant="primary"
-            compact
-            onClick={handleSimulate}
-            disabled={generating}
-          >
-            <Icon name="plus" size={13} />
-            <span>{generating ? 'Generating...' : 'Generate demo data'}</span>
-          </Button>
+            <Button variant="secondary" size="sm" onClick={loadBatches}>
+              <Icon name="refresh" size={13} />
+              <span>Refresh</span>
+            </Button>
+          </div>
+        }
+      />
 
-          <Button variant="secondary" compact onClick={loadBatches}>
-            <Icon name="refresh" size={13} />
-            <span>Refresh</span>
-          </Button>
-        </div>
-      </div>
+      {statusMsg && <Banner variant="success">{statusMsg}</Banner>}
+      {genError && <Banner variant="error">{genError}</Banner>}
 
-      {statusMsg && (
-        <div className={styles.bannerSuccess} role="status">
-          <Icon name="check" size={14} />
-          <span>{statusMsg}</span>
-        </div>
-      )}
-
-      {genError && (
-        <div className={styles.bannerError} role="alert">
-          <Icon name="close" size={14} />
-          <span>{genError}</span>
-        </div>
-      )}
-
-      {/* CSV Transaction Upload */}
-      <div className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>CSV Ingestion &amp; Transaction Upload</h2>
-          <span className={styles.cardSubtitle}>
+      {/* CSV Ingestion */}
+      <Card variant="default">
+        <div style={{ marginBottom: 'var(--space-3)' }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--text)', margin: 0 }}>
+            CSV Ingestion &amp; Transaction Upload
+          </h2>
+          <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>
             Direct batch ingestion via RFC-4180 CSV
           </span>
         </div>
 
-        {/* Documented Columns Reference */}
+        {/* Required CSV Schema Reference */}
         <div className={styles.schemaBox}>
           <span className={styles.schemaLabel}>Required CSV Columns</span>
           <div className={styles.schemaCols}>
@@ -298,208 +296,166 @@ export const DataManagementPage: React.FC = () => {
               <span key={col} className={styles.colBadge}>{col}</span>
             ))}
           </div>
-          <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>
-            Destination rule: exactly one of <code>toAccount</code> or <code>merchant</code> must be populated per row.
-          </span>
         </div>
 
-        {/* Upload Controls */}
         <div className={styles.uploadRow}>
-          <input
-            type="file"
-            accept=".csv,text/csv,text/plain"
-            onChange={(e) => {
-              setSelectedFile(e.target.files?.[0] || null);
-              setUploadError(null);
-            }}
-            className={styles.uploadInput}
-            aria-label="Select CSV file for upload"
-          />
-
+          <label
+            className={`${buttonStyles.btn} ${buttonStyles.secondary} ${buttonStyles.sm}`}
+            style={{ cursor: 'pointer' }}
+          >
+            <Icon name="fileText" size={13} />
+            <span>{selectedFile ? selectedFile.name : 'Choose CSV file'}</span>
+            <input
+              type="file"
+              accept=".csv,text/csv"
+              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+              style={{ display: 'none' }}
+              aria-label="Choose CSV file"
+            />
+          </label>
           <Button
             variant="primary"
-            compact
+            size="sm"
             onClick={handleUploadCSV}
             disabled={!selectedFile || uploading}
           >
-            <Icon name="plus" size={13} />
-            <span>{uploading ? 'Uploading...' : 'Upload CSV'}</span>
+            <Icon name="play" size={13} />
+            <span>{uploading ? 'Ingesting CSV...' : 'Upload & Ingest'}</span>
           </Button>
-
-          {selectedFile && (
-            <Button
-              variant="ghost"
-              compact
-              onClick={() => {
-                setSelectedFile(null);
-                setUploadResult(null);
-                setUploadError(null);
-              }}
-            >
-              <span>Clear</span>
-            </Button>
-          )}
         </div>
 
-        {uploadError && (
-          <div className={styles.bannerError} role="alert">
-            <Icon name="close" size={14} />
-            <span>{uploadError}</span>
+        {uploading && (
+          <div className={styles.uploadProgressBar}>
+            <div className={styles.uploadProgressFill} />
           </div>
         )}
 
-        {/* Real Response Details */}
+        {uploadError && <Banner variant="error">{uploadError}</Banner>}
+
+        {/* Summary Count-Up on Upload Result */}
         {uploadResult && (
           <div className={styles.resultCard}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text)' }}>
-                Upload Result &amp; Validation Summary (Batch: {uploadResult._id})
-              </span>
-              <Button
-                variant="ghost"
-                compact
-                onClick={() => setUploadResult(null)}
-                aria-label="Dismiss result"
-              >
-                <Icon name="close" size={13} />
-              </Button>
-            </div>
-
+            <h3 style={{ fontSize: '12px', fontWeight: 600, margin: 0 }}>Batch Ingestion Report</h3>
             <div className={styles.resultStats}>
               <div className={styles.metricBox}>
                 <span className={styles.metricLabel}>Total Rows</span>
-                <span className={styles.metricValue}>{uploadResult.totalRows}</span>
-              </div>
-              <div className={styles.metricBox}>
-                <span className={styles.metricLabel}>Accepted Rows</span>
-                <span className={styles.metricValue} style={{ color: 'var(--sev-low-text)' }}>
-                  {uploadResult.acceptedRows}
+                <span className={styles.metricValue}>
+                  <CountUpText value={uploadResult.totalRows} />
                 </span>
               </div>
               <div className={styles.metricBox}>
-                <span className={styles.metricLabel}>Rejected Rows</span>
-                <span className={styles.metricValue} style={{ color: uploadResult.rejectedRows > 0 ? 'var(--sev-high-text)' : 'inherit' }}>
-                  {uploadResult.rejectedRows}
+                <span className={styles.metricLabel}>Accepted</span>
+                <span className={styles.metricValue} style={{ color: 'var(--sev-low)' }}>
+                  <CountUpText value={uploadResult.acceptedRows} />
                 </span>
               </div>
               <div className={styles.metricBox}>
-                <span className={styles.metricLabel}>Duplicate Rows</span>
-                <span className={styles.metricValue} style={{ color: uploadResult.duplicateRows > 0 ? 'var(--sev-medium-text)' : 'inherit' }}>
-                  {uploadResult.duplicateRows}
+                <span className={styles.metricLabel}>Rejected</span>
+                <span className={styles.metricValue} style={{ color: 'var(--sev-critical)' }}>
+                  <CountUpText value={uploadResult.rejectedRows} />
+                </span>
+              </div>
+              <div className={styles.metricBox}>
+                <span className={styles.metricLabel}>Duplicates</span>
+                <span className={styles.metricValue}>
+                  <CountUpText value={uploadResult.duplicateRows} />
                 </span>
               </div>
             </div>
 
-            {/* Row Errors from Real Response */}
-            {uploadResult.errors && uploadResult.errors.length > 0 ? (
-              <div>
-                <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--sev-high-text)', display: 'block', marginBottom: '6px' }}>
-                  Row Validation Errors ({uploadResult.errors.length}):
-                </span>
-                <div className={styles.errorTableWrapper}>
-                  <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse', textAlign: 'left' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface-2)' }}>
-                        <th style={{ padding: '6px 8px', width: '60px' }}>Row</th>
-                        <th style={{ padding: '6px 8px', width: '140px' }}>Transaction ID</th>
-                        <th style={{ padding: '6px 8px' }}>Reason / Error</th>
+            {uploadResult.errors && uploadResult.errors.length > 0 && (
+              <div className={styles.errorTableWrapper}>
+                <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ background: 'var(--surface-2)', textAlign: 'left' }}>
+                      <th style={{ padding: '6px' }}>Row</th>
+                      <th style={{ padding: '6px' }}>Transaction ID</th>
+                      <th style={{ padding: '6px' }}>Error Reason</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {uploadResult.errors.map((err, idx) => (
+                      <tr key={idx} style={{ borderTop: '1px solid var(--border)' }}>
+                        <td style={{ padding: '6px', fontFamily: 'var(--font-mono)' }}>{err.rowNumber ?? idx + 1}</td>
+                        <td style={{ padding: '6px', fontFamily: 'var(--font-mono)' }}>{err.externalTransactionId || '—'}</td>
+                        <td style={{ padding: '6px', color: 'var(--sev-critical)' }}>{err.reason || err.errors?.join(', ') || 'Validation error'}</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {uploadResult.errors.map((err, idx) => (
-                        <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
-                          <td style={{ padding: '6px 8px', fontFamily: 'var(--font-mono)' }}>
-                            {err.rowNumber ?? '-'}
-                          </td>
-                          <td style={{ padding: '6px 8px', fontFamily: 'var(--font-mono)' }}>
-                            {err.externalTransactionId || '-'}
-                          </td>
-                          <td style={{ padding: '6px 8px', color: 'var(--sev-high-text)' }}>
-                            {Array.isArray(err.errors) ? err.errors.join('; ') : (err.reason || 'Validation error')}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            ) : (
-              <span style={{ fontSize: '11px', color: 'var(--sev-low-text)' }}>
-                All rows validated successfully with zero schema rejections.
-              </span>
             )}
           </div>
         )}
-      </div>
+      </Card>
 
-      {/* Analysis Engine & Status */}
-      <div className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>Graph State &amp; Analysis Execution</h2>
-          <span className={styles.cardSubtitle}>Trigger detection across active batches</span>
-        </div>
-
-        <div className={styles.engineGrid}>
+      {/* Engine Ingestion Metrics & Trigger */}
+      <div className={styles.engineGrid}>
+        <Card variant="default">
+          <div style={{ marginBottom: 'var(--space-3)' }}>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--text)', margin: 0 }}>
+              Ingested Repository Metrics
+            </h2>
+            <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>
+              Total transaction ledger entries loaded into graph storage
+            </span>
+          </div>
           <div className={styles.engineMetrics}>
             <div className={styles.metricBox}>
               <span className={styles.metricLabel}>Total Batches</span>
               <span className={styles.metricValue}>{batches.length}</span>
             </div>
             <div className={styles.metricBox}>
-              <span className={styles.metricLabel}>Total Ingested Records</span>
-              <span className={styles.metricValue}>{totalRecords}</span>
+              <span className={styles.metricLabel}>Total Records</span>
+              <span className={styles.metricValue}>{totalRecords.toLocaleString()}</span>
             </div>
             <div className={styles.metricBox}>
-              <span className={styles.metricLabel}>Valid Graph Edges</span>
-              <span className={styles.metricValue}>{totalValid}</span>
+              <span className={styles.metricLabel}>Valid Records</span>
+              <span className={styles.metricValue} style={{ color: 'var(--sev-low)' }}>
+                {totalValid.toLocaleString()}
+              </span>
             </div>
           </div>
+        </Card>
 
+        <Card variant="default">
           <div className={styles.runBox}>
             <Button
               variant="primary"
-              compact
-              onClick={handleRunAnalysis}
               disabled={isRunning}
+              onClick={handleRunAnalysis}
               fullWidth
             >
-              <Icon name="refresh" size={13} />
-              <span>{isRunning ? 'Analyzing graph...' : 'Run analysis'}</span>
+              <Icon name="play" size={13} />
+              <span>{isRunning ? 'Analyzing...' : 'Run detection engine'}</span>
             </Button>
-
-            {runProgress && (
-              <span className={styles.runProgressText}>{runProgress}</span>
-            )}
-
-            {runSuccess && (
-              <div className={styles.bannerSuccess} style={{ padding: '4px 8px' }}>
-                {runSuccess}
-              </div>
-            )}
-
-            {runError && (
-              <div className={styles.bannerError} style={{ padding: '4px 8px' }}>
-                {runError}
-              </div>
-            )}
+            {runProgress && <span className={styles.runProgressText}>{runProgress}</span>}
+            {runSuccess && <span style={{ fontSize: '11px', color: 'var(--sev-low)' }}>{runSuccess}</span>}
+            {runError && <span style={{ fontSize: '11px', color: 'var(--sev-critical)' }}>{runError}</span>}
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Batches Table */}
-      <div className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>Ingested Batches</h2>
-          <span className={styles.cardSubtitle}>Audit history of data feeds</span>
+      <Card variant="default">
+        <div style={{ marginBottom: 'var(--space-3)' }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--text)', margin: 0 }}>
+            Batch Provenance History ({batches.length})
+          </h2>
+          <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>
+            Audit log of ingestion events and validation counts
+          </span>
         </div>
 
         <Table
           columns={columns}
           data={batches}
           keyExtractor={(item) => item._id}
-          emptyMessage="No data batches found. Click 'Generate demo data' or upload a CSV to seed transactions."
+          emptyText="No transaction batches have been ingested."
         />
-      </div>
+      </Card>
     </div>
   );
 };
+
+export default DataManagementPage;

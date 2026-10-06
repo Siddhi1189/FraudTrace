@@ -7,10 +7,12 @@ import { CaseAlert } from '../src/models/caseAlert.model.js';
 import { CaseEvent } from '../src/models/caseEvent.model.js';
 import { AIBrief } from '../src/models/aiBrief.model.js';
 import { verifyAiOutput } from '../src/services/ai/aiVerifier.js';
-import { generateEvidenceHash } from '../src/services/ai/evidenceHasher.js';
+import { generateEvidenceHash } from '../src/services/evidence/evidenceHasher.js';
+import { formatAmount } from '../src/utils/format.js';
 import jwt from 'jsonwebtoken';
 
-const BASE_URL = 'http://localhost:5000/api';
+const PORT = parseInt(process.env.PORT || '5000', 10);
+const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}/api`;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_in_production';
 
 async function run() {
@@ -24,7 +26,7 @@ async function run() {
   }
 
   const token = jwt.sign(
-    { id: analyst._id.toString(), email: analyst.email, role: analyst.role, name: analyst.name },
+    { sub: analyst._id.toString(), id: analyst._id.toString(), email: analyst.email, role: analyst.role, name: analyst.name },
     JWT_SECRET,
     { expiresIn: '1h' }
   );
@@ -102,9 +104,11 @@ async function run() {
   }
   const createdBrief = await createBriefRes.json();
   console.log(`Generated Brief ID: ${createdBrief._id}`);
-  console.log(`Evidence Hash: ${createdBrief.evidenceHash}`);
-  console.log(`Model: ${createdBrief.model} (Expected: deterministic-fallback)`);
-  console.log(`Verification Status: ${createdBrief.verificationStatus} (Expected: FALLBACK)`);
+  console.log(`Model: ${createdBrief.model} (Allowed: deterministic-fallback or Gemini LLM)`);
+  console.log(`Verification Status: ${createdBrief.verificationStatus} (Allowed: FALLBACK, VERIFIED, or PARTIALLY_VERIFIED)`);
+  if (!['FALLBACK', 'VERIFIED', 'PARTIALLY_VERIFIED'].includes(createdBrief.verificationStatus)) {
+    throw new Error(`Unexpected verification status: ${createdBrief.verificationStatus}`);
+  }
   console.log(`Structured Findings Count: ${createdBrief.structuredOutput?.findings?.length || 0}`);
   console.log(`Executive Summary: "${createdBrief.structuredOutput?.executiveSummary?.slice(0, 100)}..."`);
 

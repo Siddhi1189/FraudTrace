@@ -48,6 +48,8 @@ export interface AlertFilterParams {
   triageStatus?: string;
   ringId?: string;
   analysisRunId?: string;
+  minScore?: number | string;
+  maxScore?: number | string;
 }
 
 export async function fetchAlerts(params: AlertFilterParams = {}): Promise<{ alerts: Alert[]; count: number }> {
@@ -57,6 +59,8 @@ export async function fetchAlerts(params: AlertFilterParams = {}): Promise<{ ale
   if (params.triageStatus) query.set('triageStatus', params.triageStatus);
   if (params.ringId) query.set('ringId', params.ringId);
   if (params.analysisRunId) query.set('analysisRunId', params.analysisRunId);
+  if (params.minScore !== undefined && params.minScore !== '') query.set('minScore', String(params.minScore));
+  if (params.maxScore !== undefined && params.maxScore !== '') query.set('maxScore', String(params.maxScore));
 
   const qs = query.toString();
   return apiRequest<{ alerts: Alert[]; count: number }>(`/api/alerts${qs ? `?${qs}` : ''}`);

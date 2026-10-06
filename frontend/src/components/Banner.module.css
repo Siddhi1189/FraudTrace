@@ -1,0 +1,47 @@
+.banner {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid transparent;
+}
+
+.info {
+  background-color: var(--surface-2);
+  color: var(--text-2);
+  border-color: var(--border);
+}
+
+.success {
+  background-color: var(--sev-low-bg);
+  color: var(--sev-low-text);
+  border-color: var(--sev-low-border);
+}
+
+.warning {
+  background-color: var(--sev-medium-bg);
+  color: var(--sev-medium-text);
+  border-color: var(--sev-medium-border);
+}
+
+.error {
+  background-color: var(--sev-high-bg);
+  color: var(--sev-high-text);
+  border-color: var(--sev-high-border);
+}
+
+.neutral {
+  background-color: var(--surface-2);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

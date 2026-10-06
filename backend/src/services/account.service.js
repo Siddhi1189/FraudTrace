@@ -4,6 +4,8 @@ import { Transaction } from '../models/transaction.model.js';
 import { AccountRisk } from '../models/accountRisk.model.js';
 import { Alert } from '../models/alert.model.js';
 
+import { fetchDegree, fetchSuspiciousNeighbors } from './graph/graph.service.js';
+
 export async function resolveAccount(identifier) {
   let account = null;
   if (mongoose.Types.ObjectId.isValid(identifier)) {
@@ -28,13 +30,33 @@ export async function getAccountDetails(identifier) {
     .sort({ createdAt: -1 })
     .lean();
 
-  // Fetch alerts mentioning this account's externalId
+  // Fetch alerts mentioning this account's externalId in evidence (A1)
   const alerts = await Alert.find({
-    'entities.accounts': account.externalId,
+    $or: [
+      { 'evidence.transactions.fromAccount': account.externalId },
+      { 'evidence.transactions.toAccount': account.externalId },
+      { 'evidence.metrics.account': account.externalId },
+      { 'evidence.metrics.hubAccount': account.externalId },
+      { 'evidence.metrics.accounts': account.externalId },
+    ],
   })
     .populate('ringId', 'label score')
     .sort({ createdAt: -1 })
     .lean();
+
+  // Expose graph analytics: network degree and suspicious neighbors (R3)
+  let networkDegree = null;
+  let suspiciousNeighbors = null;
+  try {
+    networkDegree = await fetchDegree(account.externalId);
+  } catch (err) {
+    networkDegree = null;
+  }
+  try {
+    suspiciousNeighbors = await fetchSuspiciousNeighbors(account.externalId);
+  } catch (err) {
+    suspiciousNeighbors = null;
+  }
 
   return {
     account,
@@ -45,6 +67,8 @@ export async function getAccountDetails(identifier) {
     },
     alerts,
     alertCount: alerts.length,
+    networkDegree,
+    suspiciousNeighbors,
   };
 }
 

@@ -1,4 +1,4 @@
-import { RULE_VERSION } from '../detectors/detectorConfig.js';
+import { DEFAULT_DETECTOR_CONFIG, RULE_VERSION } from '../detectors/detectorConfig.js';
 
 /**
  * Deterministic Explainable Risk Engine for Accounts.
@@ -7,6 +7,7 @@ import { RULE_VERSION } from '../detectors/detectorConfig.js';
  * 2. Network Behavior: Ring membership (Cap: 25 pts) & Shared Device (Cap: 15 pts)
  * 3. Transaction Behavior: Velocity (Cap: 15 pts; awarded 12 pts for >= 5 transfers)
  * 4. Temporal Behavior: Rapid Pass-Through Flow (Cap: 15 pts; awarded 15 pts for pass-through)
+ * PLACEHOLDER(FT-27): RULE_VERSION v1.0.1 and >= 3 distinct accounts requirement for DEVICE_ASSOCIATION
  */
 
 export function calculateAccountRisk({
@@ -44,7 +45,7 @@ export function calculateAccountRisk({
 
   // 2. NETWORK BEHAVIOR: Ring membership and suspicious connectivity (Cap: 25 pts)
   const accountRings = rings.filter((r) =>
-    r.members.some((m) => m.externalId === accountId)
+    r.members.some((m) => m.entityType === 'ACCOUNT' && m.externalId === accountId)
   );
 
   if (accountRings.length > 0) {
@@ -66,22 +67,31 @@ export function calculateAccountRisk({
   }
 
   // Suspicious Neighbors / Degree: Shared Device Association (Cap: 15 pts)
+  // R1: Only award if device is used by >= DEFAULT_DETECTOR_CONFIG.sharedDevice.minDistinctAccounts accounts (Doc 5.3)
   const key = `ACCOUNT:${accountId}`;
   const outEdges = graph.adjacency.get(key) || [];
   const inEdges = graph.reverseAdjacency.get(key) || [];
 
+  const minSharedAccounts = DEFAULT_DETECTOR_CONFIG.sharedDevice?.minDistinctAccounts || 3;
   const usedDeviceEdges = outEdges.filter((e) => e.type === 'USED_DEVICE');
-  if (usedDeviceEdges.length > 0) {
-    const deviceIds = usedDeviceEdges.map((e) => graph.nodes.get(e.targetKey).externalId);
+  const eligibleSharedDeviceEdges = usedDeviceEdges.filter((e) => {
+    const devKey = e.targetKey;
+    const devAccEdges = (graph.reverseAdjacency.get(devKey) || []).filter((de) => de.type === 'USED_DEVICE');
+    const distinctAccs = new Set(devAccEdges.map((de) => de.sourceKey));
+    return distinctAccs.size >= minSharedAccounts;
+  });
+
+  if (eligibleSharedDeviceEdges.length > 0) {
+    const deviceIds = eligibleSharedDeviceEdges.map((e) => graph.nodes.get(e.targetKey).externalId);
     contributors.push({
       signalName: 'DEVICE_ASSOCIATION',
       category: 'NETWORK_BEHAVIOR',
-      signalValue: `${usedDeviceEdges.length} device link(s)`,
+      signalValue: `${eligibleSharedDeviceEdges.length} shared device link(s)`,
       maxCap: 15,
       weight: 15,
       score: 10,
       pointsAwarded: 10,
-      evidence: `Associated with device(s): ${deviceIds.join(', ')}`,
+      evidence: `Associated with shared device(s) linked to ≥ ${minSharedAccounts} accounts: ${deviceIds.join(', ')}`,
       ruleVersion: RULE_VERSION,
     });
     totalScore += 10;

@@ -1,18 +1,26 @@
 <!DOCTYPE html>
 
-<html lang="en"><head>
-<meta charset="utf-8"/>
-<title>FraudTrace - Graph Explorer</title>
-<!-- Material Symbols Outlined -->
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<!-- Google Fonts: Inter & Plus Jakarta Sans -->
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<!-- Tailwind CSS v3 -->
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>FraudTrace - Graph Explorer</title>
+  <!-- Material Symbols Outlined -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <!-- Tailwind CSS v3 -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
     tailwind.config = {
       darkMode: "class",
       theme: {
@@ -35,7 +43,7 @@
             "surface-bright": "#fbf9f4",
             "primary-fixed-dim": "#b0cadd",
             "surface-container-highest": "#e4e2dd",
-            "on-error-container": "#93000a",
+            "on-error-container": "#95000a",
             "inverse-surface": "#30312e",
             "tertiary-fixed": "#fed6ff",
             "surface-container": "#f0eee9",
@@ -112,7 +120,7 @@
       },
     }
   </script>
-<style>
+  <style>
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
       font-size: 1.125rem;
@@ -120,6 +128,7 @@
       display: inline-block;
       vertical-align: middle;
     }
+
     /* Archival Canvas Grid Background */
     .graph-grid-canvas {
       background-color: #F7F5F0;
@@ -128,505 +137,632 @@
     }
   </style>
 </head>
-<body class="bg-background text-on-surface antialiased overflow-hidden h-screen flex flex-col font-body-sm text-body-sm select-none">
-<!-- TOP APP BAR -->
-<header class="flex justify-between items-center w-full px-space-md h-12 border-b border-outline-variant dark:border-outline bg-surface-container-lowest shrink-0 z-30">
-<div class="flex items-center gap-space-md">
-<!-- Breadcrumb Cluster -->
-<div class="flex items-center gap-space-xs text-on-surface-variant font-label-md text-label-md">
-<span class="font-headline-sm text-headline-sm text-primary font-semibold tracking-tight">FraudTrace</span>
-<span class="text-outline-variant font-body-sm text-body-sm">/</span>
-<span class="hover:text-on-surface cursor-pointer">Investigate</span>
-<span class="text-outline-variant font-body-sm text-body-sm">/</span>
-<span class="text-primary font-medium">Graph Explorer</span>
-<span class="text-outline-variant font-body-sm text-body-sm">/</span>
-<span class="px-space-xs py-space-3xs bg-secondary-container text-on-surface font-code-sm text-code-sm border border-outline-variant rounded">Network Cluster CL-804</span>
-</div>
-</div>
-<!-- Right Controls Actions -->
-<div class="flex items-center gap-space-sm">
-<div class="flex items-center gap-space-xs border-r border-outline-variant pr-space-md">
-<button class="flex items-center gap-space-2xs text-on-surface-variant hover:text-on-surface px-space-xs py-space-3xs rounded hover:bg-surface-container-high transition-colors" title="Notifications">
-<span class="material-symbols-outlined">notifications</span>
-</button>
-<button class="flex items-center gap-space-2xs text-on-surface-variant hover:text-on-surface px-space-xs py-space-3xs rounded hover:bg-surface-container-high transition-colors" title="Audit Help">
-<span class="material-symbols-outlined">help</span>
-</button>
-<button class="flex items-center gap-space-2xs text-on-surface-variant hover:text-on-surface px-space-xs py-space-3xs rounded hover:bg-surface-container-high transition-colors" title="Preferences">
-<span class="material-symbols-outlined">tune</span>
-</button>
-</div>
-<div class="flex items-center gap-space-xs">
-<button class="h-8 px-space-md bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container font-label-md text-label-md rounded flex items-center gap-space-xs active:bg-surface-dim transition-colors">
-<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+
+<body
+  class="bg-background text-on-surface antialiased overflow-hidden h-screen flex flex-col font-body-sm text-body-sm select-none">
+  <!-- TOP APP BAR -->
+  <header
+    class="flex justify-between items-center w-full px-space-md h-12 border-b border-outline-variant dark:border-outline bg-surface-container-lowest shrink-0 z-30">
+    <div class="flex items-center gap-space-md">
+      <!-- Breadcrumb Cluster -->
+      <div class="flex items-center gap-space-xs text-on-surface-variant font-label-md text-label-md">
+        <span class="font-headline-sm text-headline-sm text-primary font-semibold tracking-tight">FraudTrace</span>
+        <span class="text-outline-variant font-body-sm text-body-sm">/</span>
+        <span class="hover:text-on-surface cursor-pointer">Investigate</span>
+        <span class="text-outline-variant font-body-sm text-body-sm">/</span>
+        <span class="text-primary font-medium">Graph Explorer</span>
+        <span class="text-outline-variant font-body-sm text-body-sm">/</span>
+        <span
+          class="px-space-xs py-space-3xs bg-secondary-container text-on-surface font-code-sm text-code-sm border border-outline-variant rounded">Network
+          Cluster CL-804</span>
+      </div>
+    </div>
+    <!-- Right Controls Actions -->
+    <div class="flex items-center gap-space-sm">
+      <div class="flex items-center gap-space-xs border-r border-outline-variant pr-space-md">
+        <button
+          class="flex items-center gap-space-2xs text-on-surface-variant hover:text-on-surface px-space-xs py-space-3xs rounded hover:bg-surface-container-high transition-colors"
+          title="Notifications">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+        <button
+          class="flex items-center gap-space-2xs text-on-surface-variant hover:text-on-surface px-space-xs py-space-3xs rounded hover:bg-surface-container-high transition-colors"
+          title="Audit Help">
+          <span class="material-symbols-outlined">help</span>
+        </button>
+        <button
+          class="flex items-center gap-space-2xs text-on-surface-variant hover:text-on-surface px-space-xs py-space-3xs rounded hover:bg-surface-container-high transition-colors"
+          title="Preferences">
+          <span class="material-symbols-outlined">tune</span>
+        </button>
+      </div>
+      <div class="flex items-center gap-space-xs">
+        <button
+          class="h-8 px-space-md bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container font-label-md text-label-md rounded flex items-center gap-space-xs active:bg-surface-dim transition-colors">
+          <span class="material-symbols-outlined text-[16px]">lock_reset</span>
           Freeze Accounts
         </button>
-<button class="h-8 px-space-md bg-primary-container text-on-primary hover:bg-primary font-label-md text-label-md rounded flex items-center gap-space-xs transition-colors shadow-none">
-<span class="material-symbols-outlined text-[16px]">gavel</span>
+        <button
+          class="h-8 px-space-md bg-primary-container text-on-primary hover:bg-primary font-label-md text-label-md rounded flex items-center gap-space-xs transition-colors shadow-none">
+          <span class="material-symbols-outlined text-[16px]">gavel</span>
           Adjudicate Case
         </button>
-</div>
-<div class="pl-space-xs ml-space-xs border-l border-outline-variant flex items-center">
-<img class="w-7 h-7 rounded border border-outline-variant object-cover" data-alt="Official portrait photograph of a senior financial fraud forensic investigator in formal muted business suit under neutral studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdoqVf_6G-4-0q5GHCVKLkWuHPEeSuL3bZnaT8VT7TBgvI3kpS_KHyhqJ5dEAXVtJfxNgCq8iXHPYjR5-0Y0Cnxaes9h7lBNDV81M35TEKLqkb0PlBnnls32YeN6_lvhpfRoPZGG2Or19GfpStjiJt5u4VctFSa4eJ2htf4Quat4JWlwtKLxN2ea1RY5-rtcoekUuXZotyq7Z2LwYICzB2KVAxRn6x8dBiB42i81wOMYjZop4oquw"/>
-</div>
-</div>
-</header>
-<!-- WORKSPACE BODY (SideNav + Tri-pane/Two-pane layout) -->
-<div class="flex flex-1 overflow-hidden">
-<!-- LEFT GLOBAL SHELL: SideNavBar -->
-<aside class="flex flex-col justify-between h-full w-60 py-space-md px-space-sm bg-secondary-container border-r border-outline-variant shrink-0 z-20">
-<div class="flex flex-col gap-space-md">
-<!-- Brand Monogram Header -->
-<div class="flex items-center gap-space-sm px-space-xs pb-space-xs border-b border-outline-variant/60">
-<div class="w-8 h-8 rounded bg-primary flex items-center justify-center text-on-primary font-headline-sm text-headline-sm font-bold tracking-tight">
+      </div>
+      <div class="pl-space-xs ml-space-xs border-l border-outline-variant flex items-center">
+        <img class="w-7 h-7 rounded border border-outline-variant object-cover"
+          data-alt="Official portrait photograph of a senior financial fraud forensic investigator in formal muted business suit under neutral studio lighting."
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdoqVf_6G-4-0q5GHCVKLkWuHPEeSuL3bZnaT8VT7TBgvI3kpS_KHyhqJ5dEAXVtJfxNgCq8iXHPYjR5-0Y0Cnxaes9h7lBNDV81M35TEKLqkb0PlBnnls32YeN6_lvhpfRoPZGG2Or19GfpStjiJt5u4VctFSa4eJ2htf4Quat4JWlwtKLxN2ea1RY5-rtcoekUuXZotyq7Z2LwYICzB2KVAxRn6x8dBiB42i81wOMYjZop4oquw" />
+      </div>
+    </div>
+  </header>
+  <!-- WORKSPACE BODY (SideNav + Tri-pane/Two-pane layout) -->
+  <div class="flex flex-1 overflow-hidden">
+    <!-- LEFT GLOBAL SHELL: SideNavBar -->
+    <aside
+      class="flex flex-col justify-between h-full w-60 py-space-md px-space-sm bg-secondary-container border-r border-outline-variant shrink-0 z-20">
+      <div class="flex flex-col gap-space-md">
+        <!-- Brand Monogram Header -->
+        <div class="flex items-center gap-space-sm px-space-xs pb-space-xs border-b border-outline-variant/60">
+          <div
+            class="w-8 h-8 rounded bg-primary flex items-center justify-center text-on-primary font-headline-sm text-headline-sm font-bold tracking-tight">
             FT
           </div>
-<div class="flex flex-col">
-<span class="text-headline-sm font-headline-sm text-on-surface tracking-tight font-bold">FraudTrace</span>
-<span class="text-label-sm font-label-sm text-secondary">Forensic Ledger Console</span>
-</div>
-</div>
-<!-- Primary Navigation Tabs -->
-<nav class="flex flex-col gap-space-3xs">
-<!-- Dashboard -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-lg">
-<span class="material-symbols-outlined">dashboard</span>
-<span>Dashboard</span>
-</a>
-<!-- Alerts -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-lg">
-<span class="material-symbols-outlined">notifications_active</span>
-<span>Alerts</span>
-</a>
-<!-- Fraud Rings -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-lg">
-<span class="material-symbols-outlined">groups</span>
-<span>Fraud Rings</span>
-</a>
-<!-- Accounts -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-lg">
-<span class="material-symbols-outlined">account_balance</span>
-<span>Accounts</span>
-</a>
-<!-- Graph Explorer [ACTIVE INTENT MATCH] -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs bg-primary-container text-on-primary rounded-lg border-l-2 border-primary font-label-md text-label-md cursor-pointer">
-<span class="material-symbols-outlined">hub</span>
-<span>Graph Explorer</span>
-</a>
-<!-- Cases -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-lg">
-<span class="material-symbols-outlined">folder_shared</span>
-<span>Cases</span>
-</a>
-<!-- Data Management -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-lg">
-<span class="material-symbols-outlined">database</span>
-<span>Data Management</span>
-</a>
-<!-- Detection Rules -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-lg">
-<span class="material-symbols-outlined">rule</span>
-<span>Detection Rules</span>
-</a>
-</nav>
-<!-- Sidebar CTA -->
-<div class="px-space-xs pt-space-xs">
-<button class="w-full h-8 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-primary font-label-md text-label-md rounded flex items-center justify-center gap-space-xs shadow-none">
-<span class="material-symbols-outlined text-[16px]">add_circle</span>
+          <div class="flex flex-col">
+            <span class="text-headline-sm font-headline-sm text-on-surface tracking-tight font-bold">FraudTrace</span>
+            <span class="text-label-sm font-label-sm text-secondary">Forensic Ledger Console</span>
+          </div>
+        </div>
+        <!-- Primary Navigation Tabs -->
+        <nav class="flex flex-col gap-space-3xs">
+          <!-- Dashboard -->
+          <a
+            class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-lg">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span>Dashboard</span>
+          </a>
+          <!-- Alerts -->
+          <a
+            class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-lg">
+            <span class="material-symbols-outlined">notifications_active</span>
+            <span>Alerts</span>
+          </a>
+          <!-- Fraud Rings -->
+          <a
+            class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-lg">
+            <span class="material-symbols-outlined">groups</span>
+            <span>Fraud Rings</span>
+          </a>
+          <!-- Accounts -->
+          <a
+            class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-lg">
+            <span class="material-symbols-outlined">account_balance</span>
+            <span>Accounts</span>
+          </a>
+          <!-- Graph Explorer [ACTIVE INTENT MATCH] -->
+          <a
+            class="flex items-center gap-space-sm px-space-md py-space-xs bg-primary-container text-on-primary rounded-lg border-l-2 border-primary font-label-md text-label-md cursor-pointer">
+            <span class="material-symbols-outlined">hub</span>
+            <span>Graph Explorer</span>
+          </a>
+          <!-- Cases -->
+          <a
+            class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-lg">
+            <span class="material-symbols-outlined">folder_shared</span>
+            <span>Cases</span>
+          </a>
+          <!-- Data Management -->
+          <a
+            class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-lg">
+            <span class="material-symbols-outlined">database</span>
+            <span>Data Management</span>
+          </a>
+          <!-- Detection Rules -->
+          <a
+            class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-lg">
+            <span class="material-symbols-outlined">rule</span>
+            <span>Detection Rules</span>
+          </a>
+        </nav>
+        <!-- Sidebar CTA -->
+        <div class="px-space-xs pt-space-xs">
+          <button
+            class="w-full h-8 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-primary font-label-md text-label-md rounded flex items-center justify-center gap-space-xs shadow-none">
+            <span class="material-symbols-outlined text-[16px]">add_circle</span>
             New Investigation
           </button>
-</div>
-</div>
-<!-- Footer Sub-Tabs -->
-<div class="flex flex-col gap-space-3xs border-t border-outline-variant/60 pt-space-sm">
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-lg">
-<span class="material-symbols-outlined">history</span>
-<span>Audit Log</span>
-</a>
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-lg">
-<span class="material-symbols-outlined">settings</span>
-<span>Settings</span>
-</a>
-</div>
-</aside>
-<!-- MAIN INTERACTIVE CANVAS & INSPECTOR CONTAINER -->
-<main class="flex flex-col flex-1 min-w-0 overflow-hidden bg-background">
-<!-- TOP QUERY CONTROLS BAR -->
-<div class="w-full bg-surface-container-low border-b border-outline-variant px-space-md py-space-xs flex flex-wrap items-center justify-between gap-space-sm shrink-0">
-<!-- Left Filter Group -->
-<div class="flex flex-wrap items-center gap-space-sm">
-<!-- Entity Seed Input -->
-<div class="flex items-center bg-surface-container-lowest border border-outline-variant rounded h-8 px-space-sm focus-within:border-primary">
-<span class="text-label-sm font-label-sm text-secondary uppercase pr-space-xs border-r border-outline-variant">Entity</span>
-<input class="w-28 pl-space-xs border-0 py-0 text-on-surface font-code-sm text-code-sm focus:ring-0 focus:outline-none bg-transparent" type="text" value="ACC-992102"/>
-<span class="material-symbols-outlined text-[15px] text-outline cursor-pointer hover:text-primary">search</span>
-</div>
-<!-- Depth Selector -->
-<div class="flex items-center bg-surface-container-lowest border border-outline-variant rounded h-8 px-space-xs text-body-sm font-body-sm">
-<span class="text-label-sm font-label-sm text-secondary px-space-xs">Depth:</span>
-<select class="border-0 py-0 pl-space-xs pr-space-lg text-body-sm font-body-sm focus:ring-0 text-on-surface bg-transparent cursor-pointer">
-<option>1 Hop</option>
-<option selected="">2 Hops</option>
-<option>3 Hops (Deep Cluster)</option>
-<option>4 Hops</option>
-</select>
-</div>
-<!-- Layout Selector -->
-<div class="flex items-center bg-surface-container-lowest border border-outline-variant rounded h-8 px-space-xs text-body-sm font-body-sm">
-<span class="text-label-sm font-label-sm text-secondary px-space-xs">Layout:</span>
-<select class="border-0 py-0 pl-space-xs pr-space-lg text-body-sm font-body-sm focus:ring-0 text-on-surface bg-transparent cursor-pointer">
-<option selected="">Force-Directed</option>
-<option>Hierarchical</option>
-<option>Concentric</option>
-</select>
-</div>
-<!-- Entity Type Filter Chips -->
-<div class="flex items-center gap-space-2xs pl-space-xs border-l border-outline-variant">
-<label class="flex items-center gap-1.5 px-2 py-1 bg-surface-container-lowest border border-outline-variant rounded cursor-pointer text-label-sm font-label-sm hover:bg-surface-container">
-<input checked="" class="w-3 h-3 text-primary-container rounded-sm border-outline-variant focus:ring-0" type="checkbox"/>
-<span class="w-2 h-2 rounded-full" style="background-color: #2F4858;"></span>
-<span class="text-on-surface">Accounts</span>
-</label>
-<label class="flex items-center gap-1.5 px-2 py-1 bg-surface-container-lowest border border-outline-variant rounded cursor-pointer text-label-sm font-label-sm hover:bg-surface-container">
-<input checked="" class="w-3 h-3 text-primary-container rounded-sm border-outline-variant focus:ring-0" type="checkbox"/>
-<span class="w-2 h-2 rounded-sm" style="background-color: #C48A1A;"></span>
-<span class="text-on-surface">Devices</span>
-</label>
-<label class="flex items-center gap-1.5 px-2 py-1 bg-surface-container-lowest border border-outline-variant rounded cursor-pointer text-label-sm font-label-sm hover:bg-surface-container">
-<input checked="" class="w-3 h-3 text-primary-container rounded-sm border-outline-variant focus:ring-0" type="checkbox"/>
-<span class="w-2 h-2" style="background-color: #6B4C6E;"></span>
-<span class="text-on-surface">Merchants</span>
-</label>
-</div>
-<!-- Time Window -->
-<div class="flex items-center bg-surface-container-lowest border border-outline-variant rounded h-8 px-space-xs">
-<span class="material-symbols-outlined text-[15px] text-secondary pl-space-2xs">calendar_today</span>
-<select class="border-0 py-0 pl-space-xs pr-space-md text-label-md font-label-md text-on-surface bg-transparent focus:ring-0 cursor-pointer">
-<option>Last 24 Hours</option>
-<option selected="">Last 7 Days</option>
-<option>Last 30 Days</option>
-<option>Cluster Lifetime</option>
-</select>
-</div>
-</div>
-<!-- Right Quick Actions -->
-<div class="flex items-center gap-space-xs">
-<button class="h-8 px-space-sm bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface font-label-md text-label-md rounded flex items-center gap-1 transition-colors">
-<span class="material-symbols-outlined text-[16px]">restart_alt</span>
+        </div>
+      </div>
+      <!-- Footer Sub-Tabs -->
+      <div class="flex flex-col gap-space-3xs border-t border-outline-variant/60 pt-space-sm">
+        <a
+          class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-lg">
+          <span class="material-symbols-outlined">history</span>
+          <span>Audit Log</span>
+        </a>
+        <a
+          class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 cursor-pointer rounded-lg">
+          <span class="material-symbols-outlined">settings</span>
+          <span>Settings</span>
+        </a>
+      </div>
+    </aside>
+    <!-- MAIN INTERACTIVE CANVAS & INSPECTOR CONTAINER -->
+    <main class="flex flex-col flex-1 min-w-0 overflow-hidden bg-background">
+      <!-- TOP QUERY CONTROLS BAR -->
+      <div
+        class="w-full bg-surface-container-low border-b border-outline-variant px-space-md py-space-xs flex flex-wrap items-center justify-between gap-space-sm shrink-0">
+        <!-- Left Filter Group -->
+        <div class="flex flex-wrap items-center gap-space-sm">
+          <!-- Entity Seed Input -->
+          <div
+            class="flex items-center bg-surface-container-lowest border border-outline-variant rounded h-8 px-space-sm focus-within:border-primary">
+            <span
+              class="text-label-sm font-label-sm text-secondary uppercase pr-space-xs border-r border-outline-variant">Entity</span>
+            <input
+              class="w-28 pl-space-xs border-0 py-0 text-on-surface font-code-sm text-code-sm focus:ring-0 focus:outline-none bg-transparent"
+              type="text" value="ACC-992102" />
+            <span
+              class="material-symbols-outlined text-[15px] text-outline cursor-pointer hover:text-primary">search</span>
+          </div>
+          <!-- Depth Selector -->
+          <div
+            class="flex items-center bg-surface-container-lowest border border-outline-variant rounded h-8 px-space-xs text-body-sm font-body-sm">
+            <span class="text-label-sm font-label-sm text-secondary px-space-xs">Depth:</span>
+            <select
+              class="border-0 py-0 pl-space-xs pr-space-lg text-body-sm font-body-sm focus:ring-0 text-on-surface bg-transparent cursor-pointer">
+              <option>1 Hop</option>
+              <option selected="">2 Hops</option>
+              <option>3 Hops (Deep Cluster)</option>
+              <option>4 Hops</option>
+            </select>
+          </div>
+          <!-- Layout Selector -->
+          <div
+            class="flex items-center bg-surface-container-lowest border border-outline-variant rounded h-8 px-space-xs text-body-sm font-body-sm">
+            <span class="text-label-sm font-label-sm text-secondary px-space-xs">Layout:</span>
+            <select
+              class="border-0 py-0 pl-space-xs pr-space-lg text-body-sm font-body-sm focus:ring-0 text-on-surface bg-transparent cursor-pointer">
+              <option selected="">Force-Directed</option>
+              <option>Hierarchical</option>
+              <option>Concentric</option>
+            </select>
+          </div>
+          <!-- Entity Type Filter Chips -->
+          <div class="flex items-center gap-space-2xs pl-space-xs border-l border-outline-variant">
+            <label
+              class="flex items-center gap-1.5 px-2 py-1 bg-surface-container-lowest border border-outline-variant rounded cursor-pointer text-label-sm font-label-sm hover:bg-surface-container">
+              <input checked="" class="w-3 h-3 text-primary-container rounded-sm border-outline-variant focus:ring-0"
+                type="checkbox" />
+              <span class="w-2 h-2 rounded-full" style="background-color: #2F4858;"></span>
+              <span class="text-on-surface">Accounts</span>
+            </label>
+            <label
+              class="flex items-center gap-1.5 px-2 py-1 bg-surface-container-lowest border border-outline-variant rounded cursor-pointer text-label-sm font-label-sm hover:bg-surface-container">
+              <input checked="" class="w-3 h-3 text-primary-container rounded-sm border-outline-variant focus:ring-0"
+                type="checkbox" />
+              <span class="w-2 h-2 rounded-sm" style="background-color: #C48A1A;"></span>
+              <span class="text-on-surface">Devices</span>
+            </label>
+            <label
+              class="flex items-center gap-1.5 px-2 py-1 bg-surface-container-lowest border border-outline-variant rounded cursor-pointer text-label-sm font-label-sm hover:bg-surface-container">
+              <input checked="" class="w-3 h-3 text-primary-container rounded-sm border-outline-variant focus:ring-0"
+                type="checkbox" />
+              <span class="w-2 h-2" style="background-color: #6B4C6E;"></span>
+              <span class="text-on-surface">Merchants</span>
+            </label>
+          </div>
+          <!-- Time Window -->
+          <div
+            class="flex items-center bg-surface-container-lowest border border-outline-variant rounded h-8 px-space-xs">
+            <span class="material-symbols-outlined text-[15px] text-secondary pl-space-2xs">calendar_today</span>
+            <select
+              class="border-0 py-0 pl-space-xs pr-space-md text-label-md font-label-md text-on-surface bg-transparent focus:ring-0 cursor-pointer">
+              <option>Last 24 Hours</option>
+              <option selected="">Last 7 Days</option>
+              <option>Last 30 Days</option>
+              <option>Cluster Lifetime</option>
+            </select>
+          </div>
+        </div>
+        <!-- Right Quick Actions -->
+        <div class="flex items-center gap-space-xs">
+          <button
+            class="h-8 px-space-sm bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface font-label-md text-label-md rounded flex items-center gap-1 transition-colors">
+            <span class="material-symbols-outlined text-[16px]">restart_alt</span>
             Reset View
           </button>
-<button class="h-8 px-space-sm bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface font-label-md text-label-md rounded flex items-center gap-1 transition-colors">
-<span class="material-symbols-outlined text-[16px]">file_download</span>
+          <button
+            class="h-8 px-space-sm bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface font-label-md text-label-md rounded flex items-center gap-1 transition-colors">
+            <span class="material-symbols-outlined text-[16px]">file_download</span>
             Export Subgraph
           </button>
-</div>
-</div>
-<!-- WORKSPACE TWO-PANE SPLIT -->
-<div class="flex flex-1 min-h-0 relative">
-<!-- PANE 1: LEFT NETWORK GRAPH CANVAS (68% width) -->
-<section class="w-[68%] h-full relative graph-grid-canvas flex flex-col justify-between overflow-hidden">
-<!-- Top Floating Canvas Toolbar -->
-<div class="absolute top-space-md left-space-md z-10 flex items-center gap-space-2xs bg-surface-container-lowest/90 backdrop-blur-none border border-outline-variant rounded shadow-none p-1">
-<button class="w-7 h-7 flex items-center justify-center text-on-surface hover:bg-surface-container rounded" title="Zoom In">
-<span class="material-symbols-outlined text-[18px]">zoom_in</span>
-</button>
-<button class="w-7 h-7 flex items-center justify-center text-on-surface hover:bg-surface-container rounded" title="Zoom Out">
-<span class="material-symbols-outlined text-[18px]">zoom_out</span>
-</button>
-<button class="w-7 h-7 flex items-center justify-center text-on-surface hover:bg-surface-container rounded" title="Fit to Screen">
-<span class="material-symbols-outlined text-[18px]">fit_screen</span>
-</button>
-<div class="w-px h-4 bg-outline-variant mx-0.5"></div>
-<button class="w-7 h-7 flex items-center justify-center text-on-surface hover:bg-surface-container rounded" title="Toggle Physics Layout">
-<span class="material-symbols-outlined text-[18px]">play_circle</span>
-</button>
-<button class="w-7 h-7 flex items-center justify-center text-on-surface hover:bg-surface-container rounded" title="Select Box Tool">
-<span class="material-symbols-outlined text-[18px]">highlight_alt</span>
-</button>
-</div>
-<!-- Floating Cluster Metadata Badge -->
-<div class="absolute top-space-md right-space-md z-10 bg-surface-container-lowest border border-outline-variant px-space-sm py-space-xs rounded flex items-center gap-space-md">
-<div>
-<div class="text-label-sm font-label-sm text-secondary uppercase">Cluster Topology</div>
-<div class="font-headline-sm text-headline-sm text-on-surface font-semibold">Layered Cash-Out Ring</div>
-</div>
-<div class="h-6 w-px bg-outline-variant"></div>
-<div>
-<div class="text-label-sm font-label-sm text-secondary">Nodes / Edges</div>
-<div class="font-code-sm text-code-sm text-on-surface font-medium">7 Entities · 8 Flows</div>
-</div>
-<div class="h-6 w-px bg-outline-variant"></div>
-<div>
-<div class="text-label-sm font-label-sm text-secondary">Total Velocity</div>
-<div class="font-code-sm text-code-sm text-error font-medium">$348,500.00</div>
-</div>
-</div>
-<!-- CYTOSCAPE GRAPH CANVAS RENDERING (Crisp SVG Representation) -->
-<div class="w-full h-full relative cursor-crosshair">
-<svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-<defs>
-<!-- Standard directional vector marker -->
-<marker id="arrow-neutral" markerheight="6" markerwidth="6" orient="auto-start-reverse" refx="22" refy="5" viewbox="0 0 10 10">
-<path d="M 0 1 L 10 5 L 0 9 z" fill="#888275"></path>
-</marker>
-<!-- High-risk velocity flow marker -->
-<marker id="arrow-flagged" markerheight="6" markerwidth="6" orient="auto-start-reverse" refx="24" refy="5" viewbox="0 0 10 10">
-<path d="M 0 1 L 10 5 L 0 9 z" fill="#B3402A"></path>
-</marker>
-</defs>
-<!-- Connection Edges with Direction & Crisp Labels -->
-<!-- ACC-440181 to Target ACC-992102 ($42,000) -->
-<g class="flow-edge">
-<line marker-end="url(#arrow-flagged)" stroke="#B3402A" stroke-dasharray="0" stroke-width="2" x1="160" x2="360" y1="180" y2="290"></line>
-<rect fill="#FFFFFF" height="18" rx="2" stroke="#E3DED3" width="60" x="230" y="222"></rect>
-<text fill="#802B1B" font-family="Inter" font-size="10" font-weight="600" text-anchor="middle" x="260" y="235">$42,000</text>
-</g>
-<!-- ACC-883019 to Target ACC-992102 ($18,500) -->
-<g class="flow-edge">
-<line marker-end="url(#arrow-neutral)" stroke="#73787c" stroke-width="1.5" x1="200" x2="360" y1="460" y2="290"></line>
-<rect fill="#FFFFFF" height="18" rx="2" stroke="#E3DED3" width="58" x="250" y="365"></rect>
-<text fill="#1b1c19" font-family="Inter" font-size="10" font-weight="500" text-anchor="middle" x="279" y="378">$18,500</text>
-</g>
-<!-- Target ACC-992102 to MCH-3092 ($84,000 flagged cash-out) -->
-<g class="flow-edge">
-<line marker-end="url(#arrow-flagged)" stroke="#B3402A" stroke-width="2.5" x1="360" x2="570" y1="290" y2="170"></line>
-<rect fill="#FFFFFF" height="18" rx="2" stroke="#B3402A" width="62" x="435" y="215"></rect>
-<text fill="#B3402A" font-family="Inter" font-size="10" font-weight="700" text-anchor="middle" x="466" y="228">$84,000</text>
-</g>
-<!-- Target ACC-992102 to MCH-4410 ($58,000) -->
-<g class="flow-edge">
-<line marker-end="url(#arrow-neutral)" stroke="#73787c" stroke-width="1.5" x1="360" x2="610" y1="290" y2="390"></line>
-<rect fill="#FFFFFF" height="18" rx="2" stroke="#E3DED3" width="60" x="460" y="332"></rect>
-<text fill="#1b1c19" font-family="Inter" font-size="10" font-weight="500" text-anchor="middle" x="490" y="345">$58,000</text>
-</g>
-<!-- Device Associations (Dotted structural correlation lines) -->
-<!-- DEV-993821 to Target ACC-992102 -->
-<line stroke="#C48A1A" stroke-dasharray="3,3" stroke-width="1.5" x1="360" x2="340" y1="290" y2="120"></line>
-<!-- DEV-993821 to ACC-440181 (Shared device link) -->
-<line stroke="#C48A1A" stroke-dasharray="3,3" stroke-width="1.5" x1="340" x2="160" y1="120" y2="180"></line>
-<!-- DEV-110293 to ACC-883019 -->
-<line stroke="#C48A1A" stroke-dasharray="3,3" stroke-width="1.5" x1="200" x2="380" y1="460" y2="490"></line>
-<!-- NODES LAYER -->
-<!-- DEVICE 1: DEV-993821 (Hexagon shape in Ochre #C48A1A) -->
-<g class="cursor-pointer" transform="translate(340, 120)">
-<!-- Hexagon representation -->
-<polygon fill="#C48A1A" points="0,-18 16,-9 16,9 0,18 -16,9 -16,-9" stroke="#FFFFFF" stroke-width="2"></polygon>
-<text fill="#FFFFFF" font-family="Inter" font-size="10" font-weight="700" text-anchor="middle" x="0" y="3">D1</text>
-<text fill="#1b1c19" font-family="Inter" font-size="10" font-weight="600" text-anchor="middle" x="0" y="-24">DEV-993821</text>
-<text fill="#605e57" font-family="Inter" font-size="9" text-anchor="middle" x="0" y="-35">Multi-Account Proxy</text>
-</g>
-<!-- DEVICE 2: DEV-110293 -->
-<g class="cursor-pointer" transform="translate(380, 490)">
-<polygon fill="#C48A1A" points="0,-16 14,-8 14,8 0,16 -14,8 -14,-8" stroke="#FFFFFF" stroke-width="2"></polygon>
-<text fill="#FFFFFF" font-family="Inter" font-size="10" font-weight="700" text-anchor="middle" x="0" y="3">D2</text>
-<text fill="#1b1c19" font-family="Inter" font-size="10" font-weight="600" text-anchor="middle" x="0" y="28">DEV-110293</text>
-</g>
-<!-- ACCOUNT 2: ACC-440181 (Circle in Slate Blue #2F4858) -->
-<g class="cursor-pointer" transform="translate(160, 180)">
-<circle fill="#2F4858" r="18" stroke="#FFFFFF" stroke-width="2"></circle>
-<text fill="#FFFFFF" font-family="Inter" font-size="11" font-weight="600" text-anchor="middle" x="0" y="4">A2</text>
-<text fill="#1b1c19" font-family="Inter" font-size="10" font-weight="600" text-anchor="middle" x="0" y="-24">ACC-440181</text>
-<text fill="#605e57" font-family="Inter" font-size="9" text-anchor="middle" x="0" y="-35">Origin Smurf A</text>
-</g>
-<!-- ACCOUNT 3: ACC-883019 -->
-<g class="cursor-pointer" transform="translate(200, 460)">
-<circle fill="#2F4858" r="18" stroke="#FFFFFF" stroke-width="2"></circle>
-<text fill="#FFFFFF" font-family="Inter" font-size="11" font-weight="600" text-anchor="middle" x="0" y="4">A3</text>
-<text fill="#1b1c19" font-family="Inter" font-size="10" font-weight="600" text-anchor="middle" x="0" y="30">ACC-883019</text>
-<text fill="#605e57" font-family="Inter" font-size="9" text-anchor="middle" x="0" y="41">Origin Smurf B</text>
-</g>
-<!-- MERCHANT 1: MCH-3092 Apex Electronics (Square in Plum #6B4C6E) -->
-<g class="cursor-pointer" transform="translate(570, 170)">
-<rect fill="#6B4C6E" height="32" rx="2" stroke="#FFFFFF" stroke-width="2" width="32" x="-16" y="-16"></rect>
-<text fill="#FFFFFF" font-family="Inter" font-size="10" font-weight="600" text-anchor="middle" x="0" y="4">M1</text>
-<text fill="#1b1c19" font-family="Inter" font-size="10" font-weight="600" text-anchor="middle" x="0" y="-22">MCH-3092</text>
-<text fill="#605e57" font-family="Inter" font-size="9" text-anchor="middle" x="0" y="-33">Apex Electronics</text>
-</g>
-<!-- MERCHANT 2: MCH-4410 Prime Vault -->
-<g class="cursor-pointer" transform="translate(610, 390)">
-<rect fill="#6B4C6E" height="32" rx="2" stroke="#FFFFFF" stroke-width="2" width="32" x="-16" y="-16"></rect>
-<text fill="#FFFFFF" font-family="Inter" font-size="10" font-weight="600" text-anchor="middle" x="0" y="4">M2</text>
-<text fill="#1b1c19" font-family="Inter" font-size="10" font-weight="600" text-anchor="middle" x="0" y="28">MCH-4410</text>
-<text fill="#605e57" font-family="Inter" font-size="9" text-anchor="middle" x="0" y="39">Prime Vault Ltd</text>
-</g>
-<!-- TARGET ACCOUNT: ACC-992102 (Selected Focal Node) -->
-<g class="cursor-pointer" transform="translate(360, 290)">
-<!-- Archival selection ring -->
-<circle fill="none" r="32" stroke="#2F4858" stroke-dasharray="4,2" stroke-width="1.5"></circle>
-<circle fill="#2F4858" r="24" stroke="#FFFFFF" stroke-width="2"></circle>
-<text fill="#FFFFFF" font-family="Inter" font-size="11" font-weight="700" text-anchor="middle" x="0" y="4">HUB</text>
-<!-- Target Anchor Tag Badge -->
-<rect fill="#183241" height="18" rx="2" width="84" x="-42" y="32"></rect>
-<text fill="#FFFFFF" font-family="Inter" font-size="10" font-weight="700" text-anchor="middle" x="0" y="44">ACC-992102 [T]</text>
-</g>
-</svg>
-</div>
-<!-- BOTTOM-LEFT LEGEND (Standard Archival Legend) -->
-<div class="m-space-md p-space-xs bg-surface-container-lowest border border-outline-variant rounded flex items-center gap-space-md z-10 w-fit">
-<span class="text-label-sm font-label-sm text-secondary uppercase font-semibold">Entity Registry:</span>
-<div class="flex items-center gap-1.5 text-label-sm font-label-sm text-on-surface">
-<span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color: #2F4858;"></span>
-<span>Account (#2F4858)</span>
-</div>
-<div class="flex items-center gap-1.5 text-label-sm font-label-sm text-on-surface">
-<span class="w-2.5 h-2.5 rounded-sm inline-block" style="background-color: #C48A1A;"></span>
-<span>Device (#C48A1A)</span>
-</div>
-<div class="flex items-center gap-1.5 text-label-sm font-label-sm text-on-surface">
-<span class="w-2.5 h-2.5 inline-block" style="background-color: #6B4C6E;"></span>
-<span>Merchant (#6B4C6E)</span>
-</div>
-</div>
-</section>
-<!-- PANE 2: RIGHT SELECTED ENTITY INSPECTOR (32% width, #FFFFFF ground, border-l) -->
-<aside class="w-[32%] h-full bg-surface-container-lowest border-l border-outline-variant flex flex-col justify-between overflow-y-auto z-10">
-<div class="flex flex-col">
-<!-- Inspector Header Block -->
-<div class="p-space-md border-b border-outline-variant bg-surface-container-low/40">
-<div class="flex items-center justify-between mb-1">
-<span class="text-label-sm font-label-sm text-secondary uppercase tracking-wider">Forensic Entity Dossier</span>
-<span class="px-space-xs py-space-3xs text-label-sm font-label-sm font-bold bg-[#EFE4E6] text-[#54151D] border border-[#DBBFC3] rounded">
+        </div>
+      </div>
+      <!-- WORKSPACE TWO-PANE SPLIT -->
+      <div class="flex flex-1 min-h-0 relative">
+        <!-- PANE 1: LEFT NETWORK GRAPH CANVAS (68% width) -->
+        <section class="w-[68%] h-full relative graph-grid-canvas flex flex-col justify-between overflow-hidden">
+          <!-- Top Floating Canvas Toolbar -->
+          <div
+            class="absolute top-space-md left-space-md z-10 flex items-center gap-space-2xs bg-surface-container-lowest/90 backdrop-blur-none border border-outline-variant rounded shadow-none p-1">
+            <button class="w-7 h-7 flex items-center justify-center text-on-surface hover:bg-surface-container rounded"
+              title="Zoom In">
+              <span class="material-symbols-outlined text-[18px]">zoom_in</span>
+            </button>
+            <button class="w-7 h-7 flex items-center justify-center text-on-surface hover:bg-surface-container rounded"
+              title="Zoom Out">
+              <span class="material-symbols-outlined text-[18px]">zoom_out</span>
+            </button>
+            <button class="w-7 h-7 flex items-center justify-center text-on-surface hover:bg-surface-container rounded"
+              title="Fit to Screen">
+              <span class="material-symbols-outlined text-[18px]">fit_screen</span>
+            </button>
+            <div class="w-px h-4 bg-outline-variant mx-0.5"></div>
+            <button class="w-7 h-7 flex items-center justify-center text-on-surface hover:bg-surface-container rounded"
+              title="Toggle Physics Layout">
+              <span class="material-symbols-outlined text-[18px]">play_circle</span>
+            </button>
+            <button class="w-7 h-7 flex items-center justify-center text-on-surface hover:bg-surface-container rounded"
+              title="Select Box Tool">
+              <span class="material-symbols-outlined text-[18px]">highlight_alt</span>
+            </button>
+          </div>
+          <!-- Floating Cluster Metadata Badge -->
+          <div
+            class="absolute top-space-md right-space-md z-10 bg-surface-container-lowest border border-outline-variant px-space-sm py-space-xs rounded flex items-center gap-space-md">
+            <div>
+              <div class="text-label-sm font-label-sm text-secondary uppercase">Cluster Topology</div>
+              <div class="font-headline-sm text-headline-sm text-on-surface font-semibold">Layered Cash-Out Ring</div>
+            </div>
+            <div class="h-6 w-px bg-outline-variant"></div>
+            <div>
+              <div class="text-label-sm font-label-sm text-secondary">Nodes / Edges</div>
+              <div class="font-code-sm text-code-sm text-on-surface font-medium">7 Entities · 8 Flows</div>
+            </div>
+            <div class="h-6 w-px bg-outline-variant"></div>
+            <div>
+              <div class="text-label-sm font-label-sm text-secondary">Total Velocity</div>
+              <div class="font-code-sm text-code-sm text-error font-medium">$348,500.00</div>
+            </div>
+          </div>
+          <!-- CYTOSCAPE GRAPH CANVAS RENDERING (Crisp SVG Representation) -->
+          <div class="w-full h-full relative cursor-crosshair">
+            <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <!-- Standard directional vector marker -->
+                <marker id="arrow-neutral" markerheight="6" markerwidth="6" orient="auto-start-reverse" refx="22"
+                  refy="5" viewbox="0 0 10 10">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#888275"></path>
+                </marker>
+                <!-- High-risk velocity flow marker -->
+                <marker id="arrow-flagged" markerheight="6" markerwidth="6" orient="auto-start-reverse" refx="24"
+                  refy="5" viewbox="0 0 10 10">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#B3402A"></path>
+                </marker>
+              </defs>
+              <!-- Connection Edges with Direction & Crisp Labels -->
+              <!-- ACC-440181 to Target ACC-992102 ($42,000) -->
+              <g class="flow-edge">
+                <line marker-end="url(#arrow-flagged)" stroke="#B3402A" stroke-dasharray="0" stroke-width="2" x1="160"
+                  x2="360" y1="180" y2="290"></line>
+                <rect fill="#FFFFFF" height="18" rx="2" stroke="#E3DED3" width="60" x="230" y="222"></rect>
+                <text fill="#802B1B" font-family="Inter" font-size="10" font-weight="600" text-anchor="middle" x="260"
+                  y="235">$42,000</text>
+              </g>
+              <!-- ACC-883019 to Target ACC-992102 ($18,500) -->
+              <g class="flow-edge">
+                <line marker-end="url(#arrow-neutral)" stroke="#73787c" stroke-width="1.5" x1="200" x2="360" y1="460"
+                  y2="290"></line>
+                <rect fill="#FFFFFF" height="18" rx="2" stroke="#E3DED3" width="58" x="250" y="365"></rect>
+                <text fill="#1b1c19" font-family="Inter" font-size="10" font-weight="500" text-anchor="middle" x="279"
+                  y="378">$18,500</text>
+              </g>
+              <!-- Target ACC-992102 to MCH-3092 ($84,000 flagged cash-out) -->
+              <g class="flow-edge">
+                <line marker-end="url(#arrow-flagged)" stroke="#B3402A" stroke-width="2.5" x1="360" x2="570" y1="290"
+                  y2="170"></line>
+                <rect fill="#FFFFFF" height="18" rx="2" stroke="#B3402A" width="62" x="435" y="215"></rect>
+                <text fill="#B3402A" font-family="Inter" font-size="10" font-weight="700" text-anchor="middle" x="466"
+                  y="228">$84,000</text>
+              </g>
+              <!-- Target ACC-992102 to MCH-4410 ($58,000) -->
+              <g class="flow-edge">
+                <line marker-end="url(#arrow-neutral)" stroke="#73787c" stroke-width="1.5" x1="360" x2="610" y1="290"
+                  y2="390"></line>
+                <rect fill="#FFFFFF" height="18" rx="2" stroke="#E3DED3" width="60" x="460" y="332"></rect>
+                <text fill="#1b1c19" font-family="Inter" font-size="10" font-weight="500" text-anchor="middle" x="490"
+                  y="345">$58,000</text>
+              </g>
+              <!-- Device Associations (Dotted structural correlation lines) -->
+              <!-- DEV-993821 to Target ACC-992102 -->
+              <line stroke="#C48A1A" stroke-dasharray="3,3" stroke-width="1.5" x1="360" x2="340" y1="290" y2="120">
+              </line>
+              <!-- DEV-993821 to ACC-440181 (Shared device link) -->
+              <line stroke="#C48A1A" stroke-dasharray="3,3" stroke-width="1.5" x1="340" x2="160" y1="120" y2="180">
+              </line>
+              <!-- DEV-110293 to ACC-883019 -->
+              <line stroke="#C48A1A" stroke-dasharray="3,3" stroke-width="1.5" x1="200" x2="380" y1="460" y2="490">
+              </line>
+              <!-- NODES LAYER -->
+              <!-- DEVICE 1: DEV-993821 (Hexagon shape in Ochre #C48A1A) -->
+              <g class="cursor-pointer" transform="translate(340, 120)">
+                <!-- Hexagon representation -->
+                <polygon fill="#C48A1A" points="0,-18 16,-9 16,9 0,18 -16,9 -16,-9" stroke="#FFFFFF" stroke-width="2">
+                </polygon>
+                <text fill="#FFFFFF" font-family="Inter" font-size="10" font-weight="700" text-anchor="middle" x="0"
+                  y="3">D1</text>
+                <text fill="#1b1c19" font-family="Inter" font-size="10" font-weight="600" text-anchor="middle" x="0"
+                  y="-24">DEV-993821</text>
+                <text fill="#605e57" font-family="Inter" font-size="9" text-anchor="middle" x="0" y="-35">Multi-Account
+                  Proxy</text>
+              </g>
+              <!-- DEVICE 2: DEV-110293 -->
+              <g class="cursor-pointer" transform="translate(380, 490)">
+                <polygon fill="#C48A1A" points="0,-16 14,-8 14,8 0,16 -14,8 -14,-8" stroke="#FFFFFF" stroke-width="2">
+                </polygon>
+                <text fill="#FFFFFF" font-family="Inter" font-size="10" font-weight="700" text-anchor="middle" x="0"
+                  y="3">D2</text>
+                <text fill="#1b1c19" font-family="Inter" font-size="10" font-weight="600" text-anchor="middle" x="0"
+                  y="28">DEV-110293</text>
+              </g>
+              <!-- ACCOUNT 2: ACC-440181 (Circle in Slate Blue #2F4858) -->
+              <g class="cursor-pointer" transform="translate(160, 180)">
+                <circle fill="#2F4858" r="18" stroke="#FFFFFF" stroke-width="2"></circle>
+                <text fill="#FFFFFF" font-family="Inter" font-size="11" font-weight="600" text-anchor="middle" x="0"
+                  y="4">A2</text>
+                <text fill="#1b1c19" font-family="Inter" font-size="10" font-weight="600" text-anchor="middle" x="0"
+                  y="-24">ACC-440181</text>
+                <text fill="#605e57" font-family="Inter" font-size="9" text-anchor="middle" x="0" y="-35">Origin Smurf
+                  A</text>
+              </g>
+              <!-- ACCOUNT 3: ACC-883019 -->
+              <g class="cursor-pointer" transform="translate(200, 460)">
+                <circle fill="#2F4858" r="18" stroke="#FFFFFF" stroke-width="2"></circle>
+                <text fill="#FFFFFF" font-family="Inter" font-size="11" font-weight="600" text-anchor="middle" x="0"
+                  y="4">A3</text>
+                <text fill="#1b1c19" font-family="Inter" font-size="10" font-weight="600" text-anchor="middle" x="0"
+                  y="30">ACC-883019</text>
+                <text fill="#605e57" font-family="Inter" font-size="9" text-anchor="middle" x="0" y="41">Origin Smurf
+                  B</text>
+              </g>
+              <!-- MERCHANT 1: MCH-3092 Apex Electronics (Square in Plum #6B4C6E) -->
+              <g class="cursor-pointer" transform="translate(570, 170)">
+                <rect fill="#6B4C6E" height="32" rx="2" stroke="#FFFFFF" stroke-width="2" width="32" x="-16" y="-16">
+                </rect>
+                <text fill="#FFFFFF" font-family="Inter" font-size="10" font-weight="600" text-anchor="middle" x="0"
+                  y="4">M1</text>
+                <text fill="#1b1c19" font-family="Inter" font-size="10" font-weight="600" text-anchor="middle" x="0"
+                  y="-22">MCH-3092</text>
+                <text fill="#605e57" font-family="Inter" font-size="9" text-anchor="middle" x="0" y="-33">Apex
+                  Electronics</text>
+              </g>
+              <!-- MERCHANT 2: MCH-4410 Prime Vault -->
+              <g class="cursor-pointer" transform="translate(610, 390)">
+                <rect fill="#6B4C6E" height="32" rx="2" stroke="#FFFFFF" stroke-width="2" width="32" x="-16" y="-16">
+                </rect>
+                <text fill="#FFFFFF" font-family="Inter" font-size="10" font-weight="600" text-anchor="middle" x="0"
+                  y="4">M2</text>
+                <text fill="#1b1c19" font-family="Inter" font-size="10" font-weight="600" text-anchor="middle" x="0"
+                  y="28">MCH-4410</text>
+                <text fill="#605e57" font-family="Inter" font-size="9" text-anchor="middle" x="0" y="39">Prime Vault
+                  Ltd</text>
+              </g>
+              <!-- TARGET ACCOUNT: ACC-992102 (Selected Focal Node) -->
+              <g class="cursor-pointer" transform="translate(360, 290)">
+                <!-- Archival selection ring -->
+                <circle fill="none" r="32" stroke="#2F4858" stroke-dasharray="4,2" stroke-width="1.5"></circle>
+                <circle fill="#2F4858" r="24" stroke="#FFFFFF" stroke-width="2"></circle>
+                <text fill="#FFFFFF" font-family="Inter" font-size="11" font-weight="700" text-anchor="middle" x="0"
+                  y="4">HUB</text>
+                <!-- Target Anchor Tag Badge -->
+                <rect fill="#183241" height="18" rx="2" width="84" x="-42" y="32"></rect>
+                <text fill="#FFFFFF" font-family="Inter" font-size="10" font-weight="700" text-anchor="middle" x="0"
+                  y="44">ACC-992102 [T]</text>
+              </g>
+            </svg>
+          </div>
+          <!-- BOTTOM-LEFT LEGEND (Standard Archival Legend) -->
+          <div
+            class="m-space-md p-space-xs bg-surface-container-lowest border border-outline-variant rounded flex items-center gap-space-md z-10 w-fit">
+            <span class="text-label-sm font-label-sm text-secondary uppercase font-semibold">Entity Registry:</span>
+            <div class="flex items-center gap-1.5 text-label-sm font-label-sm text-on-surface">
+              <span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color: #2F4858;"></span>
+              <span>Account (#2F4858)</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-label-sm font-label-sm text-on-surface">
+              <span class="w-2.5 h-2.5 rounded-sm inline-block" style="background-color: #C48A1A;"></span>
+              <span>Device (#C48A1A)</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-label-sm font-label-sm text-on-surface">
+              <span class="w-2.5 h-2.5 inline-block" style="background-color: #6B4C6E;"></span>
+              <span>Merchant (#6B4C6E)</span>
+            </div>
+          </div>
+        </section>
+        <!-- PANE 2: RIGHT SELECTED ENTITY INSPECTOR (32% width, #FFFFFF ground, border-l) -->
+        <aside
+          class="w-[32%] h-full bg-surface-container-lowest border-l border-outline-variant flex flex-col justify-between overflow-y-auto z-10">
+          <div class="flex flex-col">
+            <!-- Inspector Header Block -->
+            <div class="p-space-md border-b border-outline-variant bg-surface-container-low/40">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-label-sm font-label-sm text-secondary uppercase tracking-wider">Forensic Entity
+                  Dossier</span>
+                <span
+                  class="px-space-xs py-space-3xs text-label-sm font-label-sm font-bold bg-[#EFE4E6] text-[#54151D] border border-[#DBBFC3] rounded">
                   CRITICAL SEVERITY
                 </span>
-</div>
-<h2 class="font-headline-md text-headline-md text-on-surface font-bold tracking-tight">
+              </div>
+              <h2 class="font-headline-md text-headline-md text-on-surface font-bold tracking-tight">
                 Selected Entity: ACC-992102
               </h2>
-<div class="flex items-center gap-2 mt-1 text-body-sm font-body-sm text-on-surface-variant">
-<span>Primary Cash-Out Account</span>
-<span>·</span>
-<span class="font-semibold text-error">Risk Score: 94 / 100</span>
-</div>
-</div>
-<!-- Compact Entity Summary Details Table -->
-<div class="p-space-md border-b border-outline-variant">
-<h3 class="text-label-sm font-label-sm text-secondary uppercase font-semibold mb-space-xs">Core Ledger Attributes</h3>
-<div class="border border-outline-variant rounded overflow-hidden">
-<table class="w-full text-left border-collapse text-body-sm font-body-sm">
-<tbody>
-<tr class="border-b border-outline-variant bg-surface-container-low/30">
-<td class="py-1.5 px-2.5 text-label-sm font-label-sm text-secondary w-36 border-r border-outline-variant">Entity Type</td>
-<td class="py-1.5 px-2.5 text-on-surface font-medium">Financial Account (Commercial Checking)</td>
-</tr>
-<tr class="border-b border-outline-variant">
-<td class="py-1.5 px-2.5 text-label-sm font-label-sm text-secondary border-r border-outline-variant">Associated Holder</td>
-<td class="py-1.5 px-2.5 text-on-surface">Apex Logistics LLC (Registered Delaware)</td>
-</tr>
-<tr class="border-b border-outline-variant bg-surface-container-low/30">
-<td class="py-1.5 px-2.5 text-label-sm font-label-sm text-secondary border-r border-outline-variant">Activity Window</td>
-<td class="py-1.5 px-2.5 text-on-surface font-code-sm text-code-sm">
-<span>First Seen: 2024-01-12</span>
-<span class="block text-secondary">Last Txn: 14m ago (Pending clearing)</span>
-</td>
-</tr>
-<tr>
-<td class="py-1.5 px-2.5 text-label-sm font-label-sm text-secondary border-r border-outline-variant">Liquidity Volume</td>
-<td class="py-1.5 px-2.5 text-on-surface font-code-sm text-code-sm">
-<span class="text-[#46573C] font-semibold">Inflow: $184,500</span> (14 txns)<br/>
-<span class="text-[#802B1B] font-semibold">Outflow: $182,100</span> (8 txns)
+              <div class="flex items-center gap-2 mt-1 text-body-sm font-body-sm text-on-surface-variant">
+                <span>Primary Cash-Out Account</span>
+                <span>·</span>
+                <span class="font-semibold text-error">Risk Score: 94 / 100</span>
+              </div>
+            </div>
+            <!-- Compact Entity Summary Details Table -->
+            <div class="p-space-md border-b border-outline-variant">
+              <h3 class="text-label-sm font-label-sm text-secondary uppercase font-semibold mb-space-xs">Core Ledger
+                Attributes</h3>
+              <div class="border border-outline-variant rounded overflow-hidden">
+                <table class="w-full text-left border-collapse text-body-sm font-body-sm">
+                  <tbody>
+                    <tr class="border-b border-outline-variant bg-surface-container-low/30">
+                      <td
+                        class="py-1.5 px-2.5 text-label-sm font-label-sm text-secondary w-36 border-r border-outline-variant">
+                        Entity Type</td>
+                      <td class="py-1.5 px-2.5 text-on-surface font-medium">Financial Account (Commercial Checking)</td>
+                    </tr>
+                    <tr class="border-b border-outline-variant">
+                      <td
+                        class="py-1.5 px-2.5 text-label-sm font-label-sm text-secondary border-r border-outline-variant">
+                        Associated Holder</td>
+                      <td class="py-1.5 px-2.5 text-on-surface">Apex Logistics LLC (Registered Delaware)</td>
+                    </tr>
+                    <tr class="border-b border-outline-variant bg-surface-container-low/30">
+                      <td
+                        class="py-1.5 px-2.5 text-label-sm font-label-sm text-secondary border-r border-outline-variant">
+                        Activity Window</td>
+                      <td class="py-1.5 px-2.5 text-on-surface font-code-sm text-code-sm">
+                        <span>First Seen: 2024-01-12</span>
+                        <span class="block text-secondary">Last Txn: 14m ago (Pending clearing)</span>
                       </td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<!-- Direct Entity Relationships List -->
-<div class="p-space-md border-b border-outline-variant">
-<div class="flex items-center justify-between mb-space-xs">
-<h3 class="text-label-sm font-label-sm text-secondary uppercase font-semibold">Direct Entity Relationships</h3>
-<span class="text-label-sm font-label-sm text-outline font-code-sm">3 Links Resolved</span>
-</div>
-<div class="flex flex-col gap-space-xs">
-<!-- Device Relationship Card -->
-<div class="p-space-xs border border-outline-variant rounded bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
-<div class="flex items-center justify-between mb-0.5">
-<span class="flex items-center gap-1.5 text-label-sm font-label-sm font-semibold text-on-surface">
-<span class="w-2 h-2 rounded-sm" style="background-color: #C48A1A;"></span>
+                    </tr>
+                    <tr>
+                      <td
+                        class="py-1.5 px-2.5 text-label-sm font-label-sm text-secondary border-r border-outline-variant">
+                        Liquidity Volume</td>
+                      <td class="py-1.5 px-2.5 text-on-surface font-code-sm text-code-sm">
+                        <span class="text-[#46573C] font-semibold">Inflow: $184,500</span> (14 txns)<br />
+                        <span class="text-[#802B1B] font-semibold">Outflow: $182,100</span> (8 txns)
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <!-- Direct Entity Relationships List -->
+            <div class="p-space-md border-b border-outline-variant">
+              <div class="flex items-center justify-between mb-space-xs">
+                <h3 class="text-label-sm font-label-sm text-secondary uppercase font-semibold">Direct Entity
+                  Relationships</h3>
+                <span class="text-label-sm font-label-sm text-outline font-code-sm">3 Links Resolved</span>
+              </div>
+              <div class="flex flex-col gap-space-xs">
+                <!-- Device Relationship Card -->
+                <div
+                  class="p-space-xs border border-outline-variant rounded bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
+                  <div class="flex items-center justify-between mb-0.5">
+                    <span class="flex items-center gap-1.5 text-label-sm font-label-sm font-semibold text-on-surface">
+                      <span class="w-2 h-2 rounded-sm" style="background-color: #C48A1A;"></span>
                       DEV-993821
                     </span>
-<span class="text-label-sm font-label-sm font-code-sm text-error bg-error-container/40 px-1 rounded">High Conflict</span>
-</div>
-<p class="text-body-sm font-body-sm text-on-surface-variant">
+                    <span
+                      class="text-label-sm font-label-sm font-code-sm text-error bg-error-container/40 px-1 rounded">High
+                      Conflict</span>
+                  </div>
+                  <p class="text-body-sm font-body-sm text-on-surface-variant">
                     Shared with 3 other flagged accounts across separate tax IDs within 48h.
                   </p>
-</div>
-<!-- Merchant Relationship Card -->
-<div class="p-space-xs border border-outline-variant rounded bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
-<div class="flex items-center justify-between mb-0.5">
-<span class="flex items-center gap-1.5 text-label-sm font-label-sm font-semibold text-on-surface">
-<span class="w-2 h-2" style="background-color: #6B4C6E;"></span>
+                </div>
+                <!-- Merchant Relationship Card -->
+                <div
+                  class="p-space-xs border border-outline-variant rounded bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
+                  <div class="flex items-center justify-between mb-0.5">
+                    <span class="flex items-center gap-1.5 text-label-sm font-label-sm font-semibold text-on-surface">
+                      <span class="w-2 h-2" style="background-color: #6B4C6E;"></span>
                       MCH-3092 (Apex Electronics)
                     </span>
-<span class="text-label-sm font-label-sm font-code-sm text-on-surface font-semibold">$142,000 Volume</span>
-</div>
-<p class="text-body-sm font-body-sm text-on-surface-variant">
+                    <span class="text-label-sm font-label-sm font-code-sm text-on-surface font-semibold">$142,000
+                      Volume</span>
+                  </div>
+                  <p class="text-body-sm font-body-sm text-on-surface-variant">
                     Rapid card-not-present liquidation batches matching structured smurfing patterns.
                   </p>
-</div>
-<!-- Peer Account Relationship Card -->
-<div class="p-space-xs border border-outline-variant rounded bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
-<div class="flex items-center justify-between mb-0.5">
-<span class="flex items-center gap-1.5 text-label-sm font-label-sm font-semibold text-on-surface">
-<span class="w-2 h-2 rounded-full" style="background-color: #2F4858;"></span>
+                </div>
+                <!-- Peer Account Relationship Card -->
+                <div
+                  class="p-space-xs border border-outline-variant rounded bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
+                  <div class="flex items-center justify-between mb-0.5">
+                    <span class="flex items-center gap-1.5 text-label-sm font-label-sm font-semibold text-on-surface">
+                      <span class="w-2 h-2 rounded-full" style="background-color: #2F4858;"></span>
                       ACC-440181
                     </span>
-<span class="text-label-sm font-label-sm font-code-sm text-on-surface font-semibold">$42,500 Inbound</span>
-</div>
-<p class="text-body-sm font-body-sm text-on-surface-variant">
+                    <span class="text-label-sm font-label-sm font-code-sm text-on-surface font-semibold">$42,500
+                      Inbound</span>
+                  </div>
+                  <p class="text-body-sm font-body-sm text-on-surface-variant">
                     Wire origin node flagged in Suspicious Activity Report SAR-2024-089.
                   </p>
-</div>
-</div>
-</div>
-<!-- Active Operational Flags (Anti-Marketing Dossier Format) -->
-<div class="p-space-md">
-<h3 class="text-label-sm font-label-sm text-secondary uppercase font-semibold mb-space-xs">Adjudication Flags</h3>
-<div class="space-y-space-xs">
-<div class="p-space-xs bg-[#FDFCFB] border-l-[3px] border-l-primary-container border border-outline-variant rounded-sm flex items-start gap-space-xs">
-<span class="material-symbols-outlined text-error text-[18px] mt-0.5">warning</span>
-<div>
-<div class="text-label-sm font-label-sm font-semibold text-on-surface">Velocity Spike (Rule R-102)</div>
-<div class="text-body-sm font-body-sm text-on-surface-variant">Inflow-outflow turnover exceeds standard account baseline by +840% [Ev-01].</div>
-</div>
-</div>
-<div class="p-space-xs bg-[#FDFCFB] border-l-[3px] border-l-primary-container border border-outline-variant rounded-sm flex items-start gap-space-xs">
-<span class="material-symbols-outlined text-[#7E570D] text-[18px] mt-0.5">fingerprint</span>
-<div>
-<div class="text-label-sm font-label-sm font-semibold text-on-surface">Multi-Device Fingerprint Mismatch</div>
-<div class="text-body-sm font-body-sm text-on-surface-variant">Concurrent sessions detected from 3 autonomous ASN routes within 2 minutes.</div>
-</div>
-</div>
-<div class="p-space-xs bg-[#FDFCFB] border-l-[3px] border-l-primary-container border border-outline-variant rounded-sm flex items-start gap-space-xs">
-<span class="material-symbols-outlined text-[#802B1B] text-[18px] mt-0.5">storefront</span>
-<div>
-<div class="text-label-sm font-label-sm font-semibold text-on-surface">Known High-Risk Merchant Outlet</div>
-<div class="text-body-sm font-body-sm text-on-surface-variant">Terminal identifier mapped to previously quarantined shell reseller cluster.</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Persisted Sticky Action Footer -->
-<div class="p-space-md border-t border-outline-variant bg-surface-container-low/40 shrink-0">
-<div class="flex flex-col gap-space-xs">
-<button class="w-full h-8 bg-primary-container text-on-primary hover:bg-primary font-label-md text-label-md rounded flex items-center justify-center gap-space-xs transition-colors">
-<span class="material-symbols-outlined text-[16px]">visibility</span>
+                </div>
+              </div>
+            </div>
+            <!-- Active Operational Flags (Anti-Marketing Dossier Format) -->
+            <div class="p-space-md">
+              <h3 class="text-label-sm font-label-sm text-secondary uppercase font-semibold mb-space-xs">Adjudication
+                Flags</h3>
+              <div class="space-y-space-xs">
+                <div
+                  class="p-space-xs bg-[#FDFCFB] border-l-[3px] border-l-primary-container border border-outline-variant rounded-sm flex items-start gap-space-xs">
+                  <span class="material-symbols-outlined text-error text-[18px] mt-0.5">warning</span>
+                  <div>
+                    <div class="text-label-sm font-label-sm font-semibold text-on-surface">Velocity Spike (Rule R-102)
+                    </div>
+                    <div class="text-body-sm font-body-sm text-on-surface-variant">Inflow-outflow turnover exceeds
+                      standard account baseline by +840% [Ev-01].</div>
+                  </div>
+                </div>
+                <div
+                  class="p-space-xs bg-[#FDFCFB] border-l-[3px] border-l-primary-container border border-outline-variant rounded-sm flex items-start gap-space-xs">
+                  <span class="material-symbols-outlined text-[#7E570D] text-[18px] mt-0.5">fingerprint</span>
+                  <div>
+                    <div class="text-label-sm font-label-sm font-semibold text-on-surface">Multi-Device Fingerprint
+                      Mismatch</div>
+                    <div class="text-body-sm font-body-sm text-on-surface-variant">Concurrent sessions detected from 3
+                      autonomous ASN routes within 2 minutes.</div>
+                  </div>
+                </div>
+                <div
+                  class="p-space-xs bg-[#FDFCFB] border-l-[3px] border-l-primary-container border border-outline-variant rounded-sm flex items-start gap-space-xs">
+                  <span class="material-symbols-outlined text-[#802B1B] text-[18px] mt-0.5">storefront</span>
+                  <div>
+                    <div class="text-label-sm font-label-sm font-semibold text-on-surface">Known High-Risk Merchant
+                      Outlet</div>
+                    <div class="text-body-sm font-body-sm text-on-surface-variant">Terminal identifier mapped to
+                      previously quarantined shell reseller cluster.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Persisted Sticky Action Footer -->
+          <div class="p-space-md border-t border-outline-variant bg-surface-container-low/40 shrink-0">
+            <div class="flex flex-col gap-space-xs">
+              <button
+                class="w-full h-8 bg-primary-container text-on-primary hover:bg-primary font-label-md text-label-md rounded flex items-center justify-center gap-space-xs transition-colors">
+                <span class="material-symbols-outlined text-[16px]">visibility</span>
                 Open Account Dossier
               </button>
-<div class="flex items-center gap-space-xs">
-<button class="flex-1 h-8 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface font-label-md text-label-md rounded flex items-center justify-center gap-1 transition-colors">
-<span class="material-symbols-outlined text-[16px]">attachment</span>
+              <div class="flex items-center gap-space-xs">
+                <button
+                  class="flex-1 h-8 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface font-label-md text-label-md rounded flex items-center justify-center gap-1 transition-colors">
+                  <span class="material-symbols-outlined text-[16px]">attachment</span>
                   Attach to Case FT-1002
                 </button>
-<button class="flex-1 h-8 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface font-label-md text-label-md rounded flex items-center justify-center gap-1 transition-colors">
-<span class="material-symbols-outlined text-[16px]">filter_center_focus</span>
+                <button
+                  class="flex-1 h-8 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface font-label-md text-label-md rounded flex items-center justify-center gap-1 transition-colors">
+                  <span class="material-symbols-outlined text-[16px]">filter_center_focus</span>
                   Isolate in Subgraph
                 </button>
-</div>
-</div>
-</div>
-</aside>
-</div>
-</main>
-</div>
-</body></html>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+</body>
+
+</html>

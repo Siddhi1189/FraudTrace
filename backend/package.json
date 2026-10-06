@@ -8,7 +8,13 @@
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "seed": "node scripts/seed.js",
-    "evaluate": "node scripts/evaluate-detectors.js"
+    "evaluate": "node scripts/evaluate-detectors.js",
+    "verify:phase5": "node scripts/verify-phase5.js",
+    "verify:phase8": "node scripts/verify-phase8.js",
+    "verify:ai": "node scripts/verify-ai-llm-path.js"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -18,5 +24,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
     "socket.io": "^4.8.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }

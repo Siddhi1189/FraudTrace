@@ -1,68 +1,54 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../app/AuthContext';
-import { Button } from '../../components/common/Button';
+import { Card } from '../../components/Card';
+import { Field } from '../../components/Field';
+import { Button, LinkButton } from '../../components/common/Button';
+import { Banner } from '../../components/Banner';
+import { Icon } from '../../components/common/Icons';
+import { Wordmark } from '../../components/Wordmark';
+import { Container } from '../../components/Container';
 import styles from './LoginPage.module.css';
 
+/**
+ * Single-card centered analyst workspace authentication.
+ * Follows UI Fixes Round 3 Item 7 specification:
+ * - Shared sticky header with Wordmark left, Back to home right
+ * - One vertically and horizontally centered Card (max-width 460px, padding 40px)
+ * - Initial empty states, zero hardcoded credentials, zero signup links
+ */
 export const LoginPage: React.FC = () => {
-  const { user, login } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Check if redirected due to session expiry
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    if (searchParams.get('expired') === 'true') {
-      setError('Your session has ended. Sign in again.');
-    }
-  }, [location.search]);
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  useEffect(() => {
-    if (user) {
-      navigate('/dashboard', { replace: true });
-    }
-  }, [user, navigate]);
-
-  const isSafeReturnUrl = (path: unknown): path is string => {
-    return (
-      typeof path === 'string' &&
-      path.startsWith('/') &&
-      !path.startsWith('//') &&
-      !path.includes(':') &&
-      path !== '/login'
-    );
-  };
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/dashboard';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
+    if (!email.trim() || !password) {
+      setError('Please provide both email and password.');
+      return;
+    }
 
     try {
+      setIsSubmitting(true);
+      setError(null);
       await login(email, password);
-      const stateFrom = (location.state as { from?: string } | null)?.from;
-      const searchParams = new URLSearchParams(location.search);
-      const redirectParam = searchParams.get('redirect');
-      const target = isSafeReturnUrl(stateFrom)
-        ? stateFrom
-        : isSafeReturnUrl(redirectParam)
-          ? redirectParam
-          : '/dashboard';
-      navigate(target, { replace: true });
+      navigate(from, { replace: true });
     } catch (err: unknown) {
-      // Wrong credentials show generic message with no hint about user existence
-      if (err && typeof err === 'object' && 'statusCode' in err) {
-        const code = (err as { statusCode?: number }).statusCode;
-        if (code === 401 || code === 400) {
-          setError('Invalid email or password');
+      if (err && typeof err === 'object' && 'response' in err) {
+        const res = (err as { response?: { data?: { error?: string } } }).response;
+        if (res?.data?.error) {
+          setError(res.data.error);
         } else {
-          setError('Unable to connect to the authentication server. Please try again.');
+          setError('Authentication failed. Please verify your credentials.');
         }
       } else {
         setError('Unable to connect to the authentication server. Please try again.');
@@ -73,71 +59,99 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        <div className={styles.header}>
-          <h1 className={styles.brand}>Sign in</h1>
-          <div className={styles.notice}>
-            Analyst access only. Accounts are provided by an administrator.
-          </div>
-        </div>
+    <div className={styles.page}>
+      {/* Header matching public site: Wordmark left, Back to home right */}
+      <header className={styles.header}>
+        <Container className={styles.headerContainer}>
+          <Wordmark to="/" />
+          <LinkButton to="/" variant="ghost" size="sm">
+            ← Back to home
+          </LinkButton>
+        </Container>
+      </header>
 
-        {error && (
-          <div className={styles.errorBanner} role="alert">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.field}>
-            <label htmlFor="email" className={styles.label}>
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={styles.input}
-              autoComplete="username"
-            />
-          </div>
-
-          <div className={styles.field}>
-            <label htmlFor="password" className={styles.label}>
-              Password
-            </label>
-            <div className={styles.inputWrapper}>
-              <input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={`${styles.input} ${styles.inputWithToggle}`}
-                autoComplete="current-password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className={styles.toggleBtn}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                {showPassword ? 'Hide' : 'Show'}
-              </button>
+      {/* Main area: vertically and horizontally centered card */}
+      <main className={styles.main}>
+        <Container className={styles.mainContainer}>
+          <Card className={styles.loginCard}>
+            <div className={styles.cardHeader}>
+              <div className={styles.kicker}>SIGN IN</div>
+              <h1 className={styles.title}>Sign in to FraudTrace</h1>
+              <p className={styles.subtitle}>
+                Analyst workspace on synthetic demo data.
+              </p>
             </div>
+
+            <form onSubmit={handleSubmit} className={styles.form}>
+              <Field label="Email address" htmlFor="email" required className={styles.field}>
+                <input
+                  id="email"
+                  type="email"
+                  required
+                  autoFocus
+                  autoComplete="username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="analyst@fraudtrace.local"
+                  className={styles.input}
+                />
+              </Field>
+
+              <Field label="Password" htmlFor="password" required className={styles.field}>
+                <div className={styles.passwordWrapper}>
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    className={styles.input}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((s) => !s)}
+                    className={styles.passwordToggle}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    <Icon name={showPassword ? 'eyeOff' : 'eye'} size={14} />
+                  </button>
+                </div>
+              </Field>
+
+              {error && (
+                <Banner variant="error" className={styles.banner}>
+                  {error}
+                </Banner>
+              )}
+
+              <div className={styles.buttonWrapper}>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Authenticating...' : 'Sign in to workspace →'}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </Container>
+      </main>
+
+      {/* Footer line */}
+      <footer className={styles.footer}>
+        <Container>
+          <div className={styles.footerNote}>
+            Synthetic demo data · Risk scores are investigative signals, not legal determinations.
           </div>
-
-          <Button type="submit" variant="primary" disabled={isSubmitting} fullWidth>
-            {isSubmitting ? 'Signing in...' : 'Sign in'}
-          </Button>
-        </form>
-
-        <div className={styles.footer}>
-          <span>FraudTrace Investigation Platform</span>
-        </div>
-      </div>
+        </Container>
+      </footer>
     </div>
   );
 };
+
+export default LoginPage;

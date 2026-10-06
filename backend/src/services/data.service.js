@@ -112,11 +112,23 @@ export async function ingestTransactions({ records = [], source, seed = null, pr
     batchId: batch._id,
   }));
 
-  // Batch insert transactions
-  const insertedTxs = await Transaction.insertMany(transactionDocs, { ordered: false });
+  // Batch insert transactions with duplicate key handling
+  let insertedCount = 0;
+  let bulkDuplicates = 0;
+  try {
+    const insertedTxs = await Transaction.insertMany(transactionDocs, { ordered: false });
+    insertedCount = insertedTxs.length;
+  } catch (err) {
+    if (err.name === 'MongoBulkWriteError' || err.code === 11000 || err.writeErrors) {
+      insertedCount = err.result?.nInserted ?? (err.insertedDocs ? err.insertedDocs.length : 0);
+      bulkDuplicates = (err.writeErrors ? err.writeErrors.length : 0);
+    } else {
+      throw err;
+    }
+  }
 
-  batch.acceptedRows = insertedTxs.length;
-  batch.duplicateRows = totalDuplicates;
+  batch.acceptedRows = insertedCount;
+  batch.duplicateRows = totalDuplicates + bulkDuplicates;
   batch.totalRows = preRejectedRows.length + records.length;
 
   await batch.save();

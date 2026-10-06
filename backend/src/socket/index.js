@@ -1,23 +1,14 @@
 import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import { getJwtSecret, JWT_ALGORITHM } from '../config/jwt.js';
+import { corsOriginDelegate } from '../config/cors.js';
 
 let ioInstance = null;
 
-// PLACEHOLDER(FT-26): CORS origins
-function getAllowedOrigins() {
-  if (process.env.CORS_ORIGINS) {
-    return process.env.CORS_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean);
-  }
-  return process.env.NODE_ENV !== 'production' ? ['http://localhost:5173'] : [];
-}
-
 export function initSocketIO(server) {
-  const allowedOrigins = getAllowedOrigins();
-
   ioInstance = new Server(server, {
     cors: {
-      origin: allowedOrigins,
+      origin: corsOriginDelegate,
       methods: ['GET', 'POST', 'PATCH'],
       credentials: true,
     },

@@ -299,7 +299,7 @@ export function generateSimulationTransactions({ seed = 42, size = 'small' } = {
     toAccount: 'ACC-BACK-2',
     merchant: null,
     device: 'DEV-BACK-1',
-    amount: 3000,
+    amount: 5000,
     timestamp: new Date(baseTime + 50 * 3600 * 1000).toISOString(),
   });
   transactions.push({

@@ -1,19 +1,27 @@
 <!DOCTYPE html>
 
-<html lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>FraudTrace Workstation - Alerts Queue &amp; Forensic Investigation</title>
-<!-- Material Symbols Outlined -->
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<!-- Google Fonts: Inter & Plus Jakarta Sans -->
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<!-- Tailwind CSS CDN -->
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>FraudTrace Workstation - Alerts Queue &amp; Forensic Investigation</title>
+  <!-- Material Symbols Outlined -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
     tailwind.config = {
       darkMode: "class",
       theme: {
@@ -36,7 +44,7 @@
             "surface-bright": "#fbf9f4",
             "primary-fixed-dim": "#b0cadd",
             "surface-container-highest": "#e4e2dd",
-            "on-error-container": "#93000a",
+            "on-error-container": "#95000a",
             "inverse-surface": "#30312e",
             "tertiary-fixed": "#fed6ff",
             "surface-container": "#f0eee9",
@@ -113,662 +121,765 @@
       },
     }
   </script>
-<style>
+  <style>
     .material-symbols-outlined {
       font-size: 1.125rem;
       line-height: 1;
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
     }
+
     .custom-scrollbar::-webkit-scrollbar {
       width: 4px;
       height: 4px;
     }
+
     .custom-scrollbar::-webkit-scrollbar-track {
       background: #f0eee9;
     }
+
     .custom-scrollbar::-webkit-scrollbar-thumb {
       background: #c2c7cc;
     }
   </style>
 </head>
-<body class="bg-background text-on-surface antialiased overflow-hidden h-screen w-screen flex flex-col font-body-md select-none">
-<!-- TOP APP BAR / BRAND HEADER -->
-<header class="flex justify-between items-center w-full px-space-md h-12 bg-surface-container-lowest border-b border-surface-variant flex-shrink-0 z-30">
-<!-- Left Navigation / Breadcrumbs -->
-<div class="flex items-center gap-space-md">
-<div class="flex items-center gap-space-xs text-primary font-headline-sm text-headline-sm font-semibold tracking-tight">
-<span class="material-symbols-outlined text-primary" data-icon="shield">shield</span>
-<span>FraudTrace Workstation</span>
-</div>
-<div class="h-4 w-px bg-outline-variant"></div>
-<nav class="flex items-center gap-space-xs font-label-md text-label-md">
-<span class="text-on-surface-variant">FraudTrace</span>
-<span class="text-outline-variant">/</span>
-<span class="text-on-surface-variant">Investigate</span>
-<span class="text-outline-variant">/</span>
-<span class="text-primary font-semibold">Alerts</span>
-</nav>
-</div>
-<!-- Center Quick Search Bar -->
-<div class="w-80 relative flex items-center">
-<span class="material-symbols-outlined absolute left-2 text-outline" data-icon="search">search</span>
-<input class="w-full h-8 pl-8 pr-3 text-body-sm font-body-sm bg-surface-container-low border border-surface-variant rounded focus:border-primary-container focus:ring-0 focus:outline-none placeholder-outline text-on-surface" placeholder="Search alert hash, entity, case ID..." type="text"/>
-<span class="absolute right-2 font-code-sm text-label-sm text-outline border border-surface-variant bg-surface-container-lowest px-1 rounded">⌘K</span>
-</div>
-<!-- Trailing Actions & Investigator Identity -->
-<div class="flex items-center gap-space-sm">
-<button class="flex items-center gap-space-2xs px-space-sm h-8 bg-surface-container-lowest border border-surface-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-container-high transition-colors">
-<span class="material-symbols-outlined text-on-surface-variant" data-icon="download">download</span>
-<span>Export Queue</span>
-</button>
-<button class="flex items-center gap-space-2xs px-space-sm h-8 bg-surface-container-lowest border border-surface-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-container-high transition-colors">
-<span class="material-symbols-outlined text-on-surface-variant" data-icon="checklist">checklist</span>
-<span>Batch Triage</span>
-</button>
-<div class="h-4 w-px bg-outline-variant mx-space-2xs"></div>
-<!-- Icon Action Cluster -->
-<div class="flex items-center gap-space-2xs text-on-surface-variant">
-<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant relative" title="Notifications">
-<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
-<span class="w-1.5 h-1.5 rounded-full bg-error absolute top-1 right-1"></span>
-</button>
-<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant" title="System Status &amp; Help">
-<span class="material-symbols-outlined" data-icon="help">help</span>
-</button>
-<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant" title="Display Preferences">
-<span class="material-symbols-outlined" data-icon="tune">tune</span>
-</button>
-</div>
-<div class="h-4 w-px bg-outline-variant mx-space-2xs"></div>
-<!-- Lead Forensic Profile -->
-<div class="flex items-center gap-space-xs pl-space-2xs">
-<img class="w-7 h-7 rounded border border-surface-variant object-cover" data-alt="Close-up forensic portrait of a senior financial intelligence analyst in archival ambient studio lighting with neutral charcoal tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPdtXWDlebYnNj5Zm8CQoPaWgl4-DZZ81dWUcjAM4NBwf4Y0DzaO1Nm6yxPRzNJsTRGiFpceGQOhbAOL3XDRRt1C5xtFblAyjtFpvbHHdtNxCAprT3uYxe_yItPkOhbyMnVq3ou-mecPaZjRJ9cgAKdXMeX60DVi1L69SSjVh1fDORJVyMPEUGITlA4c4-P8HbpLqIe6siZhVMLWBnku9eT9YhtrzBqW7vLUqO665y5D5NHokW92g"/>
-<div class="flex flex-col text-left">
-<span class="font-label-sm text-label-sm text-on-surface leading-none font-semibold">I. Vance (L-4)</span>
-<span class="font-code-sm text-label-sm text-outline leading-none mt-0.5">FINCEN-VERIFIED</span>
-</div>
-</div>
-</div>
-</header>
-<!-- BODY CONTENT: SIDE NAV + TRI-PANE FORENSIC WORKSPACE -->
-<div class="flex flex-1 overflow-hidden relative">
-<!-- SIDE NAVIGATION BAR (Predicted Component) -->
-<aside class="flex flex-col justify-between h-full w-60 py-space-md px-space-sm bg-secondary-container border-r border-outline-variant flex-shrink-0 z-20">
-<div class="flex flex-col gap-space-sm">
-<!-- Brand Header Identity -->
-<div class="px-space-md py-space-xs flex items-center gap-space-sm">
-<div class="w-8 h-8 rounded bg-primary flex items-center justify-center text-on-primary">
-<span class="material-symbols-outlined" data-icon="balance">balance</span>
-</div>
-<div class="flex flex-col">
-<span class="font-headline-sm text-headline-sm text-primary font-bold tracking-tight">FraudTrace</span>
-<span class="font-label-sm text-label-sm text-secondary">Forensic Ledger Console</span>
-</div>
-</div>
-<!-- Primary Global Action CTA -->
-<div class="px-space-xs pt-space-xs pb-space-2xs">
-<button class="w-full flex items-center justify-center gap-space-xs h-8 bg-primary-container text-on-primary font-label-md text-label-md rounded border border-primary hover:bg-primary transition-colors duration-150">
-<span class="material-symbols-outlined text-sm" data-icon="add_circle">add_circle</span>
-<span>New Investigation</span>
-</button>
-</div>
-<!-- Primary Top-Level Navigation Tabs -->
-<nav class="flex flex-col gap-0.5 mt-space-xs">
-<!-- 1. Dashboard -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded" href="#">
-<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
-<span>Dashboard</span>
-</a>
-<!-- 2. Alerts (ACTIVE STATE MAPPED) -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs bg-primary-container text-on-primary rounded-lg border-l-2 border-primary font-label-md text-label-md" href="#">
-<span class="material-symbols-outlined" data-icon="notifications_active" data-weight="fill" style="font-variation-settings: 'FILL' 1;">notifications_active</span>
-<span class="font-semibold flex-1">Alerts</span>
-<span class="font-code-sm text-label-sm px-1.5 py-0.2 bg-error text-on-error rounded font-bold">18</span>
-</a>
-<!-- 3. Fraud Rings -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded" href="#">
-<span class="material-symbols-outlined" data-icon="groups">groups</span>
-<span>Fraud Rings</span>
-</a>
-<!-- 4. Accounts -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded" href="#">
-<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
-<span>Accounts</span>
-</a>
-<!-- 5. Graph Explorer -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded" href="#">
-<span class="material-symbols-outlined" data-icon="hub">hub</span>
-<span>Graph Explorer</span>
-</a>
-<!-- 6. Cases -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded" href="#">
-<span class="material-symbols-outlined" data-icon="folder_shared">folder_shared</span>
-<span>Cases</span>
-</a>
-<!-- 7. Data Management -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded" href="#">
-<span class="material-symbols-outlined" data-icon="database">database</span>
-<span>Data Management</span>
-</a>
-<!-- 8. Detection Rules -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded" href="#">
-<span class="material-symbols-outlined" data-icon="rule">rule</span>
-<span>Detection Rules</span>
-</a>
-</nav>
-</div>
-<!-- Footer Navigation Items -->
-<div class="border-t border-outline-variant pt-space-sm flex flex-col gap-0.5">
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded" href="#">
-<span class="material-symbols-outlined" data-icon="history">history</span>
-<span>Audit Log</span>
-</a>
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded" href="#">
-<span class="material-symbols-outlined" data-icon="settings">settings</span>
-<span>Settings</span>
-</a>
-<div class="px-space-md py-space-xs text-label-sm font-label-sm text-outline">
+
+<body
+  class="bg-background text-on-surface antialiased overflow-hidden h-screen w-screen flex flex-col font-body-md select-none">
+  <!-- TOP APP BAR / BRAND HEADER -->
+  <header
+    class="flex justify-between items-center w-full px-space-md h-12 bg-surface-container-lowest border-b border-surface-variant flex-shrink-0 z-30">
+    <!-- Left Navigation / Breadcrumbs -->
+    <div class="flex items-center gap-space-md">
+      <div
+        class="flex items-center gap-space-xs text-primary font-headline-sm text-headline-sm font-semibold tracking-tight">
+        <span class="material-symbols-outlined text-primary" data-icon="shield">shield</span>
+        <span>FraudTrace Workstation</span>
+      </div>
+      <div class="h-4 w-px bg-outline-variant"></div>
+      <nav class="flex items-center gap-space-xs font-label-md text-label-md">
+        <span class="text-on-surface-variant">FraudTrace</span>
+        <span class="text-outline-variant">/</span>
+        <span class="text-on-surface-variant">Investigate</span>
+        <span class="text-outline-variant">/</span>
+        <span class="text-primary font-semibold">Alerts</span>
+      </nav>
+    </div>
+    <!-- Center Quick Search Bar -->
+    <div class="w-80 relative flex items-center">
+      <span class="material-symbols-outlined absolute left-2 text-outline" data-icon="search">search</span>
+      <input
+        class="w-full h-8 pl-8 pr-3 text-body-sm font-body-sm bg-surface-container-low border border-surface-variant rounded focus:border-primary-container focus:ring-0 focus:outline-none placeholder-outline text-on-surface"
+        placeholder="Search alert hash, entity, case ID..." type="text" />
+      <span
+        class="absolute right-2 font-code-sm text-label-sm text-outline border border-surface-variant bg-surface-container-lowest px-1 rounded">⌘K</span>
+    </div>
+    <!-- Trailing Actions & Investigator Identity -->
+    <div class="flex items-center gap-space-sm">
+      <button
+        class="flex items-center gap-space-2xs px-space-sm h-8 bg-surface-container-lowest border border-surface-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-container-high transition-colors">
+        <span class="material-symbols-outlined text-on-surface-variant" data-icon="download">download</span>
+        <span>Export Queue</span>
+      </button>
+      <button
+        class="flex items-center gap-space-2xs px-space-sm h-8 bg-surface-container-lowest border border-surface-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-container-high transition-colors">
+        <span class="material-symbols-outlined text-on-surface-variant" data-icon="checklist">checklist</span>
+        <span>Batch Triage</span>
+      </button>
+      <div class="h-4 w-px bg-outline-variant mx-space-2xs"></div>
+      <!-- Icon Action Cluster -->
+      <div class="flex items-center gap-space-2xs text-on-surface-variant">
+        <button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant relative"
+          title="Notifications">
+          <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-error absolute top-1 right-1"></span>
+        </button>
+        <button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant"
+          title="System Status &amp; Help">
+          <span class="material-symbols-outlined" data-icon="help">help</span>
+        </button>
+        <button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant" title="Display Preferences">
+          <span class="material-symbols-outlined" data-icon="tune">tune</span>
+        </button>
+      </div>
+      <div class="h-4 w-px bg-outline-variant mx-space-2xs"></div>
+      <!-- Lead Forensic Profile -->
+      <div class="flex items-center gap-space-xs pl-space-2xs">
+        <img class="w-7 h-7 rounded border border-surface-variant object-cover"
+          data-alt="Close-up forensic portrait of a senior financial intelligence analyst in archival ambient studio lighting with neutral charcoal tones."
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPdtXWDlebYnNj5Zm8CQoPaWgl4-DZZ81dWUcjAM4NBwf4Y0DzaO1Nm6yxPRzNJsTRGiFpceGQOhbAOL3XDRRt1C5xtFblAyjtFpvbHHdtNxCAprT3uYxe_yItPkOhbyMnVq3ou-mecPaZjRJ9cgAKdXMeX60DVi1L69SSjVh1fDORJVyMPEUGITlA4c4-P8HbpLqIe6siZhVMLWBnku9eT9YhtrzBqW7vLUqO665y5D5NHokW92g" />
+        <div class="flex flex-col text-left">
+          <span class="font-label-sm text-label-sm text-on-surface leading-none font-semibold">I. Vance (L-4)</span>
+          <span class="font-code-sm text-label-sm text-outline leading-none mt-0.5">FINCEN-VERIFIED</span>
+        </div>
+      </div>
+    </div>
+  </header>
+  <!-- BODY CONTENT: SIDE NAV + TRI-PANE FORENSIC WORKSPACE -->
+  <div class="flex flex-1 overflow-hidden relative">
+    <!-- SIDE NAVIGATION BAR (Predicted Component) -->
+    <aside
+      class="flex flex-col justify-between h-full w-60 py-space-md px-space-sm bg-secondary-container border-r border-outline-variant flex-shrink-0 z-20">
+      <div class="flex flex-col gap-space-sm">
+        <!-- Brand Header Identity -->
+        <div class="px-space-md py-space-xs flex items-center gap-space-sm">
+          <div class="w-8 h-8 rounded bg-primary flex items-center justify-center text-on-primary">
+            <span class="material-symbols-outlined" data-icon="balance">balance</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-headline-sm text-headline-sm text-primary font-bold tracking-tight">FraudTrace</span>
+            <span class="font-label-sm text-label-sm text-secondary">Forensic Ledger Console</span>
+          </div>
+        </div>
+        <!-- Primary Global Action CTA -->
+        <div class="px-space-xs pt-space-xs pb-space-2xs">
+          <button
+            class="w-full flex items-center justify-center gap-space-xs h-8 bg-primary-container text-on-primary font-label-md text-label-md rounded border border-primary hover:bg-primary transition-colors duration-150">
+            <span class="material-symbols-outlined text-sm" data-icon="add_circle">add_circle</span>
+            <span>New Investigation</span>
+          </button>
+        </div>
+        <!-- Primary Top-Level Navigation Tabs -->
+        <nav class="flex flex-col gap-0.5 mt-space-xs">
+          <!-- 1. Dashboard -->
+          <a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded"
+            href="#">
+            <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+            <span>Dashboard</span>
+          </a>
+          <!-- 2. Alerts (ACTIVE STATE MAPPED) -->
+          <a class="flex items-center gap-space-sm px-space-md py-space-xs bg-primary-container text-on-primary rounded-lg border-l-2 border-primary font-label-md text-label-md"
+            href="#">
+            <span class="material-symbols-outlined" data-icon="notifications_active" data-weight="fill"
+              style="font-variation-settings: 'FILL' 1;">notifications_active</span>
+            <span class="font-semibold flex-1">Alerts</span>
+            <span class="font-code-sm text-label-sm px-1.5 py-0.2 bg-error text-on-error rounded font-bold">18</span>
+          </a>
+          <!-- 3. Fraud Rings -->
+          <a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded"
+            href="#">
+            <span class="material-symbols-outlined" data-icon="groups">groups</span>
+            <span>Fraud Rings</span>
+          </a>
+          <!-- 4. Accounts -->
+          <a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded"
+            href="#">
+            <span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+            <span>Accounts</span>
+          </a>
+          <!-- 5. Graph Explorer -->
+          <a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded"
+            href="#">
+            <span class="material-symbols-outlined" data-icon="hub">hub</span>
+            <span>Graph Explorer</span>
+          </a>
+          <!-- 6. Cases -->
+          <a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded"
+            href="#">
+            <span class="material-symbols-outlined" data-icon="folder_shared">folder_shared</span>
+            <span>Cases</span>
+          </a>
+          <!-- 7. Data Management -->
+          <a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded"
+            href="#">
+            <span class="material-symbols-outlined" data-icon="database">database</span>
+            <span>Data Management</span>
+          </a>
+          <!-- 8. Detection Rules -->
+          <a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded"
+            href="#">
+            <span class="material-symbols-outlined" data-icon="rule">rule</span>
+            <span>Detection Rules</span>
+          </a>
+        </nav>
+      </div>
+      <!-- Footer Navigation Items -->
+      <div class="border-t border-outline-variant pt-space-sm flex flex-col gap-0.5">
+        <a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded"
+          href="#">
+          <span class="material-symbols-outlined" data-icon="history">history</span>
+          <span>Audit Log</span>
+        </a>
+        <a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 rounded"
+          href="#">
+          <span class="material-symbols-outlined" data-icon="settings">settings</span>
+          <span>Settings</span>
+        </a>
+        <div class="px-space-md py-space-xs text-label-sm font-label-sm text-outline">
           Core Engine v4.19.2-rc
         </div>
-</div>
-</aside>
-<!-- SPLIT WORKSPACE: 60% QUEUE TABLE & 40% INVESTIGATION DRAWER -->
-<main class="flex-1 flex overflow-hidden bg-background">
-<!-- LEFT SECTION: ALERTS QUEUE TABLE (60% WIDTH) -->
-<section class="w-[60%] flex flex-col border-r border-surface-variant bg-surface-container-lowest h-full overflow-hidden">
-<!-- Controls Bar: Filter Parameters, Status, Patterns -->
-<div class="p-space-md bg-surface-container-low border-b border-surface-variant flex flex-col gap-space-xs">
-<!-- Upper Search & Severity Metrics Bar -->
-<div class="flex items-center justify-between gap-space-md">
-<div class="flex items-center gap-space-xs flex-1">
-<div class="relative w-full max-w-xs">
-<span class="material-symbols-outlined absolute left-2 top-2 text-outline" data-icon="search">search</span>
-<input class="w-full h-8 pl-8 pr-3 text-body-sm font-body-sm bg-surface-container-lowest border border-surface-variant rounded focus:border-primary focus:ring-0 focus:outline-none text-on-surface" placeholder="Filter by Alert ID, Account, Entity..." type="text" value="AL-89"/>
-</div>
-<span class="font-code-sm text-label-sm text-outline px-2">Showing 5 of 18 pending</span>
-</div>
-<!-- Triage Quick Presets -->
-<div class="flex items-center gap-1">
-<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider mr-1">Sort:</span>
-<button class="px-2 py-1 bg-surface-container-lowest border border-surface-variant font-label-sm text-label-sm text-on-surface rounded flex items-center gap-1">
+      </div>
+    </aside>
+    <!-- SPLIT WORKSPACE: 60% QUEUE TABLE & 40% INVESTIGATION DRAWER -->
+    <main class="flex-1 flex overflow-hidden bg-background">
+      <!-- LEFT SECTION: ALERTS QUEUE TABLE (60% WIDTH) -->
+      <section
+        class="w-[60%] flex flex-col border-r border-surface-variant bg-surface-container-lowest h-full overflow-hidden">
+        <!-- Controls Bar: Filter Parameters, Status, Patterns -->
+        <div class="p-space-md bg-surface-container-low border-b border-surface-variant flex flex-col gap-space-xs">
+          <!-- Upper Search & Severity Metrics Bar -->
+          <div class="flex items-center justify-between gap-space-md">
+            <div class="flex items-center gap-space-xs flex-1">
+              <div class="relative w-full max-w-xs">
+                <span class="material-symbols-outlined absolute left-2 top-2 text-outline"
+                  data-icon="search">search</span>
+                <input
+                  class="w-full h-8 pl-8 pr-3 text-body-sm font-body-sm bg-surface-container-lowest border border-surface-variant rounded focus:border-primary focus:ring-0 focus:outline-none text-on-surface"
+                  placeholder="Filter by Alert ID, Account, Entity..." type="text" value="AL-89" />
+              </div>
+              <span class="font-code-sm text-label-sm text-outline px-2">Showing 5 of 18 pending</span>
+            </div>
+            <!-- Triage Quick Presets -->
+            <div class="flex items-center gap-1">
+              <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider mr-1">Sort:</span>
+              <button
+                class="px-2 py-1 bg-surface-container-lowest border border-surface-variant font-label-sm text-label-sm text-on-surface rounded flex items-center gap-1">
                 Risk Score (Desc)
                 <span class="material-symbols-outlined text-xs" data-icon="arrow_downward">arrow_downward</span>
-</button>
-</div>
-</div>
-<!-- Secondary Filters Row -->
-<div class="flex items-center gap-space-sm pt-1 overflow-x-auto custom-scrollbar">
-<!-- Severity Filter Dropdown -->
-<div class="flex items-center gap-1 bg-surface-container-lowest border border-surface-variant rounded px-2 h-7">
-<span class="font-label-sm text-label-sm text-outline">Severity:</span>
-<select class="bg-transparent text-label-sm font-label-sm font-medium border-0 p-0 pr-4 focus:ring-0 text-on-surface cursor-pointer">
-<option selected="">All Severities (5)</option>
-<option>Critical (2)</option>
-<option>High (2)</option>
-<option>Medium (1)</option>
-<option>Low (0)</option>
-</select>
-</div>
-<!-- Pattern Filter Dropdown -->
-<div class="flex items-center gap-1 bg-surface-container-lowest border border-surface-variant rounded px-2 h-7">
-<span class="font-label-sm text-label-sm text-outline">Pattern:</span>
-<select class="bg-transparent text-label-sm font-label-sm font-medium border-0 p-0 pr-4 focus:ring-0 text-on-surface cursor-pointer">
-<option selected="">All Patterns (5 Types)</option>
-<option>Merchant Cash-Out</option>
-<option>Circular Flow</option>
-<option>Shared Device</option>
-<option>Pass-Through</option>
-<option>Fan-In / Fan-Out</option>
-</select>
-</div>
-<!-- Status Filter Dropdown -->
-<div class="flex items-center gap-1 bg-surface-container-lowest border border-surface-variant rounded px-2 h-7">
-<span class="font-label-sm text-label-sm text-outline">Status:</span>
-<select class="bg-transparent text-label-sm font-label-sm font-medium border-0 p-0 pr-4 focus:ring-0 text-on-surface cursor-pointer">
-<option selected="">Active Triage</option>
-<option>New (2)</option>
-<option>Under Triage / Review (2)</option>
-<option>Escalated (1)</option>
-</select>
-</div>
-<button class="h-7 px-2 font-label-sm text-label-sm text-outline hover:text-on-surface flex items-center gap-1 ml-auto">
-<span class="material-symbols-outlined text-xs" data-icon="filter_alt_off">filter_alt_off</span>
-<span>Reset</span>
-</button>
-</div>
-</div>
-<!-- Table Viewport Container -->
-<div class="flex-1 overflow-y-auto custom-scrollbar">
-<table class="w-full text-left border-collapse">
-<thead>
-<tr class="bg-surface-container border-b border-surface-variant text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider h-8">
-<th class="py-1 px-3 w-10 text-center font-semibold">
-<input class="rounded border-outline-variant text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
-</th>
-<th class="py-1 px-3 font-semibold">Alert ID &amp; Pattern</th>
-<th class="py-1 px-2 font-semibold">Severity</th>
-<th class="py-1 px-2 font-semibold text-right">Score</th>
-<th class="py-1 px-3 font-semibold">Entity Anchor</th>
-<th class="py-1 px-3 font-semibold">Fraud Ring</th>
-<th class="py-1 px-2 font-semibold">Status</th>
-<th class="py-1 px-3 font-semibold text-right">Triggered</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-surface-variant font-body-sm text-body-sm">
-<!-- ROW 1 (SELECTED / HIGHLIGHTED ACCORDING TO SPEC) -->
-<!-- Selected state uses: bg-[#EFEBE2] / bg-secondary-container-like warmth with Slate border styling -->
-<tr class="bg-surface-container border-l-4 border-l-primary-container cursor-pointer hover:bg-surface-container transition-colors">
-<td class="py-2.5 px-3 text-center">
-<input checked="" class="rounded border-outline-variant text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
-</td>
-<td class="py-2.5 px-3">
-<div class="flex flex-col">
-<span class="font-code-sm font-semibold text-primary">AL-8921</span>
-<span class="font-body-sm text-on-surface font-medium">Merchant Cash-Out</span>
-</div>
-</td>
-<td class="py-2.5 px-2">
-<span class="inline-flex items-center px-1.5 py-0.5 rounded text-label-sm font-label-sm font-semibold bg-[#EFE4E6] text-[#54151D] border border-[#DBBFC3]">
+              </button>
+            </div>
+          </div>
+          <!-- Secondary Filters Row -->
+          <div class="flex items-center gap-space-sm pt-1 overflow-x-auto custom-scrollbar">
+            <!-- Severity Filter Dropdown -->
+            <div
+              class="flex items-center gap-1 bg-surface-container-lowest border border-surface-variant rounded px-2 h-7">
+              <span class="font-label-sm text-label-sm text-outline">Severity:</span>
+              <select
+                class="bg-transparent text-label-sm font-label-sm font-medium border-0 p-0 pr-4 focus:ring-0 text-on-surface cursor-pointer">
+                <option selected="">All Severities (5)</option>
+                <option>Critical (2)</option>
+                <option>High (2)</option>
+                <option>Medium (1)</option>
+                <option>Low (0)</option>
+              </select>
+            </div>
+            <!-- Pattern Filter Dropdown -->
+            <div
+              class="flex items-center gap-1 bg-surface-container-lowest border border-surface-variant rounded px-2 h-7">
+              <span class="font-label-sm text-label-sm text-outline">Pattern:</span>
+              <select
+                class="bg-transparent text-label-sm font-label-sm font-medium border-0 p-0 pr-4 focus:ring-0 text-on-surface cursor-pointer">
+                <option selected="">All Patterns (5 Types)</option>
+                <option>Merchant Cash-Out</option>
+                <option>Circular Flow</option>
+                <option>Shared Device</option>
+                <option>Pass-Through</option>
+                <option>Fan-In / Fan-Out</option>
+              </select>
+            </div>
+            <!-- Status Filter Dropdown -->
+            <div
+              class="flex items-center gap-1 bg-surface-container-lowest border border-surface-variant rounded px-2 h-7">
+              <span class="font-label-sm text-label-sm text-outline">Status:</span>
+              <select
+                class="bg-transparent text-label-sm font-label-sm font-medium border-0 p-0 pr-4 focus:ring-0 text-on-surface cursor-pointer">
+                <option selected="">Active Triage</option>
+                <option>New (2)</option>
+                <option>Under Triage / Review (2)</option>
+                <option>Escalated (1)</option>
+              </select>
+            </div>
+            <button
+              class="h-7 px-2 font-label-sm text-label-sm text-outline hover:text-on-surface flex items-center gap-1 ml-auto">
+              <span class="material-symbols-outlined text-xs" data-icon="filter_alt_off">filter_alt_off</span>
+              <span>Reset</span>
+            </button>
+          </div>
+        </div>
+        <!-- Table Viewport Container -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr
+                class="bg-surface-container border-b border-surface-variant text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider h-8">
+                <th class="py-1 px-3 w-10 text-center font-semibold">
+                  <input class="rounded border-outline-variant text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox" />
+                </th>
+                <th class="py-1 px-3 font-semibold">Alert ID &amp; Pattern</th>
+                <th class="py-1 px-2 font-semibold">Severity</th>
+                <th class="py-1 px-2 font-semibold text-right">Score</th>
+                <th class="py-1 px-3 font-semibold">Entity Anchor</th>
+                <th class="py-1 px-3 font-semibold">Fraud Ring</th>
+                <th class="py-1 px-2 font-semibold">Status</th>
+                <th class="py-1 px-3 font-semibold text-right">Triggered</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-surface-variant font-body-sm text-body-sm">
+              <!-- ROW 1 (SELECTED / HIGHLIGHTED ACCORDING TO SPEC) -->
+              <!-- Selected state uses: bg-[#EFEBE2] / bg-secondary-container-like warmth with Slate border styling -->
+              <tr
+                class="bg-surface-container border-l-4 border-l-primary-container cursor-pointer hover:bg-surface-container transition-colors">
+                <td class="py-2.5 px-3 text-center">
+                  <input checked="" class="rounded border-outline-variant text-primary focus:ring-0 w-3.5 h-3.5"
+                    type="checkbox" />
+                </td>
+                <td class="py-2.5 px-3">
+                  <div class="flex flex-col">
+                    <span class="font-code-sm font-semibold text-primary">AL-8921</span>
+                    <span class="font-body-sm text-on-surface font-medium">Merchant Cash-Out</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-2">
+                  <span
+                    class="inline-flex items-center px-1.5 py-0.5 rounded text-label-sm font-label-sm font-semibold bg-[#EFE4E6] text-[#54151D] border border-[#DBBFC3]">
                     CRITICAL
                   </span>
-</td>
-<td class="py-2.5 px-2 text-right font-code-sm font-bold text-on-surface">
-<span class="text-[#802B1B]">94</span>
-</td>
-<td class="py-2.5 px-3">
-<div class="flex items-center gap-1 font-code-sm text-primary">
-<span class="material-symbols-outlined text-xs text-outline" data-icon="account_balance">account_balance</span>
-<span class="font-medium underline decoration-dotted">ACC-992102</span>
-</div>
-</td>
-<td class="py-2.5 px-3">
-<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-container-high border border-outline-variant text-label-sm font-code-sm text-on-surface font-semibold">
-<span class="w-1.5 h-1.5 rounded-full bg-[#54151D]"></span>
+                </td>
+                <td class="py-2.5 px-2 text-right font-code-sm font-bold text-on-surface">
+                  <span class="text-[#802B1B]">94</span>
+                </td>
+                <td class="py-2.5 px-3">
+                  <div class="flex items-center gap-1 font-code-sm text-primary">
+                    <span class="material-symbols-outlined text-xs text-outline"
+                      data-icon="account_balance">account_balance</span>
+                    <span class="font-medium underline decoration-dotted">ACC-992102</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-3">
+                  <span
+                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-container-high border border-outline-variant text-label-sm font-code-sm text-on-surface font-semibold">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#54151D]"></span>
                     Ring-Omega
                   </span>
-</td>
-<td class="py-2.5 px-2">
-<span class="px-1.5 py-0.5 text-label-sm font-label-sm rounded bg-[#F8F1E2] text-[#7E570D] border border-[#EAD7B2] font-semibold">
+                </td>
+                <td class="py-2.5 px-2">
+                  <span
+                    class="px-1.5 py-0.5 text-label-sm font-label-sm rounded bg-[#F8F1E2] text-[#7E570D] border border-[#EAD7B2] font-semibold">
                     New
                   </span>
-</td>
-<td class="py-2.5 px-3 text-right font-code-sm text-outline text-label-sm">
+                </td>
+                <td class="py-2.5 px-3 text-right font-code-sm text-outline text-label-sm">
                   14m ago
                 </td>
-</tr>
-<!-- ROW 2: CRITICAL -->
-<tr class="bg-surface-container-lowest border-l-4 border-l-transparent hover:bg-surface-container-low cursor-pointer transition-colors">
-<td class="py-2.5 px-3 text-center">
-<input class="rounded border-outline-variant text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
-</td>
-<td class="py-2.5 px-3">
-<div class="flex flex-col">
-<span class="font-code-sm font-semibold text-primary">AL-8919</span>
-<span class="font-body-sm text-on-surface">Circular Flow</span>
-</div>
-</td>
-<td class="py-2.5 px-2">
-<span class="inline-flex items-center px-1.5 py-0.5 rounded text-label-sm font-label-sm font-semibold bg-[#EFE4E6] text-[#54151D] border border-[#DBBFC3]">
+              </tr>
+              <!-- ROW 2: CRITICAL -->
+              <tr
+                class="bg-surface-container-lowest border-l-4 border-l-transparent hover:bg-surface-container-low cursor-pointer transition-colors">
+                <td class="py-2.5 px-3 text-center">
+                  <input class="rounded border-outline-variant text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox" />
+                </td>
+                <td class="py-2.5 px-3">
+                  <div class="flex flex-col">
+                    <span class="font-code-sm font-semibold text-primary">AL-8919</span>
+                    <span class="font-body-sm text-on-surface">Circular Flow</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-2">
+                  <span
+                    class="inline-flex items-center px-1.5 py-0.5 rounded text-label-sm font-label-sm font-semibold bg-[#EFE4E6] text-[#54151D] border border-[#DBBFC3]">
                     CRITICAL
                   </span>
-</td>
-<td class="py-2.5 px-2 text-right font-code-sm font-bold text-on-surface">
-<span class="text-[#802B1B]">91</span>
-</td>
-<td class="py-2.5 px-3">
-<div class="flex items-center gap-1 font-code-sm text-primary">
-<span class="material-symbols-outlined text-xs text-outline" data-icon="account_balance">account_balance</span>
-<span>ACC-440181</span>
-</div>
-</td>
-<td class="py-2.5 px-3">
-<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-container-high border border-outline-variant text-label-sm font-code-sm text-on-surface">
-<span class="w-1.5 h-1.5 rounded-full bg-[#802B1B]"></span>
+                </td>
+                <td class="py-2.5 px-2 text-right font-code-sm font-bold text-on-surface">
+                  <span class="text-[#802B1B]">91</span>
+                </td>
+                <td class="py-2.5 px-3">
+                  <div class="flex items-center gap-1 font-code-sm text-primary">
+                    <span class="material-symbols-outlined text-xs text-outline"
+                      data-icon="account_balance">account_balance</span>
+                    <span>ACC-440181</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-3">
+                  <span
+                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-container-high border border-outline-variant text-label-sm font-code-sm text-on-surface">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#802B1B]"></span>
                     Ring-Delta
                   </span>
-</td>
-<td class="py-2.5 px-2">
-<span class="px-1.5 py-0.5 text-label-sm font-label-sm rounded bg-[#F6E9E6] text-[#802B1B] border border-[#E7C6C0] font-semibold">
+                </td>
+                <td class="py-2.5 px-2">
+                  <span
+                    class="px-1.5 py-0.5 text-label-sm font-label-sm rounded bg-[#F6E9E6] text-[#802B1B] border border-[#E7C6C0] font-semibold">
                     Escalated
                   </span>
-</td>
-<td class="py-2.5 px-3 text-right font-code-sm text-outline text-label-sm">
+                </td>
+                <td class="py-2.5 px-3 text-right font-code-sm text-outline text-label-sm">
                   38m ago
                 </td>
-</tr>
-<!-- ROW 3: HIGH -->
-<tr class="bg-surface-container-lowest border-l-4 border-l-transparent hover:bg-surface-container-low cursor-pointer transition-colors">
-<td class="py-2.5 px-3 text-center">
-<input class="rounded border-outline-variant text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
-</td>
-<td class="py-2.5 px-3">
-<div class="flex flex-col">
-<span class="font-code-sm font-semibold text-primary">AL-8914</span>
-<span class="font-body-sm text-on-surface">Shared Device</span>
-</div>
-</td>
-<td class="py-2.5 px-2">
-<span class="inline-flex items-center px-1.5 py-0.5 rounded text-label-sm font-label-sm font-semibold bg-[#F6E9E6] text-[#802B1B] border border-[#E7C6C0]">
+              </tr>
+              <!-- ROW 3: HIGH -->
+              <tr
+                class="bg-surface-container-lowest border-l-4 border-l-transparent hover:bg-surface-container-low cursor-pointer transition-colors">
+                <td class="py-2.5 px-3 text-center">
+                  <input class="rounded border-outline-variant text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox" />
+                </td>
+                <td class="py-2.5 px-3">
+                  <div class="flex flex-col">
+                    <span class="font-code-sm font-semibold text-primary">AL-8914</span>
+                    <span class="font-body-sm text-on-surface">Shared Device</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-2">
+                  <span
+                    class="inline-flex items-center px-1.5 py-0.5 rounded text-label-sm font-label-sm font-semibold bg-[#F6E9E6] text-[#802B1B] border border-[#E7C6C0]">
                     HIGH
                   </span>
-</td>
-<td class="py-2.5 px-2 text-right font-code-sm font-bold text-on-surface">
-<span class="text-[#802B1B]">84</span>
-</td>
-<td class="py-2.5 px-3">
-<div class="flex items-center gap-1 font-code-sm text-primary">
-<span class="material-symbols-outlined text-xs text-outline" data-icon="devices">devices</span>
-<span>DEV-993821</span>
-</div>
-</td>
-<td class="py-2.5 px-3">
-<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-container-high border border-outline-variant text-label-sm font-code-sm text-on-surface">
-<span class="w-1.5 h-1.5 rounded-full bg-[#54151D]"></span>
+                </td>
+                <td class="py-2.5 px-2 text-right font-code-sm font-bold text-on-surface">
+                  <span class="text-[#802B1B]">84</span>
+                </td>
+                <td class="py-2.5 px-3">
+                  <div class="flex items-center gap-1 font-code-sm text-primary">
+                    <span class="material-symbols-outlined text-xs text-outline" data-icon="devices">devices</span>
+                    <span>DEV-993821</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-3">
+                  <span
+                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-container-high border border-outline-variant text-label-sm font-code-sm text-on-surface">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#54151D]"></span>
                     Ring-Omega
                   </span>
-</td>
-<td class="py-2.5 px-2">
-<span class="px-1.5 py-0.5 text-label-sm font-label-sm rounded bg-surface-container border border-outline-variant text-on-surface-variant font-medium">
+                </td>
+                <td class="py-2.5 px-2">
+                  <span
+                    class="px-1.5 py-0.5 text-label-sm font-label-sm rounded bg-surface-container border border-outline-variant text-on-surface-variant font-medium">
                     Under Review
                   </span>
-</td>
-<td class="py-2.5 px-3 text-right font-code-sm text-outline text-label-sm">
+                </td>
+                <td class="py-2.5 px-3 text-right font-code-sm text-outline text-label-sm">
                   1h ago
                 </td>
-</tr>
-<!-- ROW 4: HIGH -->
-<tr class="bg-surface-container-lowest border-l-4 border-l-transparent hover:bg-surface-container-low cursor-pointer transition-colors">
-<td class="py-2.5 px-3 text-center">
-<input class="rounded border-outline-variant text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
-</td>
-<td class="py-2.5 px-3">
-<div class="flex flex-col">
-<span class="font-code-sm font-semibold text-primary">AL-8902</span>
-<span class="font-body-sm text-on-surface">Pass-Through</span>
-</div>
-</td>
-<td class="py-2.5 px-2">
-<span class="inline-flex items-center px-1.5 py-0.5 rounded text-label-sm font-label-sm font-semibold bg-[#F6E9E6] text-[#802B1B] border border-[#E7C6C0]">
+              </tr>
+              <!-- ROW 4: HIGH -->
+              <tr
+                class="bg-surface-container-lowest border-l-4 border-l-transparent hover:bg-surface-container-low cursor-pointer transition-colors">
+                <td class="py-2.5 px-3 text-center">
+                  <input class="rounded border-outline-variant text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox" />
+                </td>
+                <td class="py-2.5 px-3">
+                  <div class="flex flex-col">
+                    <span class="font-code-sm font-semibold text-primary">AL-8902</span>
+                    <span class="font-body-sm text-on-surface">Pass-Through</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-2">
+                  <span
+                    class="inline-flex items-center px-1.5 py-0.5 rounded text-label-sm font-label-sm font-semibold bg-[#F6E9E6] text-[#802B1B] border border-[#E7C6C0]">
                     HIGH
                   </span>
-</td>
-<td class="py-2.5 px-2 text-right font-code-sm font-bold text-on-surface">
-<span class="text-[#802B1B]">81</span>
-</td>
-<td class="py-2.5 px-3">
-<div class="flex items-center gap-1 font-code-sm text-primary">
-<span class="material-symbols-outlined text-xs text-outline" data-icon="account_balance">account_balance</span>
-<span>ACC-102944</span>
-</div>
-</td>
-<td class="py-2.5 px-3">
-<span class="font-code-sm text-outline text-label-sm">—</span>
-</td>
-<td class="py-2.5 px-2">
-<span class="px-1.5 py-0.5 text-label-sm font-label-sm rounded bg-[#F8F1E2] text-[#7E570D] border border-[#EAD7B2] font-semibold">
+                </td>
+                <td class="py-2.5 px-2 text-right font-code-sm font-bold text-on-surface">
+                  <span class="text-[#802B1B]">81</span>
+                </td>
+                <td class="py-2.5 px-3">
+                  <div class="flex items-center gap-1 font-code-sm text-primary">
+                    <span class="material-symbols-outlined text-xs text-outline"
+                      data-icon="account_balance">account_balance</span>
+                    <span>ACC-102944</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-3">
+                  <span class="font-code-sm text-outline text-label-sm">—</span>
+                </td>
+                <td class="py-2.5 px-2">
+                  <span
+                    class="px-1.5 py-0.5 text-label-sm font-label-sm rounded bg-[#F8F1E2] text-[#7E570D] border border-[#EAD7B2] font-semibold">
                     New
                   </span>
-</td>
-<td class="py-2.5 px-3 text-right font-code-sm text-outline text-label-sm">
+                </td>
+                <td class="py-2.5 px-3 text-right font-code-sm text-outline text-label-sm">
                   2h ago
                 </td>
-</tr>
-<!-- ROW 5: MEDIUM -->
-<tr class="bg-surface-container-lowest border-l-4 border-l-transparent hover:bg-surface-container-low cursor-pointer transition-colors">
-<td class="py-2.5 px-3 text-center">
-<input class="rounded border-outline-variant text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
-</td>
-<td class="py-2.5 px-3">
-<div class="flex flex-col">
-<span class="font-code-sm font-semibold text-primary">AL-8894</span>
-<span class="font-body-sm text-on-surface">Fan-In / Fan-Out</span>
-</div>
-</td>
-<td class="py-2.5 px-2">
-<span class="inline-flex items-center px-1.5 py-0.5 rounded text-label-sm font-label-sm font-semibold bg-[#F8F1E2] text-[#7E570D] border border-[#EAD7B2]">
+              </tr>
+              <!-- ROW 5: MEDIUM -->
+              <tr
+                class="bg-surface-container-lowest border-l-4 border-l-transparent hover:bg-surface-container-low cursor-pointer transition-colors">
+                <td class="py-2.5 px-3 text-center">
+                  <input class="rounded border-outline-variant text-primary focus:ring-0 w-3.5 h-3.5" type="checkbox" />
+                </td>
+                <td class="py-2.5 px-3">
+                  <div class="flex flex-col">
+                    <span class="font-code-sm font-semibold text-primary">AL-8894</span>
+                    <span class="font-body-sm text-on-surface">Fan-In / Fan-Out</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-2">
+                  <span
+                    class="inline-flex items-center px-1.5 py-0.5 rounded text-label-sm font-label-sm font-semibold bg-[#F8F1E2] text-[#7E570D] border border-[#EAD7B2]">
                     MEDIUM
                   </span>
-</td>
-<td class="py-2.5 px-2 text-right font-code-sm font-bold text-on-surface">
-<span class="text-[#7E570D]">68</span>
-</td>
-<td class="py-2.5 px-3">
-<div class="flex items-center gap-1 font-code-sm text-primary">
-<span class="material-symbols-outlined text-xs text-outline" data-icon="account_balance">account_balance</span>
-<span>ACC-551092</span>
-</div>
-</td>
-<td class="py-2.5 px-3">
-<span class="font-code-sm text-outline text-label-sm">—</span>
-</td>
-<td class="py-2.5 px-2">
-<span class="px-1.5 py-0.5 text-label-sm font-label-sm rounded bg-surface-container border border-outline-variant text-on-surface-variant font-medium">
+                </td>
+                <td class="py-2.5 px-2 text-right font-code-sm font-bold text-on-surface">
+                  <span class="text-[#7E570D]">68</span>
+                </td>
+                <td class="py-2.5 px-3">
+                  <div class="flex items-center gap-1 font-code-sm text-primary">
+                    <span class="material-symbols-outlined text-xs text-outline"
+                      data-icon="account_balance">account_balance</span>
+                    <span>ACC-551092</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-3">
+                  <span class="font-code-sm text-outline text-label-sm">—</span>
+                </td>
+                <td class="py-2.5 px-2">
+                  <span
+                    class="px-1.5 py-0.5 text-label-sm font-label-sm rounded bg-surface-container border border-outline-variant text-on-surface-variant font-medium">
                     Triage Hold
                   </span>
-</td>
-<td class="py-2.5 px-3 text-right font-code-sm text-outline text-label-sm">
+                </td>
+                <td class="py-2.5 px-3 text-right font-code-sm text-outline text-label-sm">
                   4h ago
                 </td>
-</tr>
-</tbody>
-</table>
-</div>
-<!-- Footer Pagination & Triage Summary Info -->
-<div class="p-space-xs px-space-md bg-surface-container-low border-t border-surface-variant flex items-center justify-between font-label-sm text-label-sm text-outline flex-shrink-0">
-<span>Active Forensic Stream · Sync: 4s ago</span>
-<div class="flex items-center gap-space-xs">
-<span>Page 1 of 4</span>
-<div class="flex gap-1">
-<button class="w-6 h-6 border border-surface-variant rounded bg-surface-container-lowest flex items-center justify-center text-outline disabled:opacity-50" disabled="">
-<span class="material-symbols-outlined text-xs" data-icon="chevron_left">chevron_left</span>
-</button>
-<button class="w-6 h-6 border border-surface-variant rounded bg-surface-container-lowest flex items-center justify-center text-on-surface hover:bg-surface-container">
-<span class="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
-</button>
-</div>
-</div>
-</div>
-</section>
-<!-- RIGHT SECTION: DEDICATED ALERT INVESTIGATION DRAWER (40% WIDTH) -->
-<section class="w-[40%] flex flex-col bg-surface-container-lowest h-full overflow-hidden">
-<!-- Drawer Header (Alert Identity & Quick Actions) -->
-<div class="p-space-md bg-surface-container-lowest border-b border-surface-variant flex flex-col gap-space-xs flex-shrink-0">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-space-2xs text-outline font-label-sm text-label-sm">
-<span class="material-symbols-outlined text-xs" data-icon="fingerprint">fingerprint</span>
-<span>RULE-CORRELATION: ENGINE-V4</span>
-</div>
-<div class="flex items-center gap-space-xs">
-<button class="p-1 hover:bg-surface-container rounded text-outline hover:text-on-surface" title="Expand Full Screen">
-<span class="material-symbols-outlined" data-icon="open_in_full">open_in_full</span>
-</button>
-<button class="p-1 hover:bg-surface-container rounded text-outline hover:text-on-surface" title="Dismiss Panel">
-<span class="material-symbols-outlined" data-icon="close">close</span>
-</button>
-</div>
-</div>
-<!-- Alert Title -->
-<div class="flex items-start justify-between gap-space-sm pt-1">
-<div class="flex flex-col">
-<h2 class="font-headline-md text-headline-md text-primary font-bold tracking-tight">
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Footer Pagination & Triage Summary Info -->
+        <div
+          class="p-space-xs px-space-md bg-surface-container-low border-t border-surface-variant flex items-center justify-between font-label-sm text-label-sm text-outline flex-shrink-0">
+          <span>Active Forensic Stream · Sync: 4s ago</span>
+          <div class="flex items-center gap-space-xs">
+            <span>Page 1 of 4</span>
+            <div class="flex gap-1">
+              <button
+                class="w-6 h-6 border border-surface-variant rounded bg-surface-container-lowest flex items-center justify-center text-outline disabled:opacity-50"
+                disabled="">
+                <span class="material-symbols-outlined text-xs" data-icon="chevron_left">chevron_left</span>
+              </button>
+              <button
+                class="w-6 h-6 border border-surface-variant rounded bg-surface-container-lowest flex items-center justify-center text-on-surface hover:bg-surface-container">
+                <span class="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- RIGHT SECTION: DEDICATED ALERT INVESTIGATION DRAWER (40% WIDTH) -->
+      <section class="w-[40%] flex flex-col bg-surface-container-lowest h-full overflow-hidden">
+        <!-- Drawer Header (Alert Identity & Quick Actions) -->
+        <div
+          class="p-space-md bg-surface-container-lowest border-b border-surface-variant flex flex-col gap-space-xs flex-shrink-0">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-space-2xs text-outline font-label-sm text-label-sm">
+              <span class="material-symbols-outlined text-xs" data-icon="fingerprint">fingerprint</span>
+              <span>RULE-CORRELATION: ENGINE-V4</span>
+            </div>
+            <div class="flex items-center gap-space-xs">
+              <button class="p-1 hover:bg-surface-container rounded text-outline hover:text-on-surface"
+                title="Expand Full Screen">
+                <span class="material-symbols-outlined" data-icon="open_in_full">open_in_full</span>
+              </button>
+              <button class="p-1 hover:bg-surface-container rounded text-outline hover:text-on-surface"
+                title="Dismiss Panel">
+                <span class="material-symbols-outlined" data-icon="close">close</span>
+              </button>
+            </div>
+          </div>
+          <!-- Alert Title -->
+          <div class="flex items-start justify-between gap-space-sm pt-1">
+            <div class="flex flex-col">
+              <h2 class="font-headline-md text-headline-md text-primary font-bold tracking-tight">
                 Alert AL-8921 · Merchant Cash-Out
               </h2>
-<span class="font-body-sm text-on-surface-variant">Rapid structured deposits converted to POS debit liquidation</span>
-</div>
-</div>
-<!-- Badges Cluster -->
-<div class="flex items-center gap-space-xs pt-1">
-<!-- CRITICAL BADGE (#7A1F2B) -->
-<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm font-bold bg-[#EFE4E6] text-[#7A1F2B] border border-[#DBBFC3]">
-<span class="material-symbols-outlined text-xs" data-icon="crisis_alert">crisis_alert</span>
+              <span class="font-body-sm text-on-surface-variant">Rapid structured deposits converted to POS debit
+                liquidation</span>
+            </div>
+          </div>
+          <!-- Badges Cluster -->
+          <div class="flex items-center gap-space-xs pt-1">
+            <!-- CRITICAL BADGE (#7A1F2B) -->
+            <span
+              class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm font-bold bg-[#EFE4E6] text-[#7A1F2B] border border-[#DBBFC3]">
+              <span class="material-symbols-outlined text-xs" data-icon="crisis_alert">crisis_alert</span>
               CRITICAL
             </span>
-<!-- Score 94 Badge -->
-<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-code-sm font-bold bg-[#F6E9E6] text-[#802B1B] border border-[#E7C6C0]">
+            <!-- Score 94 Badge -->
+            <span
+              class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-code-sm font-bold bg-[#F6E9E6] text-[#802B1B] border border-[#E7C6C0]">
               SCORE 94 / 100
             </span>
-<!-- Status: Unassigned -->
-<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm font-medium bg-surface-container border border-outline-variant text-on-surface-variant">
-<span class="material-symbols-outlined text-xs" data-icon="person_off">person_off</span>
+            <!-- Status: Unassigned -->
+            <span
+              class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm font-medium bg-surface-container border border-outline-variant text-on-surface-variant">
+              <span class="material-symbols-outlined text-xs" data-icon="person_off">person_off</span>
               Status: Unassigned
             </span>
-</div>
-</div>
-<!-- Scrollable Dossier Content -->
-<div class="flex-1 overflow-y-auto p-space-md flex flex-col gap-space-md custom-scrollbar bg-background">
-<!-- Section: "Why It Was Flagged" (Deterministic Detection Evidence) -->
-<div class="p-space-md bg-surface-container-lowest border-l-4 border-l-primary-container border-y border-r border-surface-variant rounded-r shadow-none">
-<div class="flex items-center justify-between pb-space-2xs border-b border-surface-variant mb-space-xs">
-<div class="flex items-center gap-space-2xs text-primary font-headline-sm text-headline-sm font-semibold">
-<span class="material-symbols-outlined text-primary" data-icon="verified">verified</span>
-<span>Why It Was Flagged</span>
-</div>
-<span class="font-code-sm text-label-sm text-outline">Confidence: 98.4%</span>
-</div>
-<p class="font-body-md text-body-md text-on-surface leading-relaxed">
-              Account <strong class="font-code-sm text-primary">ACC-992102</strong> received <span class="font-semibold text-primary">$184,500.00</span> across 14 rapid peer-to-peer transfers over 120 minutes and immediately initiated 8 structural liquidations to high-risk merchant terminal <strong class="font-code-sm text-primary">MCH-3092</strong> within 18 minutes.
+          </div>
+        </div>
+        <!-- Scrollable Dossier Content -->
+        <div class="flex-1 overflow-y-auto p-space-md flex flex-col gap-space-md custom-scrollbar bg-background">
+          <!-- Section: "Why It Was Flagged" (Deterministic Detection Evidence) -->
+          <div
+            class="p-space-md bg-surface-container-lowest border-l-4 border-l-primary-container border-y border-r border-surface-variant rounded-r shadow-none">
+            <div class="flex items-center justify-between pb-space-2xs border-b border-surface-variant mb-space-xs">
+              <div class="flex items-center gap-space-2xs text-primary font-headline-sm text-headline-sm font-semibold">
+                <span class="material-symbols-outlined text-primary" data-icon="verified">verified</span>
+                <span>Why It Was Flagged</span>
+              </div>
+              <span class="font-code-sm text-label-sm text-outline">Confidence: 98.4%</span>
+            </div>
+            <p class="font-body-md text-body-md text-on-surface leading-relaxed">
+              Account <strong class="font-code-sm text-primary">ACC-992102</strong> received <span
+                class="font-semibold text-primary">$184,500.00</span> across 14 rapid peer-to-peer transfers over 120
+              minutes and immediately initiated 8 structural liquidations to high-risk merchant terminal <strong
+                class="font-code-sm text-primary">MCH-3092</strong> within 18 minutes.
             </p>
-<div class="mt-space-xs pt-space-xs border-t border-surface-variant flex items-center justify-between text-label-sm font-code-sm text-outline">
-<span>Detection Rule: FT-R-892 (Layered Smurfing Velocity)</span>
-<a class="text-primary hover:underline flex items-center gap-0.5" href="#">
+            <div
+              class="mt-space-xs pt-space-xs border-t border-surface-variant flex items-center justify-between text-label-sm font-code-sm text-outline">
+              <span>Detection Rule: FT-R-892 (Layered Smurfing Velocity)</span>
+              <a class="text-primary hover:underline flex items-center gap-0.5" href="#">
                 Rule Specs
                 <span class="material-symbols-outlined text-xs" data-icon="arrow_outward">arrow_outward</span>
-</a>
-</div>
-</div>
-<!-- Section: Primary Evidence Block (Compact Tabular Data) -->
-<div class="border border-surface-variant bg-surface-container-lowest rounded overflow-hidden">
-<div class="px-space-md py-space-xs bg-surface-container-low border-b border-surface-variant flex items-center justify-between">
-<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Primary Evidence Record</span>
-<span class="font-code-sm text-label-sm text-outline">4 Verified Attributes</span>
-</div>
-<div class="divide-y divide-surface-variant font-body-sm text-body-sm">
-<!-- Item 1: Target Account -->
-<div class="px-space-md py-space-xs flex items-center justify-between hover:bg-surface-container-low">
-<span class="text-outline font-label-md">Target Account</span>
-<div class="flex items-center gap-space-xs text-right">
-<span class="font-code-sm font-semibold text-primary">ACC-992102</span>
-<span class="px-1.5 py-0.5 text-label-sm font-label-sm rounded bg-[#F6E9E6] text-[#802B1B] border border-[#E7C6C0]">
+              </a>
+            </div>
+          </div>
+          <!-- Section: Primary Evidence Block (Compact Tabular Data) -->
+          <div class="border border-surface-variant bg-surface-container-lowest rounded overflow-hidden">
+            <div
+              class="px-space-md py-space-xs bg-surface-container-low border-b border-surface-variant flex items-center justify-between">
+              <span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Primary Evidence
+                Record</span>
+              <span class="font-code-sm text-label-sm text-outline">4 Verified Attributes</span>
+            </div>
+            <div class="divide-y divide-surface-variant font-body-sm text-body-sm">
+              <!-- Item 1: Target Account -->
+              <div class="px-space-md py-space-xs flex items-center justify-between hover:bg-surface-container-low">
+                <span class="text-outline font-label-md">Target Account</span>
+                <div class="flex items-center gap-space-xs text-right">
+                  <span class="font-code-sm font-semibold text-primary">ACC-992102</span>
+                  <span
+                    class="px-1.5 py-0.5 text-label-sm font-label-sm rounded bg-[#F6E9E6] text-[#802B1B] border border-[#E7C6C0]">
                     Flagged: KYC mismatch
                   </span>
-</div>
-</div>
-<!-- Item 2: Terminal -->
-<div class="px-space-md py-space-xs flex items-center justify-between hover:bg-surface-container-low">
-<span class="text-outline font-label-md">Terminal</span>
-<div class="flex items-center gap-space-xs text-right">
-<span class="font-code-sm font-semibold text-primary">MCH-3092</span>
-<span class="font-body-sm text-on-surface">Electronics &amp; Gold Liquidation</span>
-</div>
-</div>
-<!-- Item 3: Associated Hardware -->
-<div class="px-space-md py-space-xs flex items-center justify-between hover:bg-surface-container-low">
-<span class="text-outline font-label-md">Associated Hardware</span>
-<div class="flex flex-col items-end">
-<span class="font-code-sm font-semibold text-primary">DEV-993821</span>
-<span class="font-code-sm text-label-sm text-[#802B1B]">Shared across 4 flagged accounts</span>
-</div>
-</div>
-<!-- Item 4: Volume & Velocity -->
-<div class="px-space-md py-space-xs flex items-center justify-between hover:bg-surface-container-low">
-<span class="text-outline font-label-md">Transaction Volume</span>
-<div class="flex items-center gap-space-xs text-right">
-<span class="font-code-sm font-bold text-on-surface">$184,500.00 USD</span>
-<span class="px-1.5 py-0.5 text-label-sm font-code-sm rounded bg-[#EFE4E6] text-[#54151D] border border-[#DBBFC3] font-bold">
+                </div>
+              </div>
+              <!-- Item 2: Terminal -->
+              <div class="px-space-md py-space-xs flex items-center justify-between hover:bg-surface-container-low">
+                <span class="text-outline font-label-md">Terminal</span>
+                <div class="flex items-center gap-space-xs text-right">
+                  <span class="font-code-sm font-semibold text-primary">MCH-3092</span>
+                  <span class="font-body-sm text-on-surface">Electronics &amp; Gold Liquidation</span>
+                </div>
+              </div>
+              <!-- Item 3: Associated Hardware -->
+              <div class="px-space-md py-space-xs flex items-center justify-between hover:bg-surface-container-low">
+                <span class="text-outline font-label-md">Associated Hardware</span>
+                <div class="flex flex-col items-end">
+                  <span class="font-code-sm font-semibold text-primary">DEV-993821</span>
+                  <span class="font-code-sm text-label-sm text-[#802B1B]">Shared across 4 flagged accounts</span>
+                </div>
+              </div>
+              <!-- Item 4: Volume & Velocity -->
+              <div class="px-space-md py-space-xs flex items-center justify-between hover:bg-surface-container-low">
+                <span class="text-outline font-label-md">Transaction Volume</span>
+                <div class="flex items-center gap-space-xs text-right">
+                  <span class="font-code-sm font-bold text-on-surface">$184,500.00 USD</span>
+                  <span
+                    class="px-1.5 py-0.5 text-label-sm font-code-sm rounded bg-[#EFE4E6] text-[#54151D] border border-[#DBBFC3] font-bold">
                     Velocity: 9.2x baseline
                   </span>
-</div>
-</div>
-</div>
-</div>
-<!-- Section: Associated Fraud Ring Card -->
-<div class="p-space-md border border-surface-variant bg-surface-container-lowest rounded flex flex-col gap-space-xs">
-<div class="flex items-center justify-between">
-<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Associated Fraud Ring</span>
-<span class="px-2 py-0.5 rounded text-label-sm font-code-sm font-bold bg-[#EFE4E6] text-[#54151D] border border-[#DBBFC3]">
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Section: Associated Fraud Ring Card -->
+          <div
+            class="p-space-md border border-surface-variant bg-surface-container-lowest rounded flex flex-col gap-space-xs">
+            <div class="flex items-center justify-between">
+              <span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Associated Fraud Ring</span>
+              <span
+                class="px-2 py-0.5 rounded text-label-sm font-code-sm font-bold bg-[#EFE4E6] text-[#54151D] border border-[#DBBFC3]">
                 RING RISK SCORE 96
               </span>
-</div>
-<div class="flex items-center gap-space-sm pt-1">
-<div class="w-10 h-10 rounded bg-[#54151D] text-on-primary flex items-center justify-center flex-shrink-0">
-<span class="material-symbols-outlined" data-icon="hub">hub</span>
-</div>
-<div class="flex flex-col">
-<span class="font-headline-sm text-headline-sm text-primary font-bold">Ring-Omega</span>
-<span class="font-body-sm text-on-surface-variant">Coordinated Liquidation Syndicate</span>
-</div>
-</div>
-<div class="grid grid-cols-3 gap-2 mt-space-xs pt-space-xs border-t border-surface-variant text-center">
-<div class="bg-surface-container p-2 rounded">
-<div class="font-label-sm text-outline uppercase">Linked Nodes</div>
-<div class="font-code-sm font-bold text-on-surface mt-0.5">27 Entities</div>
-</div>
-<div class="bg-surface-container p-2 rounded">
-<div class="font-label-sm text-outline uppercase">Total Exposure</div>
-<div class="font-code-sm font-bold text-[#802B1B] mt-0.5">$1.42M</div>
-</div>
-<div class="bg-surface-container p-2 rounded">
-<div class="font-label-sm text-outline uppercase">Active Cases</div>
-<div class="font-code-sm font-bold text-on-surface mt-0.5">3 Open</div>
-</div>
-</div>
-</div>
-<!-- Mini Forensic Cytoscape Preview Grid (Archival Network Abstract) -->
-<div class="border border-surface-variant bg-surface-container-lowest rounded p-space-md flex flex-col gap-space-xs">
-<div class="flex items-center justify-between">
-<span class="font-label-md font-semibold text-on-surface uppercase tracking-wider">Topology Excerpt (Local 2-Hop)</span>
-<span class="font-code-sm text-label-sm text-outline">Cluster Hash: 0x90B...21</span>
-</div>
-<!-- Graphic Network Wireframe Area -->
-<div class="h-32 bg-surface-container-low border border-surface-variant rounded relative flex items-center justify-center overflow-hidden" style="background-image: radial-gradient(#c2c7cc 1px, transparent 0); background-size: 12px 12px;">
-<!-- Node 1: Target Account -->
-<div class="absolute left-1/4 top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center">
-<div class="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-on-primary border border-surface-variant text-xs shadow-none">
-<span class="material-symbols-outlined text-xs" data-icon="account_balance">account_balance</span>
-</div>
-<span class="font-code-sm text-label-sm text-on-surface font-semibold mt-1">ACC-992102</span>
-</div>
-<!-- Vector Edge with Direction and Velocity Badge -->
-<div class="w-1/3 h-0.5 bg-[#802B1B] relative flex items-center justify-center">
-<span class="px-1 py-0.2 bg-[#F6E9E6] border border-[#E7C6C0] text-[#802B1B] font-code-sm text-[9px] rounded -top-3 absolute">
+            </div>
+            <div class="flex items-center gap-space-sm pt-1">
+              <div
+                class="w-10 h-10 rounded bg-[#54151D] text-on-primary flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined" data-icon="hub">hub</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="font-headline-sm text-headline-sm text-primary font-bold">Ring-Omega</span>
+                <span class="font-body-sm text-on-surface-variant">Coordinated Liquidation Syndicate</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 mt-space-xs pt-space-xs border-t border-surface-variant text-center">
+              <div class="bg-surface-container p-2 rounded">
+                <div class="font-label-sm text-outline uppercase">Linked Nodes</div>
+                <div class="font-code-sm font-bold text-on-surface mt-0.5">27 Entities</div>
+              </div>
+              <div class="bg-surface-container p-2 rounded">
+                <div class="font-label-sm text-outline uppercase">Total Exposure</div>
+                <div class="font-code-sm font-bold text-[#802B1B] mt-0.5">$1.42M</div>
+              </div>
+              <div class="bg-surface-container p-2 rounded">
+                <div class="font-label-sm text-outline uppercase">Active Cases</div>
+                <div class="font-code-sm font-bold text-on-surface mt-0.5">3 Open</div>
+              </div>
+            </div>
+          </div>
+          <!-- Mini Forensic Cytoscape Preview Grid (Archival Network Abstract) -->
+          <div
+            class="border border-surface-variant bg-surface-container-lowest rounded p-space-md flex flex-col gap-space-xs">
+            <div class="flex items-center justify-between">
+              <span class="font-label-md font-semibold text-on-surface uppercase tracking-wider">Topology Excerpt (Local
+                2-Hop)</span>
+              <span class="font-code-sm text-label-sm text-outline">Cluster Hash: 0x90B...21</span>
+            </div>
+            <!-- Graphic Network Wireframe Area -->
+            <div
+              class="h-32 bg-surface-container-low border border-surface-variant rounded relative flex items-center justify-center overflow-hidden"
+              style="background-image: radial-gradient(#c2c7cc 1px, transparent 0); background-size: 12px 12px;">
+              <!-- Node 1: Target Account -->
+              <div class="absolute left-1/4 top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center">
+                <div
+                  class="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-on-primary border border-surface-variant text-xs shadow-none">
+                  <span class="material-symbols-outlined text-xs" data-icon="account_balance">account_balance</span>
+                </div>
+                <span class="font-code-sm text-label-sm text-on-surface font-semibold mt-1">ACC-992102</span>
+              </div>
+              <!-- Vector Edge with Direction and Velocity Badge -->
+              <div class="w-1/3 h-0.5 bg-[#802B1B] relative flex items-center justify-center">
+                <span
+                  class="px-1 py-0.2 bg-[#F6E9E6] border border-[#E7C6C0] text-[#802B1B] font-code-sm text-[9px] rounded -top-3 absolute">
                   $184.5k
                 </span>
-<span class="material-symbols-outlined text-xs text-[#802B1B] absolute right-0 -mr-1" data-icon="arrow_right">arrow_right</span>
-</div>
-<!-- Node 2: Terminal -->
-<div class="absolute right-1/4 top-1/2 -translate-y-1/2 translate-x-1/2 flex flex-col items-center">
-<div class="w-6 h-6 rounded bg-[#402544] flex items-center justify-center text-on-tertiary border border-surface-variant text-xs">
-<span class="material-symbols-outlined text-xs" data-icon="store">store</span>
-</div>
-<span class="font-code-sm text-label-sm text-on-surface font-semibold mt-1">MCH-3092</span>
-</div>
-</div>
-</div>
-</div>
-<!-- Operational Investigation Actions Footer -->
-<div class="p-space-md bg-surface-container-low border-t border-surface-variant flex flex-col gap-space-xs flex-shrink-0">
-<!-- Primary Action Button: Escalate to Case (Slate Blue #2F4858 fill) -->
-<button class="w-full h-9 bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md font-semibold rounded border border-primary flex items-center justify-center gap-space-xs transition-colors duration-150">
-<span class="material-symbols-outlined text-sm" data-icon="assignment_add">assignment_add</span>
-<span>Escalate to Case</span>
-</button>
-<!-- Secondary Actions Cluster -->
-<div class="grid grid-cols-3 gap-space-xs">
-<button class="h-8 bg-surface-container-lowest hover:bg-surface-container border border-surface-variant text-on-surface font-label-md text-label-md rounded flex items-center justify-center gap-1 transition-colors duration-150">
-<span class="material-symbols-outlined text-xs text-outline" data-icon="search_check">search_check</span>
-<span>Inspect Account</span>
-</button>
-<button class="h-8 bg-surface-container-lowest hover:bg-surface-container border border-surface-variant text-on-surface font-label-md text-label-md rounded flex items-center justify-center gap-1 transition-colors duration-150">
-<span class="material-symbols-outlined text-xs text-outline" data-icon="account_tree">account_tree</span>
-<span>View Ring</span>
-</button>
-<button class="h-8 bg-surface-container-lowest hover:bg-surface-container border border-surface-variant text-on-surface font-label-md text-label-md rounded flex items-center justify-center gap-1 transition-colors duration-150">
-<span class="material-symbols-outlined text-xs text-outline" data-icon="hub">hub</span>
-<span>Graph Explorer</span>
-</button>
-</div>
-</div>
-</section>
-</main>
-</div>
-</body></html>
+                <span class="material-symbols-outlined text-xs text-[#802B1B] absolute right-0 -mr-1"
+                  data-icon="arrow_right">arrow_right</span>
+              </div>
+              <!-- Node 2: Terminal -->
+              <div class="absolute right-1/4 top-1/2 -translate-y-1/2 translate-x-1/2 flex flex-col items-center">
+                <div
+                  class="w-6 h-6 rounded bg-[#402544] flex items-center justify-center text-on-tertiary border border-surface-variant text-xs">
+                  <span class="material-symbols-outlined text-xs" data-icon="store">store</span>
+                </div>
+                <span class="font-code-sm text-label-sm text-on-surface font-semibold mt-1">MCH-3092</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Operational Investigation Actions Footer -->
+        <div
+          class="p-space-md bg-surface-container-low border-t border-surface-variant flex flex-col gap-space-xs flex-shrink-0">
+          <!-- Primary Action Button: Escalate to Case (Slate Blue #2F4858 fill) -->
+          <button
+            class="w-full h-9 bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md font-semibold rounded border border-primary flex items-center justify-center gap-space-xs transition-colors duration-150">
+            <span class="material-symbols-outlined text-sm" data-icon="assignment_add">assignment_add</span>
+            <span>Escalate to Case</span>
+          </button>
+          <!-- Secondary Actions Cluster -->
+          <div class="grid grid-cols-3 gap-space-xs">
+            <button
+              class="h-8 bg-surface-container-lowest hover:bg-surface-container border border-surface-variant text-on-surface font-label-md text-label-md rounded flex items-center justify-center gap-1 transition-colors duration-150">
+              <span class="material-symbols-outlined text-xs text-outline" data-icon="search_check">search_check</span>
+              <span>Inspect Account</span>
+            </button>
+            <button
+              class="h-8 bg-surface-container-lowest hover:bg-surface-container border border-surface-variant text-on-surface font-label-md text-label-md rounded flex items-center justify-center gap-1 transition-colors duration-150">
+              <span class="material-symbols-outlined text-xs text-outline" data-icon="account_tree">account_tree</span>
+              <span>View Ring</span>
+            </button>
+            <button
+              class="h-8 bg-surface-container-lowest hover:bg-surface-container border border-surface-variant text-on-surface font-label-md text-label-md rounded flex items-center justify-center gap-1 transition-colors duration-150">
+              <span class="material-symbols-outlined text-xs text-outline" data-icon="hub">hub</span>
+              <span>Graph Explorer</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+
+</html>

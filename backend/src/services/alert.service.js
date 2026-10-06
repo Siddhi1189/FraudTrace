@@ -10,6 +10,22 @@ export async function getAlerts(filters = {}) {
   if (filters.ringId) query.ringId = filters.ringId;
   if (filters.analysisRunId) query.analysisRunId = filters.analysisRunId;
 
+  // Section 12.3: Risk score filter on alerts
+  if (filters.score !== undefined && filters.score !== '') {
+    query.score = Number(filters.score);
+  } else {
+    const scoreConditions = {};
+    if (filters.minScore !== undefined && filters.minScore !== '') {
+      scoreConditions.$gte = Number(filters.minScore);
+    }
+    if (filters.maxScore !== undefined && filters.maxScore !== '') {
+      scoreConditions.$lte = Number(filters.maxScore);
+    }
+    if (Object.keys(scoreConditions).length > 0) {
+      query.score = scoreConditions;
+    }
+  }
+
   return Alert.find(query)
     .populate('ringId', 'label score patterns')
     .sort({ createdAt: -1 })

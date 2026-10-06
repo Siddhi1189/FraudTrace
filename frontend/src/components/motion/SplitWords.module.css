@@ -1,0 +1,42 @@
+.splitContainer {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.28em;
+}
+
+.wordMask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+}
+
+.wordInner {
+  display: inline-block;
+  transform: translateY(115%);
+  opacity: 0;
+  transition: transform var(--d-hero) var(--ease-out), opacity var(--d-hero) var(--ease-out);
+  will-change: transform, opacity;
+}
+
+.visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.accentWord {
+  color: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wordInner {
+    transform: none !important;
+    opacity: 1 !important;
+    transition: none !important;
+  }
+}
+
+:global([data-motion="reduced"]) .wordInner {
+  transform: none !important;
+  opacity: 1 !important;
+  transition: none !important;
+}

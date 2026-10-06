@@ -4,6 +4,7 @@ import { CaseNote } from '../models/caseNote.model.js';
 import { CaseEvent } from '../models/caseEvent.model.js';
 import { Alert } from '../models/alert.model.js';
 import { AIBrief } from '../models/aiBrief.model.js';
+import { emitSocketEvent } from '../socket/index.js';
 
 // PLACEHOLDER(FT-18): Sequential case number generation with fallback
 export async function generateCaseNumber() {
@@ -29,7 +30,7 @@ export async function generateCaseNumber() {
 export async function createCase({ title, initialAlertId, userId }) {
   if (!title || typeof title !== 'string' || !title.trim()) {
     const error = new Error('Case title is required');
-    error.status = 400;
+    error.statusCode = 400;
     throw error;
   }
 
@@ -108,6 +109,13 @@ export async function createCase({ title, initialAlertId, userId }) {
     }
   }
 
+  // Socket event: case-updated (A7)
+  emitSocketEvent('case-updated', {
+    caseId: newCase._id.toString(),
+    eventType: 'CASE_CREATED',
+    case: newCase,
+  });
+
   return newCase;
 }
 
@@ -145,7 +153,7 @@ export async function getCaseById(id) {
   const caseRecord = await Case.findById(id).populate('createdBy', 'name email role');
   if (!caseRecord) {
     const error = new Error(`Case not found: ${id}`);
-    error.status = 404;
+    error.statusCode = 404;
     throw error;
   }
 
@@ -177,8 +185,9 @@ export async function getCaseById(id) {
     .sort({ createdAt: 1 })
     .lean();
 
-  // Get AI briefs
+  // Get AI briefs (excluding bulky evidenceSnapshot per I8)
   const briefs = await AIBrief.find({ caseId: id })
+    .select('-evidenceSnapshot')
     .sort({ createdAt: -1 })
     .lean();
 
@@ -191,12 +200,12 @@ export async function getCaseById(id) {
   };
 }
 
-// PLACEHOLDER(FT-20): Case status transition and disposition rules
+// PLACEHOLDER(FT-20, FT-31): Case status transition and disposition rules
 export async function updateCase(id, { title, status, disposition }, userId) {
   const caseRecord = await Case.findById(id);
   if (!caseRecord) {
     const error = new Error(`Case not found: ${id}`);
-    error.status = 404;
+    error.statusCode = 404;
     throw error;
   }
 
@@ -207,7 +216,7 @@ export async function updateCase(id, { title, status, disposition }, userId) {
   if (title !== undefined) {
     if (typeof title !== 'string' || !title.trim()) {
       const error = new Error('Case title cannot be empty');
-      error.status = 400;
+      error.statusCode = 400;
       throw error;
     }
     caseRecord.title = title.trim();
@@ -217,7 +226,7 @@ export async function updateCase(id, { title, status, disposition }, userId) {
   if (disposition !== undefined) {
     if (disposition !== null && !CASE_DISPOSITIONS.includes(disposition)) {
       const error = new Error(`Invalid disposition: ${disposition}. Allowed: ${CASE_DISPOSITIONS.join(', ')}`);
-      error.status = 400;
+      error.statusCode = 400;
       throw error;
     }
   }
@@ -226,8 +235,18 @@ export async function updateCase(id, { title, status, disposition }, userId) {
   if (status !== undefined) {
     if (!CASE_STATUSES.includes(status)) {
       const error = new Error(`Invalid status: ${status}. Allowed: ${CASE_STATUSES.join(', ')}`);
-      error.status = 400;
+      error.statusCode = 400;
       throw error;
+    }
+
+    // A6 & FT-31: Closing a case requires a valid disposition
+    if (status === 'CLOSED') {
+      const finalDisposition = disposition !== undefined ? disposition : caseRecord.disposition;
+      if (!finalDisposition || !CASE_DISPOSITIONS.includes(finalDisposition)) {
+        const error = new Error('A valid disposition (CONFIRMED_FRAUD, FALSE_POSITIVE, INCONCLUSIVE) is required to close a case');
+        error.statusCode = 400;
+        throw error;
+      }
     }
 
     if (status !== previousStatus) {
@@ -268,8 +287,9 @@ export async function updateCase(id, { title, status, disposition }, userId) {
     }
   }
 
-  // Handle disposition update if not already captured in closure
-  if (disposition !== undefined && disposition !== previousDisposition && status !== 'CLOSED') {
+  // A6: Handle disposition update if not already captured in closure
+  const closureHandled = status === 'CLOSED' && previousStatus !== 'CLOSED';
+  if (disposition !== undefined && disposition !== previousDisposition && !closureHandled) {
     caseRecord.disposition = disposition;
     await CaseEvent.create({
       caseId: caseRecord._id,
@@ -284,6 +304,14 @@ export async function updateCase(id, { title, status, disposition }, userId) {
   }
 
   await caseRecord.save();
+
+  // Socket event: case-updated (A7)
+  emitSocketEvent('case-updated', {
+    caseId: caseRecord._id.toString(),
+    eventType: 'CASE_UPDATED',
+    case: caseRecord,
+  });
+
   return caseRecord;
 }
 
@@ -291,13 +319,13 @@ export async function addCaseNote(caseId, content, userId) {
   const caseRecord = await Case.findById(caseId);
   if (!caseRecord) {
     const error = new Error(`Case not found: ${caseId}`);
-    error.status = 404;
+    error.statusCode = 404;
     throw error;
   }
 
   if (!content || typeof content !== 'string' || !content.trim()) {
     const error = new Error('Note content is required');
-    error.status = 400;
+    error.statusCode = 400;
     throw error;
   }
 
@@ -320,6 +348,15 @@ export async function addCaseNote(caseId, content, userId) {
   });
 
   await note.populate('authorId', 'name email role');
+
+  // Socket event: case-updated (A7)
+  emitSocketEvent('case-updated', {
+    caseId: caseRecord._id.toString(),
+    eventType: 'NOTE_ADDED',
+    case: caseRecord,
+    note,
+  });
+
   return note;
 }
 
@@ -327,14 +364,14 @@ export async function attachAlertToCase(caseId, alertId, userId) {
   const caseRecord = await Case.findById(caseId);
   if (!caseRecord) {
     const error = new Error(`Case not found: ${caseId}`);
-    error.status = 404;
+    error.statusCode = 404;
     throw error;
   }
 
   const alert = await Alert.findById(alertId);
   if (!alert) {
     const error = new Error(`Alert not found: ${alertId}`);
-    error.status = 404;
+    error.statusCode = 404;
     throw error;
   }
 
@@ -342,7 +379,7 @@ export async function attachAlertToCase(caseId, alertId, userId) {
   const existing = await CaseAlert.findOne({ caseId, alertId });
   if (existing) {
     const error = new Error(`Alert ${alertId} is already attached to this case`);
-    error.status = 409;
+    error.statusCode = 409;
     throw error;
   }
 
@@ -365,6 +402,14 @@ export async function attachAlertToCase(caseId, alertId, userId) {
     createdAt: new Date(),
   });
 
+  // Socket event: case-updated (A7)
+  emitSocketEvent('case-updated', {
+    caseId: caseRecord._id.toString(),
+    eventType: 'ALERT_ATTACHED',
+    case: caseRecord,
+    caseAlert,
+  });
+
   return caseAlert;
 }
 
@@ -372,7 +417,7 @@ export async function getCaseEvents(caseId) {
   const caseRecord = await Case.findById(caseId);
   if (!caseRecord) {
     const error = new Error(`Case not found: ${caseId}`);
-    error.status = 404;
+    error.statusCode = 404;
     throw error;
   }
 

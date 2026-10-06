@@ -1,7 +1,15 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+// Load dotenv with override: true in development so .env wins over existing env vars (0.b)
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ override: true });
+} else {
+  dotenv.config();
+}
+
 import http from 'http';
 import express from 'express';
 import cors from 'cors';
+import mongoose from 'mongoose';
 import { connectDB } from './config/db.js';
 import { initSocketIO } from './socket/index.js';
 import authRoutes from './routes/auth.routes.js';
@@ -16,28 +24,19 @@ import caseRoutes from './routes/case.routes.js';
 import aiRoutes from './routes/ai.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { getJwtSecret } from './config/jwt.js';
+import { corsOriginDelegate } from './config/cors.js';
 
 const app = express();
 const server = http.createServer(app);
-const PORT = process.env.PORT || 5000;
+const PORT = parseInt(process.env.PORT || '5000', 10);
 
 // Initialize Socket.IO
-initSocketIO(server);
-
-// PLACEHOLDER(FT-26): CORS origins
-function getAllowedOrigins() {
-  if (process.env.CORS_ORIGINS) {
-    return process.env.CORS_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean);
-  }
-  return process.env.NODE_ENV !== 'production' ? ['http://localhost:5173'] : [];
-}
-
-const allowedOrigins = getAllowedOrigins();
+const io = initSocketIO(server);
 
 // Middleware
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: corsOriginDelegate,
     credentials: true,
   })
 );
@@ -59,9 +58,49 @@ app.use('/api', healthRoutes);
 // Error Handling
 app.use(errorHandler);
 
+// Handle clean startup failures and graceful shutdown
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use. Stop the other process or change PORT in backend/.env.`);
+  } else {
+    console.error(`[Server] Server error: ${err.message}`);
+  }
+  process.exit(1);
+});
+
+async function gracefulShutdown(signal) {
+  console.log(`\n[Server] Received ${signal}. Gracefully shutting down...`);
+  try {
+    if (io) {
+      io.close();
+    }
+  } catch (_) {}
+
+  server.close(async () => {
+    try {
+      await mongoose.disconnect();
+      console.log('[Server] Closed HTTP server and MongoDB connection.');
+    } catch (_) {}
+    process.exit(0);
+  });
+}
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+
 // Start Server
 async function startServer() {
   try {
+    // Fail fast with clear error messages if MongoDB URI or JWT secret is missing in production
+    if (process.env.NODE_ENV === 'production') {
+      if (!process.env.MONGODB_URI) {
+        throw new Error('FATAL: MONGODB_URI environment variable is missing in production environment');
+      }
+      if (!process.env.JWT_SECRET) {
+        throw new Error('FATAL: JWT_SECRET environment variable is missing in production environment');
+      }
+    }
+
     // BE-AUTH-2: Validate JWT_SECRET on boot (throws in production if missing)
     getJwtSecret();
     await connectDB();

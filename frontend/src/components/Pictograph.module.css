@@ -1,0 +1,122 @@
+.pictographContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.legendRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.rowsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.rowItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-2);
+  height: 40px;
+  min-height: 40px;
+  border-radius: var(--radius-xs);
+  transition: background-color var(--d-fast) var(--ease-out);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.rowItem:hover,
+.rowItem:focus-visible {
+  background-color: var(--surface-2);
+  outline: none;
+}
+
+.labelCol {
+  width: 130px;
+  min-width: 130px;
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.marksTrack {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 16px;
+}
+
+.mark {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  transition: transform var(--d-fast) var(--ease-out), opacity var(--d-fast) var(--ease-out);
+  will-change: transform, opacity;
+  animation: markEnter var(--d-base) var(--ease-out) both;
+}
+
+@keyframes markEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.65);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.rowItem:hover .mark,
+.rowItem:focus-visible .mark {
+  transform: translateY(-1px);
+}
+
+.emptyZero {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-3);
+}
+
+.partialMark {
+  width: 8px;
+  height: 16px;
+  border-radius: 3px;
+}
+
+.countCol {
+  min-width: 32px;
+  text-align: right;
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mark {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+  .rowItem:hover .mark,
+  .rowItem:focus-visible .mark {
+    transform: none !important;
+  }
+}

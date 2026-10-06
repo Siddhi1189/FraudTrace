@@ -1,7 +1,10 @@
 import { DEFAULT_DETECTOR_CONFIG } from './detectorConfig.js';
+import { formatAmount } from '../../utils/format.js';
 
+// PLACEHOLDER(FT-28): Merchant cash-out strict subset deduplication and requireSharedDevice flag
 export function runMerchantCashOutDetector(graph, customConfig = {}) {
   const config = { ...DEFAULT_DETECTOR_CONFIG.merchantCashOut, ...customConfig };
+  const requireSharedDevice = config.requireSharedDevice !== false;
   const detections = [];
 
   const merchantKeys = Array.from(graph.nodes.keys()).filter((k) => k.startsWith('MERCHANT:'));
@@ -42,16 +45,20 @@ export function runMerchantCashOutDetector(graph, customConfig = {}) {
 
         // Check if other account shares a device with base or any related account
         const otherDevices = getDevicesForAccount(otherAccKey);
-        let sharesDevice = false;
+        let isRelated = false;
 
-        for (const dev of otherDevices) {
-          if (baseDevices.has(dev)) {
-            sharesDevice = true;
-            sharedDevicesFound.add(graph.nodes.get(dev).externalId);
+        if (!requireSharedDevice) {
+          isRelated = true;
+        } else {
+          for (const dev of otherDevices) {
+            if (baseDevices.has(dev)) {
+              isRelated = true;
+              sharedDevicesFound.add(graph.nodes.get(dev).externalId);
+            }
           }
         }
 
-        if (sharesDevice) {
+        if (isRelated) {
           relatedPayments.push(otherPay);
           relatedAccounts.add(graph.nodes.get(otherAccKey).externalId);
         }
@@ -84,7 +91,7 @@ export function runMerchantCashOutDetector(graph, customConfig = {}) {
               merchants: [merchNode.externalId],
             },
             evidence: {
-              summary: `${relatedAccounts.size} related accounts sharing devices [${Array.from(sharedDevicesFound).join(', ')}] routed coordinated payments totaling $${totalCashOut} to merchant ${merchNode.externalId} within a 2-hour window.`,
+              summary: `${relatedAccounts.size} related accounts sharing devices [${Array.from(sharedDevicesFound).join(', ')}] routed coordinated payments totaling ${formatAmount(totalCashOut)} to merchant ${merchNode.externalId} within a 2-hour window.`,
               transactions: evidenceTxs,
               metrics: {
                 merchantId: merchNode.externalId,
@@ -101,5 +108,37 @@ export function runMerchantCashOutDetector(graph, customConfig = {}) {
     }
   }
 
-  return detections;
+  // Drop any detection whose account set is a strict subset of another detection
+  // for the same merchant in an overlapping window.
+  const filteredDetections = detections.filter((detA) => {
+    const accountsA = new Set(detA.entities.accounts);
+    const merchA = detA.entities.merchants[0];
+    const txTimesA = detA.evidence.transactions.map((t) => new Date(t.timestamp).getTime());
+    const startA = Math.min(...txTimesA);
+    const endA = Math.max(...txTimesA);
+
+    const isStrictSubset = detections.some((detB) => {
+      if (detA === detB) return false;
+      const merchB = detB.entities.merchants[0];
+      if (merchA !== merchB) return false;
+
+      const accountsB = new Set(detB.entities.accounts);
+      if (accountsA.size >= accountsB.size) return false;
+
+      for (const acc of accountsA) {
+        if (!accountsB.has(acc)) return false;
+      }
+
+      const txTimesB = detB.evidence.transactions.map((t) => new Date(t.timestamp).getTime());
+      const startB = Math.min(...txTimesB);
+      const endB = Math.max(...txTimesB);
+
+      const overlaps = !(endA < startB || startA > endB);
+      return overlaps;
+    });
+
+    return !isStrictSubset;
+  });
+
+  return filteredDetections;
 }

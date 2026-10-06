@@ -7,7 +7,7 @@ import {
   analyzeSuspiciousNeighbors,
 } from './graphAnalytics.js';
 
-export async function fetchNeighborhood({ entityId, depth = 1, limit = 50 }) {
+export async function fetchNeighborhood({ entityId, entityType = null, depth = 1, limit = 50 }) {
   if (!entityId) {
     const error = new Error('entityId is required');
     error.statusCode = 400;
@@ -15,7 +15,7 @@ export async function fetchNeighborhood({ entityId, depth = 1, limit = 50 }) {
   }
 
   const graph = await buildInMemoryGraph();
-  const neighborhood = getNeighborhood(graph, entityId, { depth, limit });
+  const neighborhood = getNeighborhood(graph, entityId, { entityType, depth, limit });
 
   if (!neighborhood) {
     const error = new Error(`Entity "${entityId}" not found in graph`);

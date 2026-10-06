@@ -1,35 +1,52 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-6);
 }
 
 .section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .sectionHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 8px;
+  padding-bottom: var(--space-2);
   border-bottom: 1px solid var(--border);
 }
 
 .sectionTitle {
-  font-family: var(--font-heading);
-  font-size: 13px;
+  font-family: var(--font-display);
+  font-size: var(--text-base);
   font-weight: 600;
   color: var(--text);
+  margin: 0;
+}
+
+.badgeSlideIn {
+  animation: badgeIn var(--d-base) var(--ease-out) forwards;
+}
+
+@keyframes badgeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .disclaimerBanner {
   background-color: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-ui);
   font-size: 11px;
   color: var(--text-2);
   display: flex;
@@ -41,28 +58,30 @@
   background-color: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 16px;
+  padding: var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-3);
 }
 
 .briefHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
 .briefMeta {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
 }
 
 .briefContent {
-  font-size: 12px;
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
   color: var(--text);
   line-height: 1.6;
   white-space: pre-wrap;
@@ -71,19 +90,20 @@
 .decisionControls {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-top: 10px;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
   border-top: 1px solid var(--border);
 }
 
 .chipList {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 6px;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
 }
 
 .evidenceChip {
+  font-family: var(--font-mono);
   font-size: 10px;
   background-color: var(--surface);
   border: 1px solid var(--border);
@@ -93,11 +113,35 @@
   font-variant-numeric: tabular-nums;
 }
 
+.catalogTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  margin-top: var(--space-2);
+}
+
+.catalogTable th {
+  text-align: left;
+  padding: var(--space-2);
+  background-color: var(--surface-2);
+  color: var(--text-2);
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+}
+
+.catalogTable td {
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
 .editTextarea {
   width: 100%;
   min-height: 140px;
-  padding: 10px;
-  font-size: 12px;
+  padding: var(--space-3);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
   background-color: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -106,21 +150,21 @@
 }
 
 .editTextarea:focus {
-  border-color: var(--border-strong);
-  outline: 1px solid var(--primary);
+  border-color: var(--border-focus);
+  outline: none;
 }
 
-/* Q&A Section */
 .qaForm {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .qaInput {
   flex: 1;
-  height: 32px;
-  padding: 0 10px;
-  font-size: 12px;
+  height: 36px;
+  padding: 0 var(--space-3);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
   background-color: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -128,42 +172,45 @@
 }
 
 .qaInput:focus {
-  border-color: var(--border-strong);
-  outline: 1px solid var(--primary);
+  border-color: var(--border-focus);
+  outline: none;
 }
 
 .qaList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .qaItem {
   background-color: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 12px 14px;
+  padding: var(--space-3) var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .qaQuestion {
+  font-family: var(--font-ui);
   font-weight: 600;
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--text);
 }
 
 .qaAnswer {
-  font-size: 12px;
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
   color: var(--text-2);
   line-height: 1.5;
 }
 
 .qaAssessment {
+  font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-3);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-2);
 }

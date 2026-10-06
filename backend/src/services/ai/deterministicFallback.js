@@ -1,3 +1,5 @@
+import { formatAmount } from '../../utils/format.js';
+
 /**
  * Generates a structured investigation brief deterministically from verified evidence snapshot.
  * Used when GEMINI_API_KEY is not configured or LLM is unreachable.
@@ -45,7 +47,7 @@ export function generateDeterministicBrief(evidenceSnapshot) {
   if (derived.totalVolume > 0) {
     findings.push({
       id: `F-${findingCounter++}`,
-      claim: `Coordinated financial flow totals ₹${derived.totalVolume.toLocaleString()} across ${derived.transactionCount} transactions involving ${derived.uniqueSendersCount} sender accounts.`,
+      claim: `Coordinated financial flow totals ${formatAmount(derived.totalVolume)} across ${derived.transactionCount} transactions involving ${derived.uniqueSendersCount} sender accounts.`,
       evidenceIds: [...factEvidenceIds, ...txEvidenceIds.slice(0, 2)],
       category: 'FACTUAL_EVIDENCE',
     });
@@ -100,7 +102,7 @@ export function generateDeterministicBrief(evidenceSnapshot) {
 
   const executiveSummary =
     `Deterministic Investigation Brief for ${caseInfo.caseNumber}: Case contains ${alerts.length} attached alerts with ` +
-    `${rings.length} identified ring associations and ₹${(derived.totalVolume || 0).toLocaleString()} in total transaction flow. ` +
+    `${rings.length} identified ring associations and ${formatAmount(derived.totalVolume || 0)} in total transaction flow. ` +
     `Analysis indicates coordinated activity across ${accounts.length} accounts.`;
 
   return {
@@ -163,7 +165,7 @@ export function answerQuestionDeterministically(question, evidenceSnapshot) {
   if (qLower.includes('volume') || qLower.includes('amount') || qLower.includes('total flow') || qLower.includes('money')) {
     const factItem = catalog.find((c) => c.type === 'DERIVED_METRIC');
     return {
-      answer: `The total transaction volume under investigation is ₹${(derived.totalVolume || 0).toLocaleString()} across ${derived.transactionCount || 0} recorded transactions.`,
+      answer: `The total transaction volume under investigation is ${formatAmount(derived.totalVolume || 0)} across ${derived.transactionCount || 0} recorded transactions.`,
       evidenceIds: factItem ? [factItem.id] : [],
       confidence: 'GROUNDED',
       unsupportedReason: null,

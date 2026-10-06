@@ -20,6 +20,9 @@ export function authenticateToken(req, res, next) {
     if (err) {
       return res.status(401).json({ error: 'Invalid or expired authentication token' });
     }
+    if (decoded && !decoded.sub && decoded.id) {
+      decoded.sub = decoded.id;
+    }
     req.user = decoded;
     next();
   });

@@ -1,0 +1,92 @@
+.progressContainer {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow-card);
+}
+
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pulsingDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--accent);
+  animation: ft-pulse-calm 1.4s ease-in-out infinite;
+}
+
+.percentage {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-2);
+}
+
+.track {
+  width: 100%;
+  height: 4px;
+  background-color: var(--surface-2);
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+  position: relative;
+}
+
+.bar {
+  height: 100%;
+  background-color: var(--primary);
+  border-radius: var(--radius-xs);
+  transition: transform var(--d-base) var(--ease-out);
+  transform-origin: left center;
+  will-change: transform;
+}
+
+.stagesRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.stageItem {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: color var(--d-fast) var(--ease-out);
+}
+
+.stageActive {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.stageCompleted {
+  color: var(--text-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulsingDot {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+  .bar {
+    transition: none !important;
+  }
+}

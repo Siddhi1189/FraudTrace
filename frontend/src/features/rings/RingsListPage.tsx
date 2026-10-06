@@ -6,7 +6,11 @@ import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
 import { Table, Column } from '../../components/common/Table';
 import { StateView } from '../../components/common/StateView';
+import { PageHeader } from '../../components/PageHeader';
+import { Card } from '../../components/Card';
+import { FilterBar } from '../../components/FilterBar';
 import { Icon } from '../../components/common/Icons';
+import { formatCurrency } from '../../lib/format';
 import styles from './RingsListPage.module.css';
 
 export const RingsListPage: React.FC = () => {
@@ -80,7 +84,7 @@ export const RingsListPage: React.FC = () => {
       width: '90px',
       align: 'right',
       render: (item) => (
-        <span className="tabular-nums">
+        <span className="tabular-nums" style={{ fontFamily: 'var(--font-mono)' }}>
           {item.memberCount || 0}
         </span>
       ),
@@ -88,11 +92,11 @@ export const RingsListPage: React.FC = () => {
     {
       key: 'totalFlow',
       title: 'Coordinated Flow',
-      width: '130px',
+      width: '140px',
       align: 'right',
       render: (item) => (
-        <span className="tabular-nums" style={{ fontWeight: 500 }}>
-          ${Number(item.totalFlow || 0).toLocaleString()}
+        <span className="tabular-nums" style={{ fontWeight: 500, fontFamily: 'var(--font-mono)' }}>
+          {formatCurrency(item.totalFlow)}
         </span>
       ),
     },
@@ -102,7 +106,7 @@ export const RingsListPage: React.FC = () => {
       width: '100px',
       align: 'right',
       render: (item) => (
-        <span className="tabular-nums">
+        <span className="tabular-nums" style={{ fontFamily: 'var(--font-mono)' }}>
           {item.transactionCount || 0}
         </span>
       ),
@@ -115,7 +119,7 @@ export const RingsListPage: React.FC = () => {
       render: (item) => (
         <Button
           variant="ghost"
-          compact
+          size="sm"
           onClick={(e) => {
             e.stopPropagation();
             navigate(`/rings/${item._id}`);
@@ -138,16 +142,20 @@ export const RingsListPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      {/* Header */}
-      <div className={styles.headerRow}>
-        <div className={styles.titleArea}>
-          <h1 className={styles.title}>Fraud Rings</h1>
-          <p className={styles.subtitle}>
-            Coordinated multi-entity fraud networks grouped from related detector findings without evidence double-counting.
-          </p>
-        </div>
+      <PageHeader
+        kicker="03 — FRAUD RINGS"
+        title="Fraud Rings"
+        subtitle="Coordinated multi-entity fraud networks grouped from related detector findings without evidence double-counting."
+        actions={
+          <Button variant="secondary" size="sm" onClick={loadRings}>
+            <Icon name="refresh" size={13} />
+            <span>Refresh</span>
+          </Button>
+        }
+      />
 
-        <div className={styles.filterBar}>
+      <FilterBar>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
           <Icon name="filter" size={14} />
           <select
             value={statusFilter}
@@ -159,24 +167,20 @@ export const RingsListPage: React.FC = () => {
             <option value="DISSOLVED">Dissolved / Historical</option>
             <option value="ALL">All Rings</option>
           </select>
-
-          <Button variant="secondary" compact onClick={loadRings}>
-            <Icon name="refresh" size={13} />
-            <span>Refresh</span>
-          </Button>
         </div>
-      </div>
+      </FilterBar>
 
-      {/* Rings Table */}
-      <div className={styles.card}>
+      <Card variant="default">
         <Table
           columns={columns}
           data={rings}
           keyExtractor={(item) => item._id}
           onRowClick={(item) => navigate(`/rings/${item._id}`)}
-          emptyMessage="No fraud rings found for current status filter."
+          emptyText="No fraud rings found for current status filter."
         />
-      </div>
+      </Card>
     </div>
   );
 };
+
+export default RingsListPage;

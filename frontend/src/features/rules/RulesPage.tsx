@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { fetchActiveRules, DetectorRules } from '../../api/analysisApi';
 import { Badge } from '../../components/common/Badge';
 import { StateView } from '../../components/common/StateView';
+import { PageHeader } from '../../components/PageHeader';
+import { Card } from '../../components/Card';
 import styles from './RulesPage.module.css';
 
 export const RulesPage: React.FC = () => {
@@ -42,24 +44,20 @@ export const RulesPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      {/* Header */}
-      <div className={styles.headerRow}>
-        <div className={styles.titleArea}>
-          <div className={styles.titleWithBadge}>
-            <h1 className={styles.title}>Detection &amp; Scoring Rules</h1>
-            <Badge variant="neutral">{rules.ruleVersion}</Badge>
-          </div>
-          <p className={styles.subtitle}>
-            Deterministic thresholds and category caps governing pattern detection and explainable risk scores.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        kicker="08 — RULES & POLICIES"
+        title="Detection & Scoring Rules"
+        subtitle="Deterministic thresholds and category caps governing pattern detection and explainable risk scores."
+        actions={<Badge variant="neutral">{rules.ruleVersion}</Badge>}
+      />
 
       {/* Account Risk Scoring Configuration */}
-      <div className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>Account Scoring Category Caps</h2>
-          <span className={styles.cardSubtitle}>
+      <Card variant="default">
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>
+            Account Scoring Category Caps
+          </h2>
+          <span className={styles.sectionSub}>
             {rules.scoringWeights.account.explanation}
           </span>
         </div>
@@ -75,13 +73,15 @@ export const RulesPage: React.FC = () => {
             </div>
           ))}
         </div>
-      </div>
+      </Card>
 
       {/* Fraud Ring Scoring Configuration */}
-      <div className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>Fraud Ring Scoring Category Caps</h2>
-          <span className={styles.cardSubtitle}>
+      <Card variant="default">
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>
+            Fraud Ring Scoring Category Caps
+          </h2>
+          <span className={styles.sectionSub}>
             {rules.scoringWeights.ring.explanation}
           </span>
         </div>
@@ -97,13 +97,15 @@ export const RulesPage: React.FC = () => {
             </div>
           ))}
         </div>
-      </div>
+      </Card>
 
       {/* Detector Thresholds */}
-      <div className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>Pattern Detector Thresholds</h2>
-          <span className={styles.cardSubtitle}>
+      <Card variant="default">
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>
+            Pattern Detector Thresholds
+          </h2>
+          <span className={styles.sectionSub}>
             Engine thresholds triggering structural fraud alerts
           </span>
         </div>
@@ -125,48 +127,44 @@ export const RulesPage: React.FC = () => {
             </div>
           ))}
         </div>
-      </div>
+      </Card>
 
       {/* Risk Tier Boundaries */}
-      <div className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>Risk Score Tier Boundaries</h2>
-          <span className={styles.cardSubtitle}>
+      <Card variant="default">
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>
+            Risk Score Tier Boundaries
+          </h2>
+          <span className={styles.sectionSub}>
             Deterministic 0–100 score classification
           </span>
         </div>
 
         <div className={styles.capsGrid}>
           <div className={styles.capBox}>
-            <span className={styles.capLabel}>Low</span>
-            <div className={styles.capValue}>
-              {rules.riskThresholds.low[0]} &ndash; {rules.riskThresholds.low[1]}
-            </div>
-            <span className={styles.capNote}>Routine monitoring</span>
+            <span className={styles.capLabel}>Critical Risk</span>
+            <div className={`${styles.capValue} ${styles.valCritical}`}>85–100</div>
+            <span className={styles.capNote}>Immediate investigation mandatory</span>
           </div>
           <div className={styles.capBox}>
-            <span className={styles.capLabel}>Medium</span>
-            <div className={styles.capValue}>
-              {rules.riskThresholds.medium[0]} &ndash; {rules.riskThresholds.medium[1]}
-            </div>
-            <span className={styles.capNote}>Standard review</span>
+            <span className={styles.capLabel}>High Risk</span>
+            <div className={`${styles.capValue} ${styles.valHigh}`}>70–84</div>
+            <span className={styles.capNote}>High priority review queue</span>
           </div>
           <div className={styles.capBox}>
-            <span className={styles.capLabel}>High</span>
-            <div className={styles.capValue}>
-              {rules.riskThresholds.high[0]} &ndash; {rules.riskThresholds.high[1]}
-            </div>
-            <span className={styles.capNote}>Priority investigation</span>
+            <span className={styles.capLabel}>Medium Risk</span>
+            <div className={`${styles.capValue} ${styles.valMedium}`}>40–69</div>
+            <span className={styles.capNote}>Standard monitoring queue</span>
           </div>
           <div className={styles.capBox}>
-            <span className={styles.capLabel}>Critical</span>
-            <div className={styles.capValue}>
-              {rules.riskThresholds.critical[0]} &ndash; {rules.riskThresholds.critical[1]}
-            </div>
-            <span className={styles.capNote}>Immediate escalation</span>
+            <span className={styles.capLabel}>Low Risk</span>
+            <div className={`${styles.capValue} ${styles.valLow}`}>0–39</div>
+            <span className={styles.capNote}>Passive ledger observation</span>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };
+
+export default RulesPage;

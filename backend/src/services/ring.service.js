@@ -1,6 +1,9 @@
 import { FraudRing } from '../models/fraudRing.model.js';
 import { FraudRingMember } from '../models/fraudRingMember.model.js';
 import { Alert } from '../models/alert.model.js';
+import { Account } from '../models/account.model.js';
+import { Device } from '../models/device.model.js';
+import { Merchant } from '../models/merchant.model.js';
 
 export async function getRings(filter = {}) {
   const query = {};
@@ -37,11 +40,32 @@ export async function getRingById(ringId) {
     throw error;
   }
 
-  // Fetch populated members and alerts
-  const [members, alerts] = await Promise.all([
-    FraudRingMember.find({ ringId }).populate('entityId').lean(),
+  // Fetch members and alerts
+  const [memberRecords, alerts] = await Promise.all([
+    FraudRingMember.find({ ringId }).lean(),
     Alert.find({ ringId }).lean(),
   ]);
+
+  // Manually resolve member entities per entityType (A2)
+  const accountIds = memberRecords.filter((m) => m.entityType === 'ACCOUNT').map((m) => m.entityId);
+  const deviceIds = memberRecords.filter((m) => m.entityType === 'DEVICE').map((m) => m.entityId);
+  const merchantIds = memberRecords.filter((m) => m.entityType === 'MERCHANT').map((m) => m.entityId);
+
+  const [accounts, devices, merchants] = await Promise.all([
+    Account.find({ _id: { $in: accountIds } }).lean(),
+    Device.find({ _id: { $in: deviceIds } }).lean(),
+    Merchant.find({ _id: { $in: merchantIds } }).lean(),
+  ]);
+
+  const entityMap = new Map();
+  accounts.forEach((a) => entityMap.set(a._id.toString(), a));
+  devices.forEach((d) => entityMap.set(d._id.toString(), d));
+  merchants.forEach((m) => entityMap.set(m._id.toString(), m));
+
+  const members = memberRecords.map((m) => ({
+    ...m,
+    entityId: entityMap.get(m.entityId.toString()) || m.entityId,
+  }));
 
   return {
     ...ring,

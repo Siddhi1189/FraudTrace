@@ -100,7 +100,7 @@ async function run() {
 
   // Wait for upload result card to render
   console.log('Waiting for upload result...');
-  await new Promise((r) => setTimeout(r, 3000));
+  await new Promise((r) => setTimeout(r, 5000));
 
   // Capture screenshot of Data page with upload result
   const mediaDir = 'C:\\Users\\siddh\\.gemini\\antigravity-ide\\brain\\231d4a07-6c17-4efc-8ddd-8ccab3e6613c\\.tempmediaStorage';

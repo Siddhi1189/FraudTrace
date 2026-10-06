@@ -1,10 +1,11 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(31, 35, 40, 0.4);
+  background-color: var(--overlay);
   z-index: 100;
   display: flex;
   justify-content: flex-end;
+  animation: ft-fade-in 280ms var(--ease-out) forwards;
 }
 
 .drawer {
@@ -15,7 +16,8 @@
   border-left: 1px solid var(--border-strong);
   display: flex;
   flex-direction: column;
-  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-pop);
+  animation: ft-slide-drawer 280ms var(--ease-out) forwards;
 }
 
 .header {

@@ -1,0 +1,86 @@
+.tile {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  box-shadow: var(--shadow-card);
+  transition: border-color 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
+}
+
+.tile[role="button"] {
+  cursor: pointer;
+}
+
+.tile[role="button"]:hover,
+.tile[role="button"]:focus-visible {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+@media (hover: none) {
+  .tile[role="button"]:hover,
+  .tile[role="button"]:focus-visible {
+    transform: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile[role="button"]:hover,
+  .tile[role="button"]:focus-visible {
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+:global([data-motion="reduced"]) .tile[role="button"]:hover,
+:global([data-motion="reduced"]) .tile[role="button"]:focus-visible {
+  transform: none !important;
+  transition: none !important;
+}
+
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+
+.iconWrap {
+  color: var(--text-3);
+}
+
+.valueRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.value {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.05;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.subtext {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.4;
+}

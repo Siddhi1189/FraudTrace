@@ -7,6 +7,7 @@ interface DrawerProps {
   onClose: () => void;
   title: React.ReactNode;
   children: React.ReactNode;
+  width?: string;
 }
 
 export const Drawer: React.FC<DrawerProps> = ({
@@ -14,6 +15,7 @@ export const Drawer: React.FC<DrawerProps> = ({
   onClose,
   title,
   children,
+  width,
 }) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -31,6 +33,7 @@ export const Drawer: React.FC<DrawerProps> = ({
     <div className={styles.overlay} onClick={onClose}>
       <aside
         className={styles.drawer}
+        style={width ? { width, maxWidth: '100vw' } : undefined}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

@@ -1,119 +1,143 @@
 import crypto from 'crypto';
+import { DEFAULT_DETECTOR_CONFIG, RULE_VERSION } from '../detectors/detectorConfig.js';
+import { formatAmount } from '../../utils/format.js';
 
 /**
  * Ring grouping service for FraudTrace.
  * Rules:
  * 1. Start from entities involved in fraud alerts.
  * 2. Connect related alert entities.
- * 3. Prevent high-degree hubs from merging unrelated groups.
- * 4. Combine related findings into coherent fraud networks without double-counting evidence.
- * 5. Calculate deterministic ring risk score and contributors.
- * 6. Generate deterministic ring fingerprints derived from canonical member entities.
+ * 3. Prevent high-degree hubs (> maxAlertHubDegree) from merging unrelated groups.
+ * 4. Device nodes only bridge alerts if linked to >= sharedDeviceThreshold distinct accounts.
+ * 5. Combine related findings into coherent fraud networks without double-counting evidence.
+ * 6. Calculate deterministic ring risk score and contributors.
+ * 7. Generate deterministic ring fingerprints derived from canonical member entities.
+ * PLACEHOLDER(FT-29): Ring grouping alert hub limit and device threshold
  */
 
-export function groupAlertsIntoRings(detections, graph) {
+export function groupAlertsIntoRings(detections, graph, customConfig = {}) {
   if (!detections || detections.length === 0) {
     return [];
   }
 
-  // Build alert-entity connectivity graph
-  const entityAdjacency = new Map(); // entityKey -> Set of neighbor entityKeys
-  const entityMeta = new Map(); // entityKey -> { entityType, externalId, mongoId }
+  const maxAlertHubDegree = customConfig.maxAlertHubDegree ?? DEFAULT_DETECTOR_CONFIG.maxAlertHubDegree ?? 3;
+  const sharedDeviceThreshold = customConfig.sharedDeviceThreshold ?? DEFAULT_DETECTOR_CONFIG.sharedDeviceThreshold ?? 3;
 
-  function addEntity(entityType, externalId) {
-    const key = `${entityType}:${externalId}`;
-    if (!entityMeta.has(key)) {
-      const node = graph.getNode(externalId);
-      entityMeta.set(key, {
-        entityType,
-        externalId,
-        mongoId: node ? node.mongoId : null,
-      });
-      entityAdjacency.set(key, new Set());
-    }
-    return key;
-  }
-
-  function addConnection(keyA, keyB) {
-    if (keyA === keyB) return;
-    entityAdjacency.get(keyA).add(keyB);
-    entityAdjacency.get(keyB).add(keyA);
-  }
-
-  // Connect entities involved in each alert
+  // Track entity alert frequency across detections
+  const entityAlertCounts = new Map();
   for (const detection of detections) {
-    const alertEntityKeys = [];
+    const keysInAlert = new Set([
+      ...(detection.entities.accounts || []).map((a) => `ACCOUNT:${a}`),
+      ...(detection.entities.devices || []).map((d) => `DEVICE:${d}`),
+      ...(detection.entities.merchants || []).map((m) => `MERCHANT:${m}`),
+    ]);
+    for (const key of keysInAlert) {
+      entityAlertCounts.set(key, (entityAlertCounts.get(key) || 0) + 1);
+    }
+  }
 
-    (detection.entities.accounts || []).forEach((acc) => {
-      alertEntityKeys.push(addEntity('ACCOUNT', acc));
-    });
+  function canBridge(key) {
+    // Entities appearing in more than maxAlertHubDegree alerts are hubs and excluded from bridging
+    if ((entityAlertCounts.get(key) || 0) > maxAlertHubDegree) {
+      return false;
+    }
+    // Device nodes only bridge alerts if linked to at least sharedDeviceThreshold distinct accounts
+    if (key.startsWith('DEVICE:')) {
+      const devEdges = (graph.reverseAdjacency?.get(key) || []).filter((e) => e.type === 'USED_DEVICE');
+      const distinctAccs = new Set(devEdges.map((e) => e.sourceKey));
+      if (distinctAccs.size < sharedDeviceThreshold) {
+        return false;
+      }
+    }
+    return true;
+  }
 
-    (detection.entities.devices || []).forEach((dev) => {
-      alertEntityKeys.push(addEntity('DEVICE', dev));
-    });
+  // Map each detection to its entity keys
+  const alertEntitiesList = detections.map((det) => {
+    const keys = new Set();
+    (det.entities.accounts || []).forEach((a) => keys.add(`ACCOUNT:${a}`));
+    (det.entities.devices || []).forEach((d) => keys.add(`DEVICE:${d}`));
+    (det.entities.merchants || []).forEach((m) => keys.add(`MERCHANT:${m}`));
+    return keys;
+  });
 
-    (detection.entities.merchants || []).forEach((merch) => {
-      alertEntityKeys.push(addEntity('MERCHANT', merch));
-    });
+  // Build alert adjacency graph: connect alerts that share at least one eligible bridging entity
+  const n = detections.length;
+  const alertAdjacency = Array.from({ length: n }, () => new Set());
 
-    // Fully connect all entities in this single alert
-    for (let i = 0; i < alertEntityKeys.length; i++) {
-      for (let j = i + 1; j < alertEntityKeys.length; j++) {
-        addConnection(alertEntityKeys[i], alertEntityKeys[j]);
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      let sharesBridgingEntity = false;
+      for (const key of alertEntitiesList[i]) {
+        if (alertEntitiesList[j].has(key) && canBridge(key)) {
+          sharesBridgingEntity = true;
+          break;
+        }
+      }
+      if (sharesBridgingEntity) {
+        alertAdjacency[i].add(j);
+        alertAdjacency[j].add(i);
       }
     }
   }
 
-  // Extract connected components of the alert entity graph
-  const visited = new Set();
-  const rawRings = [];
+  // Find connected components of alerts
+  const visitedAlerts = new Set();
+  const alertComponents = [];
 
-  for (const startKey of entityAdjacency.keys()) {
-    if (visited.has(startKey)) continue;
+  for (let i = 0; i < n; i++) {
+    if (visitedAlerts.has(i)) continue;
 
-    const componentKeys = [];
-    const queue = [startKey];
-    visited.add(startKey);
+    const component = [];
+    const queue = [i];
+    visitedAlerts.add(i);
 
     while (queue.length > 0) {
-      const current = queue.shift();
-      componentKeys.push(current);
+      const curr = queue.shift();
+      component.push(curr);
 
-      for (const neighbor of entityAdjacency.get(current)) {
-        if (!visited.has(neighbor)) {
-          visited.add(neighbor);
+      for (const neighbor of alertAdjacency[curr]) {
+        if (!visitedAlerts.has(neighbor)) {
+          visitedAlerts.add(neighbor);
           queue.push(neighbor);
         }
       }
     }
 
-    rawRings.push(componentKeys);
+    alertComponents.push(component);
   }
 
-  // Format, fingerprint, and score each ring
-  const rings = rawRings.map((componentKeys) => {
-    // Deterministic canonical sorting of member entity keys
-    const sortedEntityKeys = componentKeys.slice().sort();
+  // Build ring objects from alert components
+  const rings = alertComponents.map((componentAlertIndices) => {
+    const ringAlerts = componentAlertIndices.map((idx) => detections[idx]);
+
+    // Union of all entity keys across alerts in this ring
+    const memberKeySet = new Set();
+    componentAlertIndices.forEach((idx) => {
+      alertEntitiesList[idx].forEach((k) => memberKeySet.add(k));
+    });
+
+    const sortedEntityKeys = Array.from(memberKeySet).sort();
     const rawKey = sortedEntityKeys.join('|');
     const hash = crypto.createHash('sha256').update(rawKey).digest('hex').slice(0, 16);
     const fingerprint = `RING:${hash}`;
 
-    const memberSet = new Set(componentKeys);
-    const members = componentKeys.map((k) => entityMeta.get(k));
-
-    // Match alerts that belong to this ring
-    const ringAlerts = detections.filter((det) => {
-      const accKeys = (det.entities.accounts || []).map((a) => `ACCOUNT:${a}`);
-      const devKeys = (det.entities.devices || []).map((d) => `DEVICE:${d}`);
-      const merchKeys = (det.entities.merchants || []).map((m) => `MERCHANT:${m}`);
-      const allDetKeys = [...accKeys, ...devKeys, ...merchKeys];
-      return allDetKeys.some((k) => memberSet.has(k));
+    // Resolve member details
+    const members = sortedEntityKeys.map((k) => {
+      const [entityType, ...rest] = k.split(':');
+      const externalId = rest.join(':');
+      const node = graph.getNode(externalId);
+      return {
+        entityType,
+        externalId,
+        mongoId: node ? node.mongoId : null,
+      };
     });
 
     // Unique patterns
     const patterns = Array.from(new Set(ringAlerts.map((a) => a.pattern)));
 
-    // Unique transactions to avoid double-counting flow/count (Constraint 7)
+    // Unique transactions to avoid double-counting flow/count
     const uniqueTxMap = new Map();
     for (const alert of ringAlerts) {
       for (const tx of alert.evidence.transactions || []) {
@@ -172,7 +196,7 @@ function calculateRingRisk({ patterns, totalFlow, memberCount, alertCount, alert
     weight: maxPatternWeight,
     score: maxPatternWeight,
     evidence: `Ring contains active fraud patterns: ${patterns.join(', ')}`,
-    ruleVersion: 'v1.0.0',
+    ruleVersion: RULE_VERSION,
   });
   rawScore += maxPatternWeight;
 
@@ -188,8 +212,8 @@ function calculateRingRisk({ patterns, totalFlow, memberCount, alertCount, alert
     category: 'TRANSACTION_BEHAVIOR',
     weight: 25,
     score: flowScore,
-    evidence: `Total coordinated money movement across ring members is $${totalFlow}`,
-    ruleVersion: 'v1.0.0',
+    evidence: `Total coordinated money movement across ring members is ${formatAmount(totalFlow)}`,
+    ruleVersion: RULE_VERSION,
   });
   rawScore += flowScore;
 
@@ -205,7 +229,7 @@ function calculateRingRisk({ patterns, totalFlow, memberCount, alertCount, alert
     weight: 25,
     score: networkScore,
     evidence: `Ring connects ${memberCount} entities across ${alertCount} coordinated fraud alerts`,
-    ruleVersion: 'v1.0.0',
+    ruleVersion: RULE_VERSION,
   });
   rawScore += networkScore;
 

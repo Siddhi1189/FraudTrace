@@ -6,6 +6,9 @@ import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
 import { Icon } from '../../components/common/Icons';
 import { StateView } from '../../components/common/StateView';
+import { PageHeader } from '../../components/PageHeader';
+import { FilterBar } from '../../components/FilterBar';
+import { formatCurrency, formatDateTime } from '../../lib/format';
 import styles from './GraphExplorerPage.module.css';
 
 export const GraphExplorerPage: React.FC = () => {
@@ -83,23 +86,19 @@ export const GraphExplorerPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      {/* Header */}
-      <div className={styles.headerRow}>
-        <div className={styles.titleArea}>
-          <h1 className={styles.title}>Graph Explorer</h1>
-          <p className={styles.subtitle}>
-            Explore the in-memory financial network. Expand neighborhoods, trace funds between accounts, and uncover shared infrastructure.
-          </p>
-        </div>
+      <PageHeader
+        kicker="04 — GRAPH EXPLORER"
+        title="Graph Explorer"
+        subtitle="Explore the in-memory financial network. Expand neighborhoods, trace funds between accounts, and uncover shared infrastructure."
+        actions={
+          <Button variant="secondary" size="sm" onClick={() => handleSearch()}>
+            <Icon name="refresh" size={13} />
+            <span>Reload view</span>
+          </Button>
+        }
+      />
 
-        <Button variant="secondary" compact onClick={() => handleSearch()}>
-          <Icon name="refresh" size={13} />
-          <span>Reload view</span>
-        </Button>
-      </div>
-
-      {/* Query Bar */}
-      <div className={styles.filterBar}>
+      <FilterBar>
         <div className={styles.searchBox}>
           <Icon name="search" size={14} />
           <input
@@ -140,78 +139,77 @@ export const GraphExplorerPage: React.FC = () => {
             value={limit}
             onChange={(e) => setLimit(Number(e.target.value))}
             className={styles.select}
-            aria-label="Node limit"
+            aria-label="Entity limit"
           >
             <option value={25}>Limit: 25</option>
             <option value={50}>Limit: 50</option>
             <option value={100}>Limit: 100</option>
           </select>
 
-          <Button variant="primary" compact onClick={() => handleSearch()} disabled={loading}>
-            <span>{loading ? 'Querying...' : 'Trace'}</span>
+          <Button variant="primary" size="sm" onClick={() => handleSearch()}>
+            <span>Query Neighborhood</span>
           </Button>
         </div>
-      </div>
+      </FilterBar>
 
-      {error && (
-        <div style={{ color: 'var(--sev-high-text)', backgroundColor: 'var(--sev-high-bg)', border: '1px solid var(--sev-high-border)', padding: '8px 12px', borderRadius: '2px', fontSize: '12px' }}>
-          {error}
-        </div>
-      )}
-
-      {/* Main Workspace: Canvas + Right-Hand Inspector */}
       <div className={styles.workspaceGrid}>
         <div className={styles.canvasCard}>
           <div className={styles.canvasTopBar}>
-            <span>
-              Topology View: {nodes.length} nodes, {edges.length} edges
-            </span>
-            <span className={styles.nodeLimitNote}>
-              Expansion limited to {limit} nodes for responsiveness.
-            </span>
+            <div>
+              <span>Active Neighborhood: </span>
+              <strong>{nodes.length}</strong> entities, <strong>{edges.length}</strong> relationships
+            </div>
+            <div className={styles.nodeLimitNote}>
+              <span>Cap: 300 visible nodes max</span>
+            </div>
           </div>
 
           <div className={styles.canvasWrapper}>
-            {loading ? (
-              <StateView type="loading" title="Querying network neighborhood..." />
-            ) : nodes.length === 0 ? (
-              <StateView
-                type="empty"
-                title="No nodes in graph view"
-                description="Query an entity ID above to render its connected financial network."
-              />
-            ) : (
-              <CytoscapeGraph
-                nodes={nodes}
-                edges={edges}
-                onNodeClick={handleNodeClick}
-                onEdgeClick={handleEdgeClick}
-                highlightNodeId={selectedNode?.externalId}
-                height="100%"
-              />
+            {loading && (
+              <div style={{ position: 'absolute', inset: 0, zIndex: 10, background: 'var(--bg)', opacity: 0.85, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <StateView type="loading" title="Traversing in-memory graph..." />
+              </div>
             )}
+            {error && !loading && nodes.length === 0 && (
+              <div style={{ position: 'absolute', inset: 0, zIndex: 10, background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <StateView type="error" title="No matching nodes" description={error} />
+              </div>
+            )}
+
+            <CytoscapeGraph
+              nodes={nodes}
+              edges={edges}
+              selectedNodeId={selectedNode?.id}
+              selectedEdgeId={selectedEdge?.id}
+              onNodeClick={handleNodeClick}
+              onEdgeClick={handleEdgeClick}
+            />
           </div>
         </div>
 
-        {/* Right-Hand Inspector */}
-        <aside className={styles.inspectorCard} aria-label="Entity inspector">
+        <aside className={styles.inspectorCard} aria-label="Entity Inspector">
           <div className={styles.inspectorHeader}>
-            <span className={styles.inspectorTitle}>Inspector</span>
+            <span className={styles.inspectorTitle}>Entity Inspector</span>
             {selectedNode && (
               <Badge variant={selectedNode.entityType === 'ACCOUNT' ? 'neutral' : 'medium'}>
                 {selectedNode.entityType}
               </Badge>
             )}
-            {selectedEdge && (
-              <Badge variant="neutral">{selectedEdge.type}</Badge>
-            )}
+            {selectedEdge && <Badge variant="high">{selectedEdge.type}</Badge>}
           </div>
 
           {selectedNode ? (
             <div className={styles.attributeList}>
               <div className={styles.attributeItem}>
-                <span className={styles.attributeLabel}>Identifier</span>
-                <span className="entity-id">{selectedNode.externalId}</span>
+                <span className={styles.attributeLabel}>External Identifier</span>
+                <span className={styles.attributeValue}>{selectedNode.externalId}</span>
+              </div>
+
+              <div className={styles.attributeItem}>
+                <span className={styles.attributeLabel}>Internal Mongo ID</span>
+                <span className={styles.attributeValue} style={{ fontSize: '11px', color: 'var(--text-3)' }}>
+                  {selectedNode.mongoId}
+                </span>
               </div>
 
               <div className={styles.attributeItem}>
@@ -219,34 +217,21 @@ export const GraphExplorerPage: React.FC = () => {
                 <span className={styles.attributeValue}>{selectedNode.entityType}</span>
               </div>
 
-              {selectedNode.metadata && Object.keys(selectedNode.metadata).length > 0 && (
-                <div className={styles.attributeItem}>
-                  <span className={styles.attributeLabel}>Attributes</span>
-                  <div style={{ fontSize: '11px', color: 'var(--text-2)', background: 'var(--surface-2)', padding: '6px 8px', borderRadius: '2px' }}>
-                    {Object.entries(selectedNode.metadata).map(([k, v]) => (
-                      <div key={k}><strong>{k}:</strong> {String(v)}</div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginTop: 'var(--space-4)' }}>
                 <Button
                   variant="secondary"
                   compact
                   onClick={() => handleExpandFromNode(selectedNode)}
-                  fullWidth
                 >
-                  <Icon name="maximize" size={12} />
-                  <span>Expand neighborhood</span>
+                  <Icon name="search" size={12} />
+                  <span>Expand from this entity</span>
                 </Button>
 
                 {selectedNode.entityType === 'ACCOUNT' && (
                   <Button
                     variant="primary"
-                    compact
+                    size="sm"
                     onClick={() => navigate(`/accounts/${selectedNode.mongoId || selectedNode.externalId}`)}
-                    fullWidth
                   >
                     <Icon name="user" size={12} />
                     <span>View account workspace</span>
@@ -263,19 +248,19 @@ export const GraphExplorerPage: React.FC = () => {
 
               <div className={styles.attributeItem}>
                 <span className={styles.attributeLabel}>Source</span>
-                <span className="entity-id">{selectedEdge.source}</span>
+                <span className={styles.attributeValue}>{selectedEdge.source}</span>
               </div>
 
               <div className={styles.attributeItem}>
                 <span className={styles.attributeLabel}>Target</span>
-                <span className="entity-id">{selectedEdge.target}</span>
+                <span className={styles.attributeValue}>{selectedEdge.target}</span>
               </div>
 
               {selectedEdge.amount !== undefined && (
                 <div className={styles.attributeItem}>
                   <span className={styles.attributeLabel}>Transaction Amount</span>
-                  <span className="tabular-nums" style={{ fontSize: '13px', fontWeight: 700 }}>
-                    ${Number(selectedEdge.amount).toLocaleString()}
+                  <span className="tabular-nums" style={{ fontSize: '13px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
+                    {formatCurrency(selectedEdge.amount)}
                   </span>
                 </div>
               )}
@@ -283,8 +268,8 @@ export const GraphExplorerPage: React.FC = () => {
               {selectedEdge.timestamp && (
                 <div className={styles.attributeItem}>
                   <span className={styles.attributeLabel}>Timestamp</span>
-                  <span className="tabular-nums" style={{ fontSize: '11px', color: 'var(--text-2)' }}>
-                    {new Date(selectedEdge.timestamp).toLocaleString()}
+                  <span className="tabular-nums" style={{ fontSize: '11px', color: 'var(--text-2)', fontFamily: 'var(--font-mono)' }}>
+                    {formatDateTime(selectedEdge.timestamp)}
                   </span>
                 </div>
               )}
@@ -292,7 +277,7 @@ export const GraphExplorerPage: React.FC = () => {
               {selectedEdge.externalTransactionId && (
                 <div className={styles.attributeItem}>
                   <span className={styles.attributeLabel}>Transaction ID</span>
-                  <span className="entity-id">{selectedEdge.externalTransactionId}</span>
+                  <span className={styles.attributeValue}>{selectedEdge.externalTransactionId}</span>
                 </div>
               )}
             </div>
@@ -306,3 +291,5 @@ export const GraphExplorerPage: React.FC = () => {
     </div>
   );
 };
+
+export default GraphExplorerPage;

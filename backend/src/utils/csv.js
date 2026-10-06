@@ -18,15 +18,16 @@ export const EXPECTED_HEADERS = [
 export const MAX_BATCH_ROWS = 50000;
 
 export function parseCSVLines(csvText) {
+  const sanitized = csvText ? csvText.replace(/^\uFEFF/, '') : '';
   const rows = [];
   let currentRow = [];
   let currentField = '';
   let inQuotes = false;
   let i = 0;
 
-  while (i < csvText.length) {
-    const char = csvText[i];
-    const nextChar = csvText[i + 1];
+  while (i < sanitized.length) {
+    const char = sanitized[i];
+    const nextChar = sanitized[i + 1];
 
     if (inQuotes) {
       if (char === '"') {
@@ -98,13 +99,14 @@ export function validateAndParseTransactionsCSV(csvText) {
     throw new Error('CSV content is empty');
   }
 
-  const rawRows = parseCSVLines(csvText.trim());
+  const cleanCsvText = csvText.replace(/^\uFEFF/, '');
+  const rawRows = parseCSVLines(cleanCsvText.trim());
   if (rawRows.length === 0) {
     throw new Error('CSV contains no data');
   }
 
   const headers = rawRows[0].map((h) => h.trim());
-  
+
   // Validate headers
   const missingHeaders = EXPECTED_HEADERS.filter((eh) => !headers.includes(eh));
   if (missingHeaders.length > 0) {
@@ -123,6 +125,8 @@ export function validateAndParseTransactionsCSV(csvText) {
 
   const validRecords = [];
   const rejectedRows = [];
+
+  const ISO_8601_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|[+-]\d{2}:\d{2})?$/;
 
   for (let rowIndex = 0; rowIndex < dataRows.length; rowIndex++) {
     const row = dataRows[rowIndex];
@@ -162,7 +166,7 @@ export function validateAndParseTransactionsCSV(csvText) {
     }
 
     const parsedDate = new Date(rawTimestamp);
-    if (!rawTimestamp || isNaN(parsedDate.getTime())) {
+    if (!rawTimestamp || !ISO_8601_REGEX.test(rawTimestamp) || isNaN(parsedDate.getTime())) {
       errors.push(`Invalid timestamp "${rawTimestamp}": must be a valid ISO 8601 date`);
     }
 

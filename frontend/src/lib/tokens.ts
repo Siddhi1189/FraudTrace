@@ -37,4 +37,12 @@ export const graphTokens = {
   get sevMedium() { return getToken('--sev-medium'); },
   get sevHigh() { return getToken('--sev-high'); },
   get sevCritical() { return getToken('--sev-critical'); },
+  get accent() { return getToken('--accent'); },
+  get onPrimary() { return getToken('--on-primary'); },
+  get onSecondary() { return getToken('--on-secondary'); },
+  get onGhost() { return getToken('--on-ghost'); },
+  get onDanger() { return getToken('--on-danger'); },
+  get fontUi() { return getToken('--font-ui') || 'Poppins, sans-serif'; },
+  get fontDisplay() { return getToken('--font-display') || 'EB Garamond, serif'; },
+  get fontMono() { return getToken('--font-mono') || 'JetBrains Mono, monospace'; },
 };

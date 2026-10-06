@@ -9,6 +9,7 @@ import { Device } from '../../models/device.model.js';
 import { Merchant } from '../../models/merchant.model.js';
 import { Transaction } from '../../models/transaction.model.js';
 import { AccountRisk } from '../../models/accountRisk.model.js';
+import { formatAmount } from '../../utils/format.js';
 
 /**
  * Builds a controlled, canonical evidence snapshot for an investigation case.
@@ -22,7 +23,7 @@ export async function buildCaseEvidenceSnapshot(caseId) {
   const caseRecord = await Case.findById(caseId).populate('createdBy', 'name email').lean();
   if (!caseRecord) {
     const error = new Error(`Case not found: ${caseId}`);
-    error.status = 404;
+    error.statusCode = 404;
     throw error;
   }
 
@@ -62,20 +63,21 @@ export async function buildCaseEvidenceSnapshot(caseId) {
   const accountIds = new Set();
   const deviceIds = new Set();
   const merchantIds = new Set();
-  const transactionIds = new Set();
   const externalTxIds = new Set();
 
-  // Extract from alerts evidence
+  // Extract from alerts evidence and entities (I1)
   alerts.forEach((alert) => {
     if (alert.evidence) {
       if (Array.isArray(alert.evidence.transactions)) {
         alert.evidence.transactions.forEach((tx) => {
           if (tx.externalTransactionId) externalTxIds.add(tx.externalTransactionId);
-          if (tx.from) accountIds.add(tx.from);
-          if (tx.to) accountIds.add(tx.to);
+          if (tx.fromAccount) accountIds.add(tx.fromAccount);
+          if (tx.toAccount) accountIds.add(tx.toAccount);
+          if (tx.merchant) merchantIds.add(tx.merchant);
+          if (tx.device) deviceIds.add(tx.device);
         });
       }
-      if (alert.evidence.accounts && Array.isArray(alert.evidence.accounts)) {
+      if (Array.isArray(alert.evidence.accounts)) {
         alert.evidence.accounts.forEach((acc) => accountIds.add(acc));
       }
       if (alert.evidence.device) {
@@ -83,6 +85,26 @@ export async function buildCaseEvidenceSnapshot(caseId) {
       }
       if (alert.evidence.merchant) {
         merchantIds.add(alert.evidence.merchant);
+      }
+      if (alert.evidence.metrics?.merchantId) {
+        merchantIds.add(alert.evidence.metrics.merchantId);
+      }
+      if (alert.evidence.metrics?.account) {
+        accountIds.add(alert.evidence.metrics.account);
+      }
+      if (Array.isArray(alert.evidence.metrics?.sharedDevices)) {
+        alert.evidence.metrics.sharedDevices.forEach((d) => deviceIds.add(d));
+      }
+    }
+    if (alert.entities) {
+      if (Array.isArray(alert.entities.accounts)) {
+        alert.entities.accounts.forEach((a) => accountIds.add(a));
+      }
+      if (Array.isArray(alert.entities.devices)) {
+        alert.entities.devices.forEach((d) => deviceIds.add(d));
+      }
+      if (Array.isArray(alert.entities.merchants)) {
+        alert.entities.merchants.forEach((m) => merchantIds.add(m));
       }
     }
   });
@@ -123,12 +145,18 @@ export async function buildCaseEvidenceSnapshot(caseId) {
     ],
   }).lean();
 
-  // Fetch account risks
+  // Fetch account risks sorted latest first (I2)
   const accountDbIds = resolvedAccounts.map((a) => a._id);
-  const accountRisks = await AccountRisk.find({ accountId: { $in: accountDbIds } }).lean();
+  const accountRisks = await AccountRisk.find({ accountId: { $in: accountDbIds } })
+    .sort({ createdAt: -1 })
+    .lean();
+
   const riskMap = {};
   accountRisks.forEach((r) => {
-    riskMap[r.accountId.toString()] = r.score;
+    const accKey = r.accountId.toString();
+    if (!riskMap[accKey]) {
+      riskMap[accKey] = r;
+    }
   });
 
   // 7. Resolve Transactions from DB
@@ -147,7 +175,7 @@ export async function buildCaseEvidenceSnapshot(caseId) {
     .limit(100) // bounded to prevent runaway payloads
     .lean();
 
-  // 8. Derived Facts (Step 2 of Section 10.1: backend calculates arithmetic/metrics)
+  // 8. Derived Facts (Step 2 of Section 10.1: backend calculates arithmetic/metrics) (I3)
   const totalFlow = resolvedTransactions.reduce((sum, tx) => sum + (tx.amount || 0), 0);
   const txCount = resolvedTransactions.length;
   const uniqueFromAccounts = new Set(
@@ -200,7 +228,7 @@ export async function buildCaseEvidenceSnapshot(caseId) {
     evidenceCatalog.push({
       id: `E-RING-${index + 1}`,
       type: 'RING',
-      summary: `Fraud Ring ${ring.label} (Score: ${ring.score}, Status: ${ring.status}, Total Flow: ₹${ring.totalFlow?.toLocaleString() || 0})`,
+      summary: `Fraud Ring ${ring.label} (Score: ${ring.score}, Status: ${ring.status}, Total Flow: ${formatAmount(ring.totalFlow)})`,
       data: {
         ringId: ring._id.toString(),
         label: ring.label,
@@ -213,17 +241,23 @@ export async function buildCaseEvidenceSnapshot(caseId) {
     });
   });
 
-  // Entity items
+  // Entity items (I4: include whyFlagged & contributors)
   resolvedAccounts.forEach((acc, index) => {
-    const score = riskMap[acc._id.toString()] ?? 0;
+    const latestRisk = riskMap[acc._id.toString()] || {};
+    const score = latestRisk.score ?? 0;
+    const whyFlagged = latestRisk.whyFlagged || [];
+    const contributors = latestRisk.contributors || [];
+
     evidenceCatalog.push({
       id: `E-ACC-${index + 1}`,
       type: 'ACCOUNT',
-      summary: `Account ${acc.externalId} (Assessed Risk Score: ${score}/100)`,
+      summary: `Account ${acc.externalId} (Assessed Risk Score: ${score}/100)${whyFlagged.length > 0 ? ` - ${whyFlagged[0]}` : ''}`,
       data: {
         accountId: acc._id.toString(),
         externalId: acc.externalId,
         riskScore: score,
+        whyFlagged,
+        contributors,
       },
     });
   });
@@ -259,7 +293,7 @@ export async function buildCaseEvidenceSnapshot(caseId) {
     evidenceCatalog.push({
       id: `E-TX-${index + 1}`,
       type: 'TRANSACTION',
-      summary: `Transaction ${tx.externalTransactionId}: ${src} transferred ₹${tx.amount.toLocaleString()} to ${dest} at ${new Date(tx.timestamp).toISOString()}`,
+      summary: `Transaction ${tx.externalTransactionId}: ${src} transferred ${formatAmount(tx.amount)} to ${dest} at ${new Date(tx.timestamp).toISOString()}`,
       data: {
         transactionId: tx._id.toString(),
         externalTransactionId: tx.externalTransactionId,
@@ -291,7 +325,7 @@ export async function buildCaseEvidenceSnapshot(caseId) {
   evidenceCatalog.push({
     id: 'E-FACT-1',
     type: 'DERIVED_METRIC',
-    summary: `Aggregate Transaction Volume: ${txCount} transactions amounting to ₹${totalFlow.toLocaleString()}`,
+    summary: `Aggregate Transaction Volume: ${txCount} transactions amounting to ${formatAmount(totalFlow)}`,
     data: {
       transactionCount: txCount,
       totalVolume: totalFlow,
@@ -324,11 +358,16 @@ export async function buildCaseEvidenceSnapshot(caseId) {
       transactionCount: r.transactionCount,
     })),
     entities: {
-      accounts: resolvedAccounts.map((a) => ({
-        id: a._id.toString(),
-        externalId: a.externalId,
-        riskScore: riskMap[a._id.toString()] ?? 0,
-      })),
+      accounts: resolvedAccounts.map((a) => {
+        const latestRisk = riskMap[a._id.toString()] || {};
+        return {
+          id: a._id.toString(),
+          externalId: a.externalId,
+          riskScore: latestRisk.score ?? 0,
+          whyFlagged: latestRisk.whyFlagged || [],
+          contributors: latestRisk.contributors || [],
+        };
+      }),
       devices: resolvedDevices.map((d) => ({
         id: d._id.toString(),
         externalId: d.externalId,
@@ -366,4 +405,3 @@ export async function buildCaseEvidenceSnapshot(caseId) {
 
   return JSON.parse(JSON.stringify(rawSnapshot));
 }
-

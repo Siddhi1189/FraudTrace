@@ -36,6 +36,12 @@ export interface AccountDetails {
 export interface AccountProfileResponse {
   account: AccountDetails;
   latestRisk: AccountRisk | null;
+  networkDegree?: {
+    inDegree: number;
+    outDegree: number;
+    totalDegree: number;
+  };
+  suspiciousNeighbors?: number;
   recentAlerts: Alert[];
   ringMemberships: Array<{
     _id: string;

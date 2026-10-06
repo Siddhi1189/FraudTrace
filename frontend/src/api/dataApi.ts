@@ -4,10 +4,14 @@ export interface DataBatch {
   _id: string;
   source: 'CSV_UPLOAD' | 'SIMULATION';
   fileName?: string;
-  recordCount: number;
-  validCount: number;
-  duplicateCount: number;
-  errorCount: number;
+  recordCount?: number;
+  acceptedRows?: number;
+  totalRows?: number;
+  rejectedRows?: number;
+  duplicateRows?: number;
+  validCount?: number;
+  duplicateCount?: number;
+  errorCount?: number;
   createdAt: string;
 }
 

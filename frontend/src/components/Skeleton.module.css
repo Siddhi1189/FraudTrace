@@ -1,0 +1,17 @@
+.skeleton {
+  background-color: var(--surface-2);
+  border-radius: var(--radius-xs);
+  animation: ft-pulse-calm 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none !important;
+    opacity: 0.5;
+  }
+}
+
+:global([data-motion="reduced"]) .skeleton {
+  animation: none !important;
+  opacity: 0.5;
+}

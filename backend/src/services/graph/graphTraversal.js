@@ -61,14 +61,16 @@ export function dfsTraversal(graph, startKey, { maxDepth = 3, directed = false }
   return result;
 }
 
-// Shortest Path and Simple Path Analysis
-export function findShortestPath(graph, sourceId, targetId, { directed = false, maxDepth = 6 } = {}) {
+// Shortest Path and Simple Path Analysis (FT-10: maxDepth clamped to 1-6)
+export function findShortestPath(graph, sourceId, targetId, { directed = false, maxDepth = 4 } = {}) {
   const sourceKey = graph.resolveNodeKey(sourceId);
   const targetKey = graph.resolveNodeKey(targetId);
 
   if (!sourceKey || !targetKey || !graph.nodes.has(sourceKey) || !graph.nodes.has(targetKey)) {
     return null;
   }
+
+  const effectiveMaxDepth = Math.max(1, Math.min(Number(maxDepth) || 4, 6));
 
   if (sourceKey === targetKey) {
     return {
@@ -85,7 +87,7 @@ export function findShortestPath(graph, sourceId, targetId, { directed = false, 
   while (queue.length > 0) {
     const { key, pathNodes, pathEdges } = queue.shift();
 
-    if (pathNodes.length - 1 >= maxDepth) continue;
+    if (pathNodes.length - 1 >= effectiveMaxDepth) continue;
 
     const adj = directed
       ? (graph.adjacency.get(key) || []).map((e) => ({ neighborKey: e.targetKey, edge: e }))
@@ -122,8 +124,8 @@ export function findShortestPath(graph, sourceId, targetId, { directed = false, 
   };
 }
 
-// Neighborhood Query for API (enforcing node limits per FT-10)
-export function getNeighborhood(graph, entityId, { depth = 1, limit = 50 } = {}) {
+// Neighborhood Query for API (enforcing node limits and entityType filter per FT-10)
+export function getNeighborhood(graph, entityId, { entityType = null, depth = 1, limit = 50 } = {}) {
   const centerKey = graph.resolveNodeKey(entityId);
   if (!centerKey || !graph.nodes.has(centerKey)) {
     return null;
@@ -148,6 +150,13 @@ export function getNeighborhood(graph, entityId, { depth = 1, limit = 50 } = {})
     const neighbors = graph.undirectedAdjacency.get(key) || [];
 
     for (const { neighborKey, edge } of neighbors) {
+      const neighborNode = graph.nodes.get(neighborKey);
+
+      // FT-10: Optional entityType filtering
+      if (entityType && neighborNode && neighborNode.entityType !== entityType) {
+        continue;
+      }
+
       // Check node limit before visiting new node
       if (!visitedNodeKeys.has(neighborKey)) {
         if (visitedNodeKeys.size >= nodeLimit) {

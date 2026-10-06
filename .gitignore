@@ -1,13 +1,18 @@
 # Dependencies
 node_modules/
+**/node_modules/
 
 # Production builds
 dist/
+**/dist/
 
 # Environment files (except .env.example)
 .env
 .env.*
+**/.env
+**/.env.*
 !.env.example
+!**/.env.example
 
 # Build info and caches
 *.tsbuildinfo
@@ -15,4 +20,5 @@ tsconfig.tsbuildinfo
 
 # Logs & System
 *.log
+**/*.log
 .DS_Store

@@ -1,10 +1,14 @@
 import { AIBrief, ANALYST_DECISIONS } from '../models/aiBrief.model.js';
 import { Case } from '../models/case.model.js';
 import { CaseEvent } from '../models/caseEvent.model.js';
-import { buildCaseEvidenceSnapshot } from './ai/evidenceBuilder.js';
-import { generateEvidenceHash } from './ai/evidenceHasher.js';
+import { buildCaseEvidenceSnapshot } from './evidence/evidenceBuilder.js';
+import { generateEvidenceHash } from './evidence/evidenceHasher.js';
 import { executeAiQuery } from './ai/llmClient.js';
 import { verifyAiOutput } from './ai/aiVerifier.js';
+import {
+  generateDeterministicBrief,
+  answerQuestionDeterministically,
+} from './ai/deterministicFallback.js';
 import { emitSocketEvent } from '../socket/index.js';
 
 /**
@@ -18,7 +22,7 @@ import { emitSocketEvent } from '../socket/index.js';
 export async function createBrief({ caseId, userId }) {
   if (!caseId) {
     const error = new Error('Case ID is required');
-    error.status = 400;
+    error.statusCode = 400;
     throw error;
   }
 
@@ -26,7 +30,7 @@ export async function createBrief({ caseId, userId }) {
   const caseRecord = await Case.findById(caseId);
   if (!caseRecord) {
     const error = new Error(`Case not found: ${caseId}`);
-    error.status = 404;
+    error.statusCode = 404;
     throw error;
   }
 
@@ -49,6 +53,30 @@ export async function createBrief({ caseId, userId }) {
     isFallback
   );
 
+  let finalOutput = structuredOutput;
+  let finalModel = model;
+  let finalStatus = verificationStatus;
+
+  // I6: If UNVERIFIED, persist deterministic fallback as shown output with rejection errors in verificationErrors
+  if (verificationStatus === 'UNVERIFIED') {
+    finalOutput = generateDeterministicBrief(evidenceSnapshot);
+    finalModel = 'deterministic-fallback';
+    finalStatus = 'FALLBACK';
+  } else if (verificationStatus === 'PARTIALLY_VERIFIED') {
+    // Filter out unverified findings before display (I6)
+    const catalog = evidenceSnapshot.evidenceCatalog || [];
+    const validEvidenceIds = new Set(catalog.map((i) => i.id));
+    if (Array.isArray(finalOutput?.findings)) {
+      finalOutput = {
+        ...finalOutput,
+        findings: finalOutput.findings.filter((f) => {
+          const citedIds = Array.isArray(f.evidenceIds) ? f.evidenceIds : [];
+          return citedIds.length > 0 && citedIds.every((id) => validEvidenceIds.has(id));
+        }),
+      };
+    }
+  }
+
   // 6. Persist AIBrief
   const brief = await AIBrief.create({
     caseId,
@@ -56,10 +84,10 @@ export async function createBrief({ caseId, userId }) {
     question: null,
     evidenceSnapshot,
     evidenceHash,
-    structuredOutput,
-    verificationStatus,
+    structuredOutput: finalOutput,
+    verificationStatus: finalStatus,
     verificationErrors,
-    model,
+    model: finalModel,
     promptVersion,
     analystDecision: 'PENDING',
     editedText: null,
@@ -73,8 +101,8 @@ export async function createBrief({ caseId, userId }) {
     metadata: {
       briefId: brief._id,
       kind: brief.kind,
-      model,
-      verificationStatus,
+      model: finalModel,
+      verificationStatus: finalStatus,
       evidenceHash,
     },
     createdBy: userId || null,
@@ -101,7 +129,7 @@ export async function getBriefById(id) {
   const brief = await AIBrief.findById(id).lean();
   if (!brief) {
     const error = new Error(`AI Brief not found: ${id}`);
-    error.status = 404;
+    error.statusCode = 404;
     throw error;
   }
   return brief;
@@ -122,7 +150,7 @@ export async function updateBrief(id, { analystDecision, editedText }, userId) {
   const brief = await AIBrief.findById(id);
   if (!brief) {
     const error = new Error(`AI Brief not found: ${id}`);
-    error.status = 404;
+    error.statusCode = 404;
     throw error;
   }
 
@@ -132,7 +160,7 @@ export async function updateBrief(id, { analystDecision, editedText }, userId) {
       const error = new Error(
         `Invalid analystDecision: ${analystDecision}. Allowed: ${ANALYST_DECISIONS.join(', ')}`
       );
-      error.status = 400;
+      error.statusCode = 400;
       throw error;
     }
     brief.analystDecision = analystDecision;
@@ -177,20 +205,20 @@ export async function updateBrief(id, { analystDecision, editedText }, userId) {
 export async function askCaseQuestion(caseId, { question, userId }) {
   if (!caseId) {
     const error = new Error('Case ID is required');
-    error.status = 400;
+    error.statusCode = 400;
     throw error;
   }
 
   if (!question || typeof question !== 'string' || !question.trim()) {
     const error = new Error('Investigation question cannot be empty');
-    error.status = 400;
+    error.statusCode = 400;
     throw error;
   }
 
   const caseRecord = await Case.findById(caseId);
   if (!caseRecord) {
     const error = new Error(`Case not found: ${caseId}`);
-    error.status = 404;
+    error.statusCode = 404;
     throw error;
   }
 
@@ -214,6 +242,17 @@ export async function askCaseQuestion(caseId, { question, userId }) {
     isFallback
   );
 
+  let finalOutput = structuredOutput;
+  let finalModel = model;
+  let finalStatus = verificationStatus;
+
+  // I6: If UNVERIFIED, persist deterministic fallback as shown output
+  if (verificationStatus === 'UNVERIFIED') {
+    finalOutput = answerQuestionDeterministically(question.trim(), evidenceSnapshot);
+    finalModel = 'deterministic-fallback';
+    finalStatus = 'FALLBACK';
+  }
+
   // 5. Persist AIBrief
   const brief = await AIBrief.create({
     caseId,
@@ -221,10 +260,10 @@ export async function askCaseQuestion(caseId, { question, userId }) {
     question: question.trim(),
     evidenceSnapshot,
     evidenceHash,
-    structuredOutput,
-    verificationStatus,
+    structuredOutput: finalOutput,
+    verificationStatus: finalStatus,
     verificationErrors,
-    model,
+    model: finalModel,
     promptVersion,
     analystDecision: 'PENDING',
     editedText: null,
@@ -238,7 +277,7 @@ export async function askCaseQuestion(caseId, { question, userId }) {
     metadata: {
       briefId: brief._id,
       question: question.trim(),
-      verificationStatus,
+      verificationStatus: finalStatus,
     },
     createdBy: userId || null,
     createdAt: new Date(),

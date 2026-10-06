@@ -7,11 +7,15 @@ import { RiskBadge } from '../../components/RiskBadge';
 import { SeverityBadge } from '../../components/SeverityBadge';
 import { TriageStatusBadge } from '../../components/TriageStatusBadge';
 import { Badge } from '../../components/common/Badge';
-import { Button } from '../../components/common/Button';
+import { Button, LinkButton } from '../../components/common/Button';
 import { Table, Column } from '../../components/common/Table';
 import { StateView } from '../../components/common/StateView';
+import { PageHeader } from '../../components/PageHeader';
+import { Card } from '../../components/Card';
 import { Icon } from '../../components/common/Icons';
+import { CountUpText } from '../../components/motion/CountUpText';
 import { GraphNodeData, GraphEdgeData } from '../../api/graphApi';
+import { formatCurrency, formatDateTime } from '../../lib/format';
 import styles from './RingDetailPage.module.css';
 
 export const RingDetailPage: React.FC = () => {
@@ -21,6 +25,7 @@ export const RingDetailPage: React.FC = () => {
   const [ring, setRing] = useState<FraudRingDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [barsLoaded, setBarsLoaded] = useState(false);
 
   const [graphNodes, setGraphNodes] = useState<GraphNodeData[]>([]);
   const [graphEdges, setGraphEdges] = useState<GraphEdgeData[]>([]);
@@ -122,6 +127,9 @@ export const RingDetailPage: React.FC = () => {
 
         setGraphNodes(Array.from(nodesMap.values()));
         setGraphEdges(edgesList);
+
+        // Animate bars on load
+        setTimeout(() => setBarsLoaded(true), 150);
       } catch (err: unknown) {
         console.error('Failed to load ring detail:', err);
         setError('Unable to load fraud ring workspace.');
@@ -159,24 +167,16 @@ export const RingDetailPage: React.FC = () => {
 
         if (m.entityType === 'ACCOUNT') {
           return (
-            <button
-              onClick={() => navigate(`/accounts/${mongoId}`)}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                color: 'var(--primary)',
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontFamily: 'var(--font-body)',
-              }}
-              className="entity-id"
+            <LinkButton
+              to={`/accounts/${mongoId}`}
+              variant="ghost"
+              size="sm"
             >
-              {extId}
-            </button>
+              <span style={{ fontFamily: 'var(--font-mono)' }}>{extId}</span>
+            </LinkButton>
           );
         }
-        return <span className="entity-id">{extId}</span>;
+        return <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px' }}>{extId}</span>;
       },
     },
   ];
@@ -186,7 +186,7 @@ export const RingDetailPage: React.FC = () => {
       key: 'pattern',
       title: 'Pattern',
       render: (a) => (
-        <span style={{ fontWeight: 600, color: 'var(--text)' }}>
+        <span style={{ fontWeight: 500, color: 'var(--text)' }}>
           {a.pattern.replace(/_/g, ' ')}
         </span>
       ),
@@ -214,8 +214,8 @@ export const RingDetailPage: React.FC = () => {
       title: 'Detected',
       width: '110px',
       render: (a) => (
-        <span className="tabular-nums" style={{ color: 'var(--text-3)' }}>
-          {new Date(a.createdAt).toLocaleDateString()}
+        <span className="tabular-nums" style={{ color: 'var(--text-3)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+          {formatDateTime(a.createdAt)}
         </span>
       ),
     },
@@ -238,31 +238,29 @@ export const RingDetailPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      {/* Header */}
-      <div className={styles.headerRow}>
-        <div className={styles.titleArea}>
-          <div className={styles.breadcrumbs}>
-            <button className={styles.backBtn} onClick={() => navigate('/rings')}>
-              <Icon name="arrowLeft" size={12} />
-              <span>All Rings</span>
-            </button>
-            <span>/</span>
-            <span>{ring.label}</span>
-          </div>
-
-          <div className={styles.titleWithBadges}>
-            <h1 className={styles.title}>{ring.label}</h1>
-            <Badge variant={ring.status === 'ACTIVE' ? 'high' : 'neutral'}>
-              {ring.status}
-            </Badge>
-            <RiskBadge score={ring.score} />
-          </div>
-        </div>
-
-        <Button variant="secondary" compact onClick={() => navigate('/graph')}>
-          <Icon name="graph" size={13} />
-          <span>Open in Graph Explorer</span>
-        </Button>
+      {/* Breadcrumb + PageHeader */}
+      <div>
+        <PageHeader
+          kicker="03 — FRAUD RING DETAIL"
+          breadcrumbs={[
+            { label: 'All Rings', onClick: () => navigate('/rings') },
+            { label: ring.label },
+          ]}
+          title={ring.label}
+          subtitle={`Coordinated fraud cluster involving ${ring.members?.length || 0} entities and ${ring.transactionCount || 0} transactions.`}
+          actions={
+            <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+              <Badge variant={ring.status === 'ACTIVE' ? 'high' : 'neutral'}>
+                {ring.status}
+              </Badge>
+              <RiskBadge score={ring.score} />
+              <Button variant="secondary" size="sm" onClick={() => navigate('/graph')}>
+                <Icon name="graph" size={13} />
+                <span>Open in Graph Explorer</span>
+              </Button>
+            </div>
+          }
+        />
       </div>
 
       {/* Meta Statistics Grid */}
@@ -270,30 +268,40 @@ export const RingDetailPage: React.FC = () => {
         <div className={styles.metaBox}>
           <span className={styles.metaLabel}>Coordinated Flow</span>
           <span className={styles.metaValue}>
-            ${Number(ring.totalFlow || 0).toLocaleString()}
+            {formatCurrency(ring.totalFlow)}
           </span>
         </div>
         <div className={styles.metaBox}>
           <span className={styles.metaLabel}>Transactions</span>
-          <span className={styles.metaValue}>{ring.transactionCount || 0}</span>
+          <span className={styles.metaValue}>
+            <CountUpText value={ring.transactionCount || 0} />
+          </span>
         </div>
         <div className={styles.metaBox}>
           <span className={styles.metaLabel}>Ring Members</span>
-          <span className={styles.metaValue}>{ring.members?.length || 0}</span>
+          <span className={styles.metaValue}>
+            <CountUpText value={ring.members?.length || 0} />
+          </span>
         </div>
         <div className={styles.metaBox}>
-          <span className={styles.metaLabel}>Associated Alerts</span>
-          <span className={styles.metaValue}>{ring.alerts?.length || 0}</span>
+          <span className={styles.metaLabel}>Risk Score</span>
+          <span className={styles.metaValue}>
+            <CountUpText value={ring.score || 0} suffix=" / 100" />
+          </span>
         </div>
       </div>
 
-      {/* Ring Topology Subgraph */}
-      <div className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>Ring Network Topology</h2>
-          <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>
-            Interactive local cluster
-          </span>
+      {/* Topology Subgraph */}
+      <Card variant="default">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+          <div>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--text)', margin: 0 }}>
+              Ring Network Topology
+            </h2>
+            <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>
+              Interactive local cluster subgraph
+            </span>
+          </div>
         </div>
 
         <div className={styles.graphContainer}>
@@ -307,15 +315,51 @@ export const RingDetailPage: React.FC = () => {
             }}
           />
         </div>
-      </div>
+      </Card>
 
-      {/* Details Grid: Members & Alerts */}
+      {/* Contributor Signals (Why Flagged?) */}
+      <Card variant="default">
+        <div style={{ marginBottom: 'var(--space-4)' }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--text)', margin: 0 }}>
+            Why Flagged? (Topological Signals)
+          </h2>
+          <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>
+            Deterministic pattern evidence detected across the entity cluster
+          </span>
+        </div>
+
+        <div className={styles.contributorList}>
+          {ring.patterns.map((p, idx) => (
+            <div key={p} className={styles.contributorItem}>
+              <div className={styles.contributorHeader}>
+                <span>{p.replace(/_/g, ' ')}</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--accent)' }}>
+                  Detected
+                </span>
+              </div>
+              <div className={styles.contributorBarTrack}>
+                <div
+                  className={styles.contributorBarFill}
+                  style={{
+                    transform: barsLoaded ? 'scaleX(1)' : 'scaleX(0)',
+                    transitionDelay: `${idx * 100}ms`,
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Members & Alerts Table Grid */}
       <div className={styles.detailGrid}>
-        <div className={styles.card}>
-          <div className={styles.cardHeader}>
-            <h2 className={styles.cardTitle}>Ring Members</h2>
+        <Card variant="default">
+          <div style={{ marginBottom: 'var(--space-3)' }}>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--text)', margin: 0 }}>
+              Ring Members ({ring.members?.length || 0})
+            </h2>
             <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>
-              {ring.members?.length || 0} linked entities
+              Linked accounts, hardware devices, and merchants
             </span>
           </div>
 
@@ -323,15 +367,17 @@ export const RingDetailPage: React.FC = () => {
             columns={memberColumns}
             data={ring.members || []}
             keyExtractor={(m, idx) => `${m.entityType}-${idx}`}
-            emptyMessage="No member entities recorded in this ring."
+            emptyText="No member entities recorded in this ring."
           />
-        </div>
+        </Card>
 
-        <div className={styles.card}>
-          <div className={styles.cardHeader}>
-            <h2 className={styles.cardTitle}>Correlated Alerts</h2>
+        <Card variant="default">
+          <div style={{ marginBottom: 'var(--space-3)' }}>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--text)', margin: 0 }}>
+              Correlated Alerts ({ring.alerts?.length || 0})
+            </h2>
             <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>
-              {ring.alerts?.length || 0} alerts
+              Individual detector signals clustered into this dossier
             </span>
           </div>
 
@@ -340,10 +386,12 @@ export const RingDetailPage: React.FC = () => {
             data={ring.alerts || []}
             keyExtractor={(a) => a._id}
             onRowClick={() => navigate('/alerts')}
-            emptyMessage="No alerts attached to this ring."
+            emptyText="No alerts attached to this ring."
           />
-        </div>
+        </Card>
       </div>
     </div>
   );
 };
+
+export default RingDetailPage;

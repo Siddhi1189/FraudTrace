@@ -1,13 +1,20 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchCases, createCase, CaseItem } from '../api/casesApi';
-import { fetchAlerts, AlertItem } from '../api/alertsApi';
-import { CaseStatusBadge } from '../components/CaseStatusBadge';
-import { CaseDispositionBadge } from '../components/CaseDispositionBadge';
-import { Button } from '../components/common/Button';
-import { Table, Column } from '../components/common/Table';
-import { StateView } from '../components/common/StateView';
-import { Icon } from '../components/common/Icons';
+import { fetchCases, createCase, CaseItem } from '../../api/casesApi';
+import { fetchAlerts, AlertItem } from '../../api/alertsApi';
+import { CaseStatusBadge } from '../../components/CaseStatusBadge';
+import { CaseDispositionBadge } from '../../components/CaseDispositionBadge';
+import { Button } from '../../components/common/Button';
+import { Table, Column } from '../../components/common/Table';
+import { StateView } from '../../components/common/StateView';
+import { PageHeader } from '../../components/PageHeader';
+import { Card } from '../../components/Card';
+import { FilterBar } from '../../components/FilterBar';
+import { Modal } from '../../components/Modal';
+import { Field } from '../../components/Field';
+import { Banner } from '../../components/Banner';
+import { Icon } from '../../components/common/Icons';
+import { formatDateTime } from '../../lib/format';
 import styles from './CasesListPage.module.css';
 
 export const CasesListPage: React.FC = () => {
@@ -114,7 +121,7 @@ export const CasesListPage: React.FC = () => {
       title: 'Case ID',
       width: '110px',
       render: (c) => (
-        <span className="entity-id" style={{ color: 'var(--primary)', fontWeight: 600 }}>
+        <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--primary)', fontWeight: 600, fontSize: '12px' }}>
           {c.caseNumber}
         </span>
       ),
@@ -141,22 +148,22 @@ export const CasesListPage: React.FC = () => {
       render: (c) => <CaseDispositionBadge disposition={c.disposition} />,
     },
     {
-      key: 'alertCount',
+      key: 'alerts',
       title: 'Alerts',
       width: '80px',
       align: 'right',
       render: (c) => (
-        <span className="tabular-nums">
-          {c.alertCount !== undefined ? c.alertCount : '-'}
+        <span className="tabular-nums" style={{ fontFamily: 'var(--font-mono)' }}>
+          {c.alertCount ?? 0}
         </span>
       ),
     },
     {
       key: 'createdBy',
       title: 'Investigator',
-      width: '130px',
+      width: '140px',
       render: (c) => (
-        <span style={{ color: 'var(--text-2)' }}>
+        <span style={{ fontSize: '12px', color: 'var(--text-2)' }}>
           {c.createdBy?.name || 'Analyst'}
         </span>
       ),
@@ -166,8 +173,8 @@ export const CasesListPage: React.FC = () => {
       title: 'Created',
       width: '110px',
       render: (c) => (
-        <span className="tabular-nums" style={{ color: 'var(--text-3)' }}>
-          {new Date(c.createdAt).toLocaleDateString()}
+        <span className="tabular-nums" style={{ color: 'var(--text-3)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+          {formatDateTime(c.createdAt)}
         </span>
       ),
     },
@@ -179,7 +186,7 @@ export const CasesListPage: React.FC = () => {
       render: (c) => (
         <Button
           variant="ghost"
-          compact
+          size="sm"
           onClick={(e) => {
             e.stopPropagation();
             navigate(`/cases/${c._id}`);
@@ -202,28 +209,30 @@ export const CasesListPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      {/* Header */}
-      <div className={styles.headerRow}>
-        <div className={styles.titleArea}>
-          <h1 className={styles.title}>Cases Directory</h1>
-          <p className={styles.subtitle}>
-            Manage investigation cases, track assigned alert evidence, and record investigation dispositions.
-          </p>
-        </div>
+      <PageHeader
+        kicker="05 — CASES"
+        title="Cases Directory"
+        subtitle="Active fraud dossiers, investigator audit logs, entity notes, and AI-synthesized forensic briefs."
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <Button variant="secondary" size="sm" onClick={loadCases}>
+              <Icon name="refresh" size={13} />
+              <span>Refresh</span>
+            </Button>
+            <Button variant="primary" size="sm" onClick={openCreateModal}>
+              <Icon name="plus" size={13} />
+              <span>Create Case</span>
+            </Button>
+          </div>
+        }
+      />
 
-        <Button variant="primary" compact onClick={openCreateModal}>
-          <Icon name="plus" size={13} />
-          <span>New case</span>
-        </Button>
-      </div>
-
-      {/* Filter Bar */}
-      <div className={styles.filterBar}>
+      <FilterBar>
         <div className={styles.searchBox}>
           <Icon name="search" size={14} />
           <input
             type="text"
-            placeholder="Search by case number, title, or investigator..."
+            placeholder="Search cases by ID, title, or analyst..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className={styles.searchInput}
@@ -233,114 +242,112 @@ export const CasesListPage: React.FC = () => {
 
         <div className={styles.selectGroup}>
           <Icon name="filter" size={14} />
-
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className={styles.select}
-            aria-label="Filter by case status"
+            aria-label="Filter cases by status"
           >
             <option value="ALL">All Statuses</option>
             <option value="OPEN">Open</option>
             <option value="INVESTIGATING">Investigating</option>
-            <option value="CLOSED">Closed</option>
+            <option value="RESOLVED">Resolved</option>
+            <option value="DISMISSED">Dismissed</option>
           </select>
 
           <select
             value={dispositionFilter}
             onChange={(e) => setDispositionFilter(e.target.value)}
             className={styles.select}
-            aria-label="Filter by disposition"
+            aria-label="Filter cases by disposition"
           >
             <option value="ALL">All Dispositions</option>
+            <option value="PENDING">Pending</option>
             <option value="CONFIRMED_FRAUD">Confirmed Fraud</option>
             <option value="FALSE_POSITIVE">False Positive</option>
-            <option value="INCONCLUSIVE">Inconclusive</option>
+            <option value="SUSPICIOUS">Suspicious</option>
+            <option value="NO_ACTION">No Action</option>
           </select>
-
-          <Button variant="secondary" compact onClick={loadCases}>
-            <Icon name="refresh" size={13} />
-            <span>Refresh</span>
-          </Button>
         </div>
-      </div>
+      </FilterBar>
 
-      {/* Cases Table */}
-      <div className={styles.card}>
+      <Card variant="default">
         <Table
           columns={columns}
           data={filteredCases}
-          keyExtractor={(c) => c._id}
-          onRowClick={(c) => navigate(`/cases/${c._id}`)}
-          emptyMessage="No cases found matching current filters."
+          keyExtractor={(item) => item._id}
+          onRowClick={(item) => navigate(`/cases/${item._id}`)}
+          emptyText="No investigation cases match the active criteria."
         />
-      </div>
+      </Card>
 
-      {/* Create Case Modal */}
-      {showCreateModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowCreateModal(false)}>
-          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>Create New Investigation Case</h2>
-              <Button variant="ghost" compact onClick={() => setShowCreateModal(false)} aria-label="Close modal">
-                <Icon name="close" size={14} />
-              </Button>
-            </div>
+      {/* Shared Modal for Case Creation */}
+      <Modal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title="Create New Investigation Case"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setShowCreateModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" disabled={creating} onClick={handleCreateSubmit}>
+              {creating ? 'Creating...' : 'Create Case'}
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          {createError && <Banner variant="error">{createError}</Banner>}
 
-            {createError && (
-              <div style={{ color: 'var(--sev-high-text)', backgroundColor: 'var(--sev-high-bg)', padding: '8px 12px', borderRadius: '2px', fontSize: '11px' }}>
-                {createError}
-              </div>
-            )}
+          <Field label="Case Title" htmlFor="caseTitle" required>
+            <input
+              id="caseTitle"
+              type="text"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              placeholder="e.g. Investigation: Mule Cluster Alpha..."
+              style={{
+                width: '100%',
+                height: '36px',
+                padding: '0 var(--space-3)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-sm)',
+                backgroundColor: 'var(--surface-2)',
+                color: 'var(--text)',
+                fontSize: '12px',
+              }}
+            />
+          </Field>
 
-            <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div className={styles.field}>
-                <label htmlFor="caseTitle" className={styles.fieldLabel}>
-                  Case Title *
-                </label>
-                <input
-                  id="caseTitle"
-                  type="text"
-                  required
-                  placeholder="e.g. Circular flow cluster investigation - Alpha"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  className={styles.fieldInput}
-                />
-              </div>
-
-              <div className={styles.field}>
-                <label htmlFor="initialAlert" className={styles.fieldLabel}>
-                  Attach Initial Alert (Optional)
-                </label>
-                <select
-                  id="initialAlert"
-                  value={selectedAlertId}
-                  onChange={(e) => setSelectedAlertId(e.target.value)}
-                  className={styles.select}
-                  style={{ height: '32px' }}
-                >
-                  <option value="">-- No initial alert --</option>
-                  {availableAlerts.map((a) => (
-                    <option key={a._id} value={a._id}>
-                      {a.pattern} (Score: {a.score}) - {a.fingerprint.slice(0, 16)}...
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className={styles.modalFooter}>
-                <Button variant="secondary" compact type="button" onClick={() => setShowCreateModal(false)}>
-                  <span>Cancel</span>
-                </Button>
-                <Button variant="primary" compact type="submit" disabled={creating}>
-                  <span>{creating ? 'Creating...' : 'Create case'}</span>
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+          <Field label="Link Initial Alert (Optional)" htmlFor="initialAlert">
+            <select
+              id="initialAlert"
+              value={selectedAlertId}
+              onChange={(e) => setSelectedAlertId(e.target.value)}
+              style={{
+                width: '100%',
+                height: '36px',
+                padding: '0 var(--space-3)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-sm)',
+                backgroundColor: 'var(--surface-2)',
+                color: 'var(--text)',
+                fontSize: '12px',
+              }}
+            >
+              <option value="">-- No initial alert --</option>
+              {availableAlerts.map((a) => (
+                <option key={a._id} value={a._id}>
+                  {a.pattern.replace(/_/g, ' ')} ({a.severity} - Score {a.score})
+                </option>
+              ))}
+            </select>
+          </Field>
+        </form>
+      </Modal>
     </div>
   );
 };
+
+export default CasesListPage;

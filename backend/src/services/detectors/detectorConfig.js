@@ -1,12 +1,16 @@
 /**
  * Configuration and default thresholds for FraudTrace fraud detectors.
  * PLACEHOLDER(FT-11): active detector thresholds and rule version format.
+ * PLACEHOLDER(FT-27): RULE_VERSION v1.0.1
+ * PLACEHOLDER(FT-29): maxAlertHubDegree and sharedDeviceThreshold
  */
 
-export const RULE_VERSION = 'v1.0.0';
+export const RULE_VERSION = 'v1.0.1';
 
 export const DEFAULT_DETECTOR_CONFIG = {
   ruleVersion: RULE_VERSION,
+  maxAlertHubDegree: 3,
+  sharedDeviceThreshold: 3,
   circularFlow: {
     minLength: 3,
     maxLength: 5,

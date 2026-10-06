@@ -17,7 +17,7 @@ interface LoginResponse {
   user: User;
 }
 
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;

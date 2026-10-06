@@ -2,8 +2,17 @@ import * as alertService from '../services/alert.service.js';
 
 export async function getAlerts(req, res, next) {
   try {
-    const { severity, pattern, triageStatus, ringId, analysisRunId } = req.query;
-    const alerts = await alertService.getAlerts({ severity, pattern, triageStatus, ringId, analysisRunId });
+    const { severity, pattern, triageStatus, ringId, analysisRunId, minScore, maxScore, score } = req.query;
+    const alerts = await alertService.getAlerts({
+      severity,
+      pattern,
+      triageStatus,
+      ringId,
+      analysisRunId,
+      minScore,
+      maxScore,
+      score,
+    });
     return res.status(200).json({ alerts, count: alerts.length });
   } catch (error) {
     next(error);

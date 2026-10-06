@@ -1,19 +1,27 @@
 <!DOCTYPE html>
 
-<html lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>FraudTrace - Detection Rules &amp; Data Management</title>
-<!-- Material Symbols Outlined -->
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<!-- Fonts -->
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<!-- Tailwind CSS -->
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>FraudTrace - Detection Rules &amp; Data Management</title>
+  <!-- Material Symbols Outlined -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
     tailwind.config = {
       darkMode: "class",
       theme: {
@@ -36,7 +44,7 @@
             "surface-bright": "#fbf9f4",
             "primary-fixed-dim": "#b0cadd",
             "surface-container-highest": "#e4e2dd",
-            "on-error-container": "#93000a",
+            "on-error-container": "#95000a",
             "inverse-surface": "#30312e",
             "tertiary-fixed": "#fed6ff",
             "surface-container": "#f0eee9",
@@ -114,560 +122,671 @@
     }
   </script>
 </head>
-<body class="bg-background text-on-surface antialiased flex h-screen overflow-hidden selection:bg-surface-variant selection:text-primary">
-<!-- Side Navigation Bar from JSON Anchor -->
-<aside class="bg-secondary-container dark:bg-surface-container border-r border-outline-variant dark:border-outline docked full-height left-0 w-60 flex flex-col justify-between h-full py-space-md px-space-sm flex-shrink-0 z-20">
-<div class="flex flex-col gap-space-md">
-<!-- Monogram Header -->
-<div class="px-space-md pt-space-xs pb-space-sm border-b border-outline-variant">
-<div class="flex items-center gap-space-sm">
-<div class="w-7 h-7 bg-primary text-on-primary flex items-center justify-center rounded font-headline-sm text-headline-sm">
+
+<body
+  class="bg-background text-on-surface antialiased flex h-screen overflow-hidden selection:bg-surface-variant selection:text-primary">
+  <!-- Side Navigation Bar from JSON Anchor -->
+  <aside
+    class="bg-secondary-container dark:bg-surface-container border-r border-outline-variant dark:border-outline docked full-height left-0 w-60 flex flex-col justify-between h-full py-space-md px-space-sm flex-shrink-0 z-20">
+    <div class="flex flex-col gap-space-md">
+      <!-- Monogram Header -->
+      <div class="px-space-md pt-space-xs pb-space-sm border-b border-outline-variant">
+        <div class="flex items-center gap-space-sm">
+          <div
+            class="w-7 h-7 bg-primary text-on-primary flex items-center justify-center rounded font-headline-sm text-headline-sm">
             FT
           </div>
-<div>
-<div class="text-headline-md font-headline-md text-on-surface dark:text-inverse-on-surface tracking-tight uppercase">FraudTrace</div>
-<div class="font-label-sm text-label-sm text-on-surface-variant">Forensic Ledger Console</div>
-</div>
-</div>
-</div>
-<!-- Quick Action CTA -->
-<div class="px-space-xs">
-<button class="w-full flex items-center justify-center gap-space-xs bg-primary text-on-primary py-space-xs px-space-md rounded text-label-md font-label-md hover:bg-primary-container transition-colors duration-150">
-<span class="material-symbols-outlined text-[16px]">add</span>
-<span>New Investigation</span>
-</button>
-</div>
-<!-- Navigation Tabs (8 tabs from JSON) -->
-<nav class="flex flex-col gap-space-3xs px-space-xs">
-<!-- 1. Dashboard -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors duration-150 rounded-lg" href="#">
-<span class="material-symbols-outlined text-[18px]">dashboard</span>
-<span>Dashboard</span>
-</a>
-<!-- 2. Alerts -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors duration-150 rounded-lg" href="#">
-<span class="material-symbols-outlined text-[18px]">notifications_active</span>
-<span>Alerts</span>
-</a>
-<!-- 3. Fraud Rings -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors duration-150 rounded-lg" href="#">
-<span class="material-symbols-outlined text-[18px]">groups</span>
-<span>Fraud Rings</span>
-</a>
-<!-- 4. Accounts -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors duration-150 rounded-lg" href="#">
-<span class="material-symbols-outlined text-[18px]">account_balance</span>
-<span>Accounts</span>
-</a>
-<!-- 5. Graph Explorer -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors duration-150 rounded-lg" href="#">
-<span class="material-symbols-outlined text-[18px]">hub</span>
-<span>Graph Explorer</span>
-</a>
-<!-- 6. Cases -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors duration-150 rounded-lg" href="#">
-<span class="material-symbols-outlined text-[18px]">folder_shared</span>
-<span>Cases</span>
-</a>
-<!-- 7. Data Management -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors duration-150 rounded-lg" href="#">
-<span class="material-symbols-outlined text-[18px]">database</span>
-<span>Data Management</span>
-</a>
-<!-- 8. Detection Rules (Active as required) -->
-<a class="flex items-center gap-space-sm px-space-md py-space-xs bg-primary-container dark:bg-primary text-on-primary rounded-lg border-l-2 border-primary font-label-md text-label-md cursor-pointer" href="#">
-<span class="material-symbols-outlined text-[18px]">rule</span>
-<span>Detection Rules</span>
-</a>
-</nav>
-</div>
-<!-- Footer Controls -->
-<div class="flex flex-col gap-space-3xs border-t border-outline-variant pt-space-sm px-space-xs">
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors duration-150 rounded-lg" href="#">
-<span class="material-symbols-outlined text-[18px]">history</span>
-<span>Audit Log</span>
-</a>
-<a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors duration-150 rounded-lg" href="#">
-<span class="material-symbols-outlined text-[18px]">settings</span>
-<span>Settings</span>
-</a>
-<!-- System Telemetry Badge -->
-<div class="mt-space-xs px-space-md py-space-xs bg-surface-container rounded border border-outline-variant text-[10px] text-on-surface-variant font-code-sm flex items-center justify-between">
-<span>ENGINE v4.19-LTS</span>
-<span class="inline-block w-2 h-2 rounded-full bg-emerald-600"></span>
-</div>
-</div>
-</aside>
-<!-- Main Workstation Viewport -->
-<div class="flex flex-col flex-1 h-full min-w-0 overflow-hidden bg-background">
-<!-- Top Navigation Bar from JSON Anchor -->
-<header class="flex justify-between items-center w-full px-space-md h-12 border-b border-outline-variant dark:border-outline bg-surface-container-lowest dark:bg-surface-container-low flex-shrink-0 z-10">
-<!-- Breadcrumb Cluster -->
-<div class="flex items-center gap-space-sm">
-<div class="text-headline-sm font-headline-sm text-primary dark:text-inverse-primary font-semibold">
+          <div>
+            <div
+              class="text-headline-md font-headline-md text-on-surface dark:text-inverse-on-surface tracking-tight uppercase">
+              FraudTrace</div>
+            <div class="font-label-sm text-label-sm text-on-surface-variant">Forensic Ledger Console</div>
+          </div>
+        </div>
+      </div>
+      <!-- Quick Action CTA -->
+      <div class="px-space-xs">
+        <button
+          class="w-full flex items-center justify-center gap-space-xs bg-primary text-on-primary py-space-xs px-space-md rounded text-label-md font-label-md hover:bg-primary-container transition-colors duration-150">
+          <span class="material-symbols-outlined text-[16px]">add</span>
+          <span>New Investigation</span>
+        </button>
+      </div>
+      <!-- Navigation Tabs (8 tabs from JSON) -->
+      <nav class="flex flex-col gap-space-3xs px-space-xs">
+        <!-- 1. Dashboard -->
+        <a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors duration-150 rounded-lg"
+          href="#">
+          <span class="material-symbols-outlined text-[18px]">dashboard</span>
+          <span>Dashboard</span>
+        </a>
+        <!-- 2. Alerts -->
+        <a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors duration-150 rounded-lg"
+          href="#">
+          <span class="material-symbols-outlined text-[18px]">notifications_active</span>
+          <span>Alerts</span>
+        </a>
+        <!-- 3. Fraud Rings -->
+        <a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors duration-150 rounded-lg"
+          href="#">
+          <span class="material-symbols-outlined text-[18px]">groups</span>
+          <span>Fraud Rings</span>
+        </a>
+        <!-- 4. Accounts -->
+        <a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors duration-150 rounded-lg"
+          href="#">
+          <span class="material-symbols-outlined text-[18px]">account_balance</span>
+          <span>Accounts</span>
+        </a>
+        <!-- 5. Graph Explorer -->
+        <a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors duration-150 rounded-lg"
+          href="#">
+          <span class="material-symbols-outlined text-[18px]">hub</span>
+          <span>Graph Explorer</span>
+        </a>
+        <!-- 6. Cases -->
+        <a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors duration-150 rounded-lg"
+          href="#">
+          <span class="material-symbols-outlined text-[18px]">folder_shared</span>
+          <span>Cases</span>
+        </a>
+        <!-- 7. Data Management -->
+        <a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors duration-150 rounded-lg"
+          href="#">
+          <span class="material-symbols-outlined text-[18px]">database</span>
+          <span>Data Management</span>
+        </a>
+        <!-- 8. Detection Rules (Active as required) -->
+        <a class="flex items-center gap-space-sm px-space-md py-space-xs bg-primary-container dark:bg-primary text-on-primary rounded-lg border-l-2 border-primary font-label-md text-label-md cursor-pointer"
+          href="#">
+          <span class="material-symbols-outlined text-[18px]">rule</span>
+          <span>Detection Rules</span>
+        </a>
+      </nav>
+    </div>
+    <!-- Footer Controls -->
+    <div class="flex flex-col gap-space-3xs border-t border-outline-variant pt-space-sm px-space-xs">
+      <a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors duration-150 rounded-lg"
+        href="#">
+        <span class="material-symbols-outlined text-[18px]">history</span>
+        <span>Audit Log</span>
+      </a>
+      <a class="flex items-center gap-space-sm px-space-md py-space-xs text-on-surface-variant dark:text-outline font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-inverse-surface hover:text-on-surface dark:hover:text-inverse-on-surface transition-colors duration-150 rounded-lg"
+        href="#">
+        <span class="material-symbols-outlined text-[18px]">settings</span>
+        <span>Settings</span>
+      </a>
+      <!-- System Telemetry Badge -->
+      <div
+        class="mt-space-xs px-space-md py-space-xs bg-surface-container rounded border border-outline-variant text-[10px] text-on-surface-variant font-code-sm flex items-center justify-between">
+        <span>ENGINE v4.19-LTS</span>
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-600"></span>
+      </div>
+    </div>
+  </aside>
+  <!-- Main Workstation Viewport -->
+  <div class="flex flex-col flex-1 h-full min-w-0 overflow-hidden bg-background">
+    <!-- Top Navigation Bar from JSON Anchor -->
+    <header
+      class="flex justify-between items-center w-full px-space-md h-12 border-b border-outline-variant dark:border-outline bg-surface-container-lowest dark:bg-surface-container-low flex-shrink-0 z-10">
+      <!-- Breadcrumb Cluster -->
+      <div class="flex items-center gap-space-sm">
+        <div class="text-headline-sm font-headline-sm text-primary dark:text-inverse-primary font-semibold">
           FraudTrace Workstation
         </div>
-<span class="text-outline-variant">/</span>
-<nav class="flex items-center gap-space-xs text-body-sm font-body-sm text-on-surface-variant">
-<span>Data &amp; Control</span>
-<span class="text-outline-variant">/</span>
-<span class="text-primary font-label-md text-label-md font-semibold">Detection Rules &amp; Data Management</span>
-</nav>
-</div>
-<!-- Action Cluster -->
-<div class="flex items-center gap-space-sm">
-<!-- Search Micro-Input -->
-<div class="relative w-64">
-<span class="material-symbols-outlined absolute left-2 top-1.5 text-[16px] text-outline">search</span>
-<input class="w-full h-7 pl-7 pr-2 bg-surface-container-low border border-outline-variant rounded font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary" placeholder="Search rules, datasets, schema tags..." type="text"/>
-</div>
-<!-- Trailing Icon Actions -->
-<div class="flex items-center gap-space-3xs text-on-surface-variant border-r border-outline-variant pr-space-sm">
-<button class="p-1 hover:bg-surface-container-high rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Notifications">
-<span class="material-symbols-outlined text-[18px]">notifications</span>
-</button>
-<button class="p-1 hover:bg-surface-container-high rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Help &amp; Documentation">
-<span class="material-symbols-outlined text-[18px]">help</span>
-</button>
-<button class="p-1 hover:bg-surface-container-high rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Engine Tuning">
-<span class="material-symbols-outlined text-[18px]">tune</span>
-</button>
-</div>
-<!-- Trailing Primary & Secondary Actions -->
-<button class="h-7 px-space-sm border border-outline-variant text-primary bg-surface-container-lowest hover:bg-surface-container font-label-sm text-label-sm rounded transition-colors duration-100 flex items-center gap-1">
-<span class="material-symbols-outlined text-[14px]">lock_reset</span>
-<span>Freeze Accounts</span>
-</button>
-<button class="h-7 px-space-sm bg-primary-container text-on-primary hover:bg-primary font-label-sm text-label-sm rounded transition-colors duration-100 flex items-center gap-1">
-<span class="material-symbols-outlined text-[14px]">gavel</span>
-<span>Adjudicate Case</span>
-</button>
-<!-- Lead Investigator Avatar Monogram -->
-<div class="w-7 h-7 bg-surface-variant border border-outline-variant rounded flex items-center justify-center font-label-sm text-label-sm text-on-surface font-semibold ml-space-xs" title="Lead Financial Fraud Investigator Portrait">
+        <span class="text-outline-variant">/</span>
+        <nav class="flex items-center gap-space-xs text-body-sm font-body-sm text-on-surface-variant">
+          <span>Data &amp; Control</span>
+          <span class="text-outline-variant">/</span>
+          <span class="text-primary font-label-md text-label-md font-semibold">Detection Rules &amp; Data
+            Management</span>
+        </nav>
+      </div>
+      <!-- Action Cluster -->
+      <div class="flex items-center gap-space-sm">
+        <!-- Search Micro-Input -->
+        <div class="relative w-64">
+          <span class="material-symbols-outlined absolute left-2 top-1.5 text-[16px] text-outline">search</span>
+          <input
+            class="w-full h-7 pl-7 pr-2 bg-surface-container-low border border-outline-variant rounded font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary"
+            placeholder="Search rules, datasets, schema tags..." type="text" />
+        </div>
+        <!-- Trailing Icon Actions -->
+        <div
+          class="flex items-center gap-space-3xs text-on-surface-variant border-r border-outline-variant pr-space-sm">
+          <button
+            class="p-1 hover:bg-surface-container-high rounded text-on-surface-variant hover:text-on-surface transition-colors"
+            title="Notifications">
+            <span class="material-symbols-outlined text-[18px]">notifications</span>
+          </button>
+          <button
+            class="p-1 hover:bg-surface-container-high rounded text-on-surface-variant hover:text-on-surface transition-colors"
+            title="Help &amp; Documentation">
+            <span class="material-symbols-outlined text-[18px]">help</span>
+          </button>
+          <button
+            class="p-1 hover:bg-surface-container-high rounded text-on-surface-variant hover:text-on-surface transition-colors"
+            title="Engine Tuning">
+            <span class="material-symbols-outlined text-[18px]">tune</span>
+          </button>
+        </div>
+        <!-- Trailing Primary & Secondary Actions -->
+        <button
+          class="h-7 px-space-sm border border-outline-variant text-primary bg-surface-container-lowest hover:bg-surface-container font-label-sm text-label-sm rounded transition-colors duration-100 flex items-center gap-1">
+          <span class="material-symbols-outlined text-[14px]">lock_reset</span>
+          <span>Freeze Accounts</span>
+        </button>
+        <button
+          class="h-7 px-space-sm bg-primary-container text-on-primary hover:bg-primary font-label-sm text-label-sm rounded transition-colors duration-100 flex items-center gap-1">
+          <span class="material-symbols-outlined text-[14px]">gavel</span>
+          <span>Adjudicate Case</span>
+        </button>
+        <!-- Lead Investigator Avatar Monogram -->
+        <div
+          class="w-7 h-7 bg-surface-variant border border-outline-variant rounded flex items-center justify-center font-label-sm text-label-sm text-on-surface font-semibold ml-space-xs"
+          title="Lead Financial Fraud Investigator Portrait">
           FI
         </div>
-</div>
-</header>
-<!-- Workspace Subheader: Top Navigation Tabs -->
-<div class="bg-surface-container border-b border-outline-variant px-space-md flex items-center justify-between flex-shrink-0">
-<div class="flex items-center gap-space-xs -mb-px">
-<button class="py-space-sm px-space-md bg-surface-container-lowest border-t-2 border-primary border-x border-outline-variant text-primary font-label-md text-label-md flex items-center gap-space-xs shadow-none">
-<span class="material-symbols-outlined text-[16px]">account_tree</span>
-<span>Detection Rules Engine</span>
-<span class="ml-1 px-1.5 py-0.2 bg-secondary-container text-on-surface font-code-sm text-[10px] rounded">Active</span>
-</button>
-<button class="py-space-sm px-space-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border-t-2 border-transparent font-label-md text-label-md flex items-center gap-space-xs transition-colors">
-<span class="material-symbols-outlined text-[16px]">upload_file</span>
-<span>Dataset Upload &amp; Simulation</span>
-</button>
-<button class="py-space-sm px-space-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border-t-2 border-transparent font-label-md text-label-md flex items-center gap-space-xs transition-colors">
-<span class="material-symbols-outlined text-[16px]">history_edu</span>
-<span>Batch Import History</span>
-</button>
-<button class="py-space-sm px-space-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border-t-2 border-transparent font-label-md text-label-md flex items-center gap-space-xs transition-colors">
-<span class="material-symbols-outlined text-[16px]">verified_user</span>
-<span>Audit &amp; Validation</span>
-</button>
-</div>
-<div class="flex items-center gap-space-sm text-body-sm font-body-sm text-secondary">
-<span class="font-code-sm text-[11px] text-on-surface-variant">LATEST SYNC: 2024-10-24 14:22:08 UTC</span>
-<button class="p-1 hover:bg-surface-container-highest rounded text-on-surface-variant" title="Refresh Rule Registry">
-<span class="material-symbols-outlined text-[16px]">refresh</span>
-</button>
-</div>
-</div>
-<!-- Main Scrollable Canvas -->
-<main class="flex-1 overflow-y-auto p-space-md space-y-space-md bg-background">
-<!-- Module 1: Deterministic Detection Rules Engine (/rules) -->
-<section class="bg-surface-container-lowest border border-outline-variant rounded p-space-md shadow-none">
-<!-- Module Header & Rigor Statement -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-space-sm border-b border-outline-variant gap-space-xs">
-<div>
-<div class="flex items-center gap-space-xs">
-<span class="material-symbols-outlined text-primary text-[20px]">verified</span>
-<h2 class="text-headline-md font-headline-md text-on-surface">Active Deterministic Rule Repository (v4.19 LTS)</h2>
-</div>
-<p class="text-body-sm font-body-sm text-on-surface-variant mt-space-3xs">
+      </div>
+    </header>
+    <!-- Workspace Subheader: Top Navigation Tabs -->
+    <div
+      class="bg-surface-container border-b border-outline-variant px-space-md flex items-center justify-between flex-shrink-0">
+      <div class="flex items-center gap-space-xs -mb-px">
+        <button
+          class="py-space-sm px-space-md bg-surface-container-lowest border-t-2 border-primary border-x border-outline-variant text-primary font-label-md text-label-md flex items-center gap-space-xs shadow-none">
+          <span class="material-symbols-outlined text-[16px]">account_tree</span>
+          <span>Detection Rules Engine</span>
+          <span
+            class="ml-1 px-1.5 py-0.2 bg-secondary-container text-on-surface font-code-sm text-[10px] rounded">Active</span>
+        </button>
+        <button
+          class="py-space-sm px-space-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border-t-2 border-transparent font-label-md text-label-md flex items-center gap-space-xs transition-colors">
+          <span class="material-symbols-outlined text-[16px]">upload_file</span>
+          <span>Dataset Upload &amp; Simulation</span>
+        </button>
+        <button
+          class="py-space-sm px-space-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border-t-2 border-transparent font-label-md text-label-md flex items-center gap-space-xs transition-colors">
+          <span class="material-symbols-outlined text-[16px]">history_edu</span>
+          <span>Batch Import History</span>
+        </button>
+        <button
+          class="py-space-sm px-space-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border-t-2 border-transparent font-label-md text-label-md flex items-center gap-space-xs transition-colors">
+          <span class="material-symbols-outlined text-[16px]">verified_user</span>
+          <span>Audit &amp; Validation</span>
+        </button>
+      </div>
+      <div class="flex items-center gap-space-sm text-body-sm font-body-sm text-secondary">
+        <span class="font-code-sm text-[11px] text-on-surface-variant">LATEST SYNC: 2024-10-24 14:22:08 UTC</span>
+        <button class="p-1 hover:bg-surface-container-highest rounded text-on-surface-variant"
+          title="Refresh Rule Registry">
+          <span class="material-symbols-outlined text-[16px]">refresh</span>
+        </button>
+      </div>
+    </div>
+    <!-- Main Scrollable Canvas -->
+    <main class="flex-1 overflow-y-auto p-space-md space-y-space-md bg-background">
+      <!-- Module 1: Deterministic Detection Rules Engine (/rules) -->
+      <section class="bg-surface-container-lowest border border-outline-variant rounded p-space-md shadow-none">
+        <!-- Module Header & Rigor Statement -->
+        <div
+          class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-space-sm border-b border-outline-variant gap-space-xs">
+          <div>
+            <div class="flex items-center gap-space-xs">
+              <span class="material-symbols-outlined text-primary text-[20px]">verified</span>
+              <h2 class="text-headline-md font-headline-md text-on-surface">Active Deterministic Rule Repository (v4.19
+                LTS)</h2>
+            </div>
+            <p class="text-body-sm font-body-sm text-on-surface-variant mt-space-3xs">
               Explainable pattern traversal rules with strict mathematical threshold parameters. Zero black-box drift.
             </p>
-</div>
-<div class="flex items-center gap-space-xs">
-<span class="px-2 py-0.5 bg-surface-container border border-outline-variant text-on-surface-variant font-code-sm text-[11px] rounded">
+          </div>
+          <div class="flex items-center gap-space-xs">
+            <span
+              class="px-2 py-0.5 bg-surface-container border border-outline-variant text-on-surface-variant font-code-sm text-[11px] rounded">
               5 Active Invariants
             </span>
-<button class="h-7 px-space-sm bg-surface-container text-on-surface hover:bg-surface-container-high border border-outline-variant font-label-sm text-label-sm rounded flex items-center gap-1 transition-colors">
-<span class="material-symbols-outlined text-[14px]">tune</span>
-<span>Parameter Tuning</span>
-</button>
-<button class="h-7 px-space-sm bg-primary text-on-primary hover:bg-primary-container font-label-sm text-label-sm rounded flex items-center gap-1 transition-colors">
-<span class="material-symbols-outlined text-[14px]">add_circle</span>
-<span>Draft Invariant Rule</span>
-</button>
-</div>
-</div>
-<!-- Rules Dense Table -->
-<div class="mt-space-sm overflow-x-auto border border-outline-variant rounded">
-<table class="w-full border-collapse text-left">
-<thead>
-<tr class="bg-surface-container text-secondary text-label-sm font-label-sm uppercase tracking-wider h-7 border-b border-outline-variant">
-<th class="py-1 px-space-md font-semibold w-24">Rule ID</th>
-<th class="py-1 px-space-md font-semibold min-w-[200px]">Pattern Designation</th>
-<th class="py-1 px-space-sm font-semibold w-20">Version</th>
-<th class="py-1 px-space-sm font-semibold w-24">Status</th>
-<th class="py-1 px-space-md font-semibold">Mathematical Threshold Parameters</th>
-<th class="py-1 px-space-md font-semibold text-right w-36">Triggered 24h</th>
-<th class="py-1 px-space-sm font-semibold text-center w-20">Actions</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-outline-variant font-body-sm text-body-sm text-on-surface">
-<!-- Rule R-101 -->
-<tr class="hover:bg-surface-container-low transition-colors duration-100 h-10">
-<td class="py-1 px-space-md font-code-sm font-semibold text-primary">R-101</td>
-<td class="py-1 px-space-md font-semibold">Circular Flow (Round-Trip Laundering)</td>
-<td class="py-1 px-space-sm font-code-sm text-on-surface-variant">v3.2</td>
-<td class="py-1 px-space-sm">
-<span class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border" style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
+            <button
+              class="h-7 px-space-sm bg-surface-container text-on-surface hover:bg-surface-container-high border border-outline-variant font-label-sm text-label-sm rounded flex items-center gap-1 transition-colors">
+              <span class="material-symbols-outlined text-[14px]">tune</span>
+              <span>Parameter Tuning</span>
+            </button>
+            <button
+              class="h-7 px-space-sm bg-primary text-on-primary hover:bg-primary-container font-label-sm text-label-sm rounded flex items-center gap-1 transition-colors">
+              <span class="material-symbols-outlined text-[14px]">add_circle</span>
+              <span>Draft Invariant Rule</span>
+            </button>
+          </div>
+        </div>
+        <!-- Rules Dense Table -->
+        <div class="mt-space-sm overflow-x-auto border border-outline-variant rounded">
+          <table class="w-full border-collapse text-left">
+            <thead>
+              <tr
+                class="bg-surface-container text-secondary text-label-sm font-label-sm uppercase tracking-wider h-7 border-b border-outline-variant">
+                <th class="py-1 px-space-md font-semibold w-24">Rule ID</th>
+                <th class="py-1 px-space-md font-semibold min-w-[200px]">Pattern Designation</th>
+                <th class="py-1 px-space-sm font-semibold w-20">Version</th>
+                <th class="py-1 px-space-sm font-semibold w-24">Status</th>
+                <th class="py-1 px-space-md font-semibold">Mathematical Threshold Parameters</th>
+                <th class="py-1 px-space-md font-semibold text-right w-36">Triggered 24h</th>
+                <th class="py-1 px-space-sm font-semibold text-center w-20">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant font-body-sm text-body-sm text-on-surface">
+              <!-- Rule R-101 -->
+              <tr class="hover:bg-surface-container-low transition-colors duration-100 h-10">
+                <td class="py-1 px-space-md font-code-sm font-semibold text-primary">R-101</td>
+                <td class="py-1 px-space-md font-semibold">Circular Flow (Round-Trip Laundering)</td>
+                <td class="py-1 px-space-sm font-code-sm text-on-surface-variant">v3.2</td>
+                <td class="py-1 px-space-sm">
+                  <span
+                    class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border"
+                    style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
                     ACTIVE
                   </span>
-</td>
-<td class="py-1 px-space-md">
-<div class="flex items-center gap-space-xs font-code-sm text-on-surface-variant text-[11px]">
-<span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Cycle depth ≤ 5 hops</span>
-<span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Settlement delta &lt; 4 hrs</span>
-<span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Min loop volume: $10,000</span>
-</div>
-</td>
-<td class="py-1 px-space-md text-right font-code-sm font-semibold tabular-nums text-on-surface">
+                </td>
+                <td class="py-1 px-space-md">
+                  <div class="flex items-center gap-space-xs font-code-sm text-on-surface-variant text-[11px]">
+                    <span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Cycle depth ≤
+                      5 hops</span>
+                    <span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Settlement
+                      delta &lt; 4 hrs</span>
+                    <span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Min loop
+                      volume: $10,000</span>
+                  </div>
+                </td>
+                <td class="py-1 px-space-md text-right font-code-sm font-semibold tabular-nums text-on-surface">
                   18 times
                 </td>
-<td class="py-1 px-space-sm text-center">
-<button class="p-1 text-on-surface-variant hover:text-primary transition-colors" title="Inspect Rule Traversal AST">
-<span class="material-symbols-outlined text-[16px]">visibility</span>
-</button>
-</td>
-</tr>
-<!-- Rule R-102 -->
-<tr class="hover:bg-surface-container-low transition-colors duration-100 h-10">
-<td class="py-1 px-space-md font-code-sm font-semibold text-primary">R-102</td>
-<td class="py-1 px-space-md font-semibold">Fan-In / Fan-Out (Aggregated Smurfing)</td>
-<td class="py-1 px-space-sm font-code-sm text-on-surface-variant">v2.8</td>
-<td class="py-1 px-space-sm">
-<span class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border" style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
+                <td class="py-1 px-space-sm text-center">
+                  <button class="p-1 text-on-surface-variant hover:text-primary transition-colors"
+                    title="Inspect Rule Traversal AST">
+                    <span class="material-symbols-outlined text-[16px]">visibility</span>
+                  </button>
+                </td>
+              </tr>
+              <!-- Rule R-102 -->
+              <tr class="hover:bg-surface-container-low transition-colors duration-100 h-10">
+                <td class="py-1 px-space-md font-code-sm font-semibold text-primary">R-102</td>
+                <td class="py-1 px-space-md font-semibold">Fan-In / Fan-Out (Aggregated Smurfing)</td>
+                <td class="py-1 px-space-sm font-code-sm text-on-surface-variant">v2.8</td>
+                <td class="py-1 px-space-sm">
+                  <span
+                    class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border"
+                    style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
                     ACTIVE
                   </span>
-</td>
-<td class="py-1 px-space-md">
-<div class="flex items-center gap-space-xs font-code-sm text-on-surface-variant text-[11px]">
-<span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Inbound ratio ≥ 6:1</span>
-<span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Dispersion interval &lt; 30 mins</span>
-<span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Aggregate velocity: 5x</span>
-</div>
-</td>
-<td class="py-1 px-space-md text-right font-code-sm font-semibold tabular-nums text-on-surface">
+                </td>
+                <td class="py-1 px-space-md">
+                  <div class="flex items-center gap-space-xs font-code-sm text-on-surface-variant text-[11px]">
+                    <span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Inbound ratio
+                      ≥ 6:1</span>
+                    <span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Dispersion
+                      interval &lt; 30 mins</span>
+                    <span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Aggregate
+                      velocity: 5x</span>
+                  </div>
+                </td>
+                <td class="py-1 px-space-md text-right font-code-sm font-semibold tabular-nums text-on-surface">
                   31 times
                 </td>
-<td class="py-1 px-space-sm text-center">
-<button class="p-1 text-on-surface-variant hover:text-primary transition-colors" title="Inspect Rule Traversal AST">
-<span class="material-symbols-outlined text-[16px]">visibility</span>
-</button>
-</td>
-</tr>
-<!-- Rule R-103 -->
-<tr class="hover:bg-surface-container-low transition-colors duration-100 h-10">
-<td class="py-1 px-space-md font-code-sm font-semibold text-primary">R-103</td>
-<td class="py-1 px-space-md font-semibold">Shared Hardware Fingerprint Collocation</td>
-<td class="py-1 px-space-sm font-code-sm text-on-surface-variant">v4.1</td>
-<td class="py-1 px-space-sm">
-<span class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border" style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
+                <td class="py-1 px-space-sm text-center">
+                  <button class="p-1 text-on-surface-variant hover:text-primary transition-colors"
+                    title="Inspect Rule Traversal AST">
+                    <span class="material-symbols-outlined text-[16px]">visibility</span>
+                  </button>
+                </td>
+              </tr>
+              <!-- Rule R-103 -->
+              <tr class="hover:bg-surface-container-low transition-colors duration-100 h-10">
+                <td class="py-1 px-space-md font-code-sm font-semibold text-primary">R-103</td>
+                <td class="py-1 px-space-md font-semibold">Shared Hardware Fingerprint Collocation</td>
+                <td class="py-1 px-space-sm font-code-sm text-on-surface-variant">v4.1</td>
+                <td class="py-1 px-space-sm">
+                  <span
+                    class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border"
+                    style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
                     ACTIVE
                   </span>
-</td>
-<td class="py-1 px-space-md">
-<div class="flex items-center gap-space-xs font-code-sm text-on-surface-variant text-[11px]">
-<span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Concurrent IP subnet</span>
-<span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Browser canvas hash collision across ≥ 3 distinct KYC entities</span>
-</div>
-</td>
-<td class="py-1 px-space-md text-right font-code-sm font-semibold tabular-nums text-on-surface">
+                </td>
+                <td class="py-1 px-space-md">
+                  <div class="flex items-center gap-space-xs font-code-sm text-on-surface-variant text-[11px]">
+                    <span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Concurrent IP
+                      subnet</span>
+                    <span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Browser
+                      canvas hash collision across ≥ 3 distinct KYC entities</span>
+                  </div>
+                </td>
+                <td class="py-1 px-space-md text-right font-code-sm font-semibold tabular-nums text-on-surface">
                   14 times
                 </td>
-<td class="py-1 px-space-sm text-center">
-<button class="p-1 text-on-surface-variant hover:text-primary transition-colors" title="Inspect Rule Traversal AST">
-<span class="material-symbols-outlined text-[16px]">visibility</span>
-</button>
-</td>
-</tr>
-<!-- Rule R-104 -->
-<tr class="hover:bg-surface-container-low transition-colors duration-100 h-10">
-<td class="py-1 px-space-md font-code-sm font-semibold text-primary">R-104</td>
-<td class="py-1 px-space-md font-semibold">Rapid Pass-Through Dispersion</td>
-<td class="py-1 px-space-sm font-code-sm text-on-surface-variant">v2.4</td>
-<td class="py-1 px-space-sm">
-<span class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border" style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
+                <td class="py-1 px-space-sm text-center">
+                  <button class="p-1 text-on-surface-variant hover:text-primary transition-colors"
+                    title="Inspect Rule Traversal AST">
+                    <span class="material-symbols-outlined text-[16px]">visibility</span>
+                  </button>
+                </td>
+              </tr>
+              <!-- Rule R-104 -->
+              <tr class="hover:bg-surface-container-low transition-colors duration-100 h-10">
+                <td class="py-1 px-space-md font-code-sm font-semibold text-primary">R-104</td>
+                <td class="py-1 px-space-md font-semibold">Rapid Pass-Through Dispersion</td>
+                <td class="py-1 px-space-sm font-code-sm text-on-surface-variant">v2.4</td>
+                <td class="py-1 px-space-sm">
+                  <span
+                    class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border"
+                    style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
                     ACTIVE
                   </span>
-</td>
-<td class="py-1 px-space-md">
-<div class="flex items-center gap-space-xs font-code-sm text-on-surface-variant text-[11px]">
-<span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Retention time &lt; 15 mins</span>
-<span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Outflow/Inflow ratio &gt; 0.95</span>
-</div>
-</td>
-<td class="py-1 px-space-md text-right font-code-sm font-semibold tabular-nums text-on-surface">
+                </td>
+                <td class="py-1 px-space-md">
+                  <div class="flex items-center gap-space-xs font-code-sm text-on-surface-variant text-[11px]">
+                    <span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Retention
+                      time &lt; 15 mins</span>
+                    <span
+                      class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Outflow/Inflow
+                      ratio &gt; 0.95</span>
+                  </div>
+                </td>
+                <td class="py-1 px-space-md text-right font-code-sm font-semibold tabular-nums text-on-surface">
                   42 times
                 </td>
-<td class="py-1 px-space-sm text-center">
-<button class="p-1 text-on-surface-variant hover:text-primary transition-colors" title="Inspect Rule Traversal AST">
-<span class="material-symbols-outlined text-[16px]">visibility</span>
-</button>
-</td>
-</tr>
-<!-- Rule R-105 -->
-<tr class="hover:bg-surface-container-low transition-colors duration-100 h-10">
-<td class="py-1 px-space-md font-code-sm font-semibold text-primary">R-105</td>
-<td class="py-1 px-space-md font-semibold">High-Velocity Merchant Cash-Out</td>
-<td class="py-1 px-space-sm font-code-sm text-on-surface-variant">v3.0</td>
-<td class="py-1 px-space-sm">
-<span class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border" style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
+                <td class="py-1 px-space-sm text-center">
+                  <button class="p-1 text-on-surface-variant hover:text-primary transition-colors"
+                    title="Inspect Rule Traversal AST">
+                    <span class="material-symbols-outlined text-[16px]">visibility</span>
+                  </button>
+                </td>
+              </tr>
+              <!-- Rule R-105 -->
+              <tr class="hover:bg-surface-container-low transition-colors duration-100 h-10">
+                <td class="py-1 px-space-md font-code-sm font-semibold text-primary">R-105</td>
+                <td class="py-1 px-space-md font-semibold">High-Velocity Merchant Cash-Out</td>
+                <td class="py-1 px-space-sm font-code-sm text-on-surface-variant">v3.0</td>
+                <td class="py-1 px-space-sm">
+                  <span
+                    class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border"
+                    style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
                     ACTIVE
                   </span>
-</td>
-<td class="py-1 px-space-md">
-<div class="flex items-center gap-space-xs font-code-sm text-on-surface-variant text-[11px]">
-<span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Merchant terminal cash-out ratio &gt; 90% within 2h of P2P deposit</span>
-</div>
-</td>
-<td class="py-1 px-space-md text-right font-code-sm font-semibold tabular-nums text-on-surface">
+                </td>
+                <td class="py-1 px-space-md">
+                  <div class="flex items-center gap-space-xs font-code-sm text-on-surface-variant text-[11px]">
+                    <span class="bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">Merchant
+                      terminal cash-out ratio &gt; 90% within 2h of P2P deposit</span>
+                  </div>
+                </td>
+                <td class="py-1 px-space-md text-right font-code-sm font-semibold tabular-nums text-on-surface">
                   27 times
                 </td>
-<td class="py-1 px-space-sm text-center">
-<button class="p-1 text-on-surface-variant hover:text-primary transition-colors" title="Inspect Rule Traversal AST">
-<span class="material-symbols-outlined text-[16px]">visibility</span>
-</button>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<!-- Evidence-backed Rule Performance Footer -->
-<div class="mt-space-sm p-space-sm bg-surface-container-low rounded border border-outline-variant flex items-center justify-between">
-<div class="flex items-center gap-space-sm">
-<span class="material-symbols-outlined text-outline text-[18px]">info</span>
-<span class="text-body-sm font-body-sm text-on-surface-variant">
-              Deterministic engines are verified against the Basel AML Basel-Index topology. Total 24h evaluations: <strong class="font-code-sm text-primary">1,489,204 transactions</strong>. False positive delta: <strong class="font-code-sm text-primary">0.003%</strong>.
+                <td class="py-1 px-space-sm text-center">
+                  <button class="p-1 text-on-surface-variant hover:text-primary transition-colors"
+                    title="Inspect Rule Traversal AST">
+                    <span class="material-symbols-outlined text-[16px]">visibility</span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Evidence-backed Rule Performance Footer -->
+        <div
+          class="mt-space-sm p-space-sm bg-surface-container-low rounded border border-outline-variant flex items-center justify-between">
+          <div class="flex items-center gap-space-sm">
+            <span class="material-symbols-outlined text-outline text-[18px]">info</span>
+            <span class="text-body-sm font-body-sm text-on-surface-variant">
+              Deterministic engines are verified against the Basel AML Basel-Index topology. Total 24h evaluations:
+              <strong class="font-code-sm text-primary">1,489,204 transactions</strong>. False positive delta: <strong
+                class="font-code-sm text-primary">0.003%</strong>.
             </span>
-</div>
-<a class="text-primary font-label-sm text-label-sm underline hover:text-primary-container" href="#">Compile Test Matrix</a>
-</div>
-</section>
-<!-- Module 2: Dataset Upload & Synthetic Simulation (/data) -->
-<section class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
-<!-- Left: Forensic Ingestion Pipeline & Synthetic Fraud Simulation (5 Cols) -->
-<div class="lg:col-span-5 flex flex-col gap-space-md">
-<!-- Ingestion Pipeline Drop Area -->
-<div class="bg-surface-container-lowest border border-outline-variant rounded p-space-md shadow-none flex flex-col">
-<div class="flex items-center justify-between pb-space-xs border-b border-outline-variant mb-space-sm">
-<div class="flex items-center gap-space-xs">
-<span class="material-symbols-outlined text-primary text-[18px]">input</span>
-<h3 class="text-headline-sm font-headline-sm text-on-surface">Forensic Ingestion Pipeline</h3>
-</div>
-<span class="text-label-sm font-label-sm text-on-surface-variant">sFTP / Direct API</span>
-</div>
-<div class="border-2 border-dashed border-outline-variant rounded p-space-lg text-center hover:border-primary transition-colors cursor-pointer bg-surface-container-low">
-<span class="material-symbols-outlined text-secondary text-[32px] mb-space-xs">cloud_upload</span>
-<p class="text-body-sm font-body-sm text-on-surface font-semibold mb-space-3xs">
+          </div>
+          <a class="text-primary font-label-sm text-label-sm underline hover:text-primary-container" href="#">Compile
+            Test Matrix</a>
+        </div>
+      </section>
+      <!-- Module 2: Dataset Upload & Synthetic Simulation (/data) -->
+      <section class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
+        <!-- Left: Forensic Ingestion Pipeline & Synthetic Fraud Simulation (5 Cols) -->
+        <div class="lg:col-span-5 flex flex-col gap-space-md">
+          <!-- Ingestion Pipeline Drop Area -->
+          <div
+            class="bg-surface-container-lowest border border-outline-variant rounded p-space-md shadow-none flex flex-col">
+            <div class="flex items-center justify-between pb-space-xs border-b border-outline-variant mb-space-sm">
+              <div class="flex items-center gap-space-xs">
+                <span class="material-symbols-outlined text-primary text-[18px]">input</span>
+                <h3 class="text-headline-sm font-headline-sm text-on-surface">Forensic Ingestion Pipeline</h3>
+              </div>
+              <span class="text-label-sm font-label-sm text-on-surface-variant">sFTP / Direct API</span>
+            </div>
+            <div
+              class="border-2 border-dashed border-outline-variant rounded p-space-lg text-center hover:border-primary transition-colors cursor-pointer bg-surface-container-low">
+              <span class="material-symbols-outlined text-secondary text-[32px] mb-space-xs">cloud_upload</span>
+              <p class="text-body-sm font-body-sm text-on-surface font-semibold mb-space-3xs">
                 Drop forensic ledger batch (.csv, .json, .parquet) or import via secure sFTP endpoint
               </p>
-<p class="text-label-sm font-label-sm text-outline">
+              <p class="text-label-sm font-label-sm text-outline">
                 Payload capacity up to 5GB per batch. Invariant checksum SHA-256 validation enforced.
               </p>
-<div class="mt-space-sm flex justify-center gap-space-xs">
-<button class="h-7 px-space-md bg-surface-container border border-outline-variant text-on-surface font-label-sm text-label-sm rounded hover:bg-surface-container-high transition-colors">
+              <div class="mt-space-sm flex justify-center gap-space-xs">
+                <button
+                  class="h-7 px-space-md bg-surface-container border border-outline-variant text-on-surface font-label-sm text-label-sm rounded hover:bg-surface-container-high transition-colors">
                   Select Local File
                 </button>
-<button class="h-7 px-space-md bg-surface-container border border-outline-variant text-on-surface font-label-sm text-label-sm rounded hover:bg-surface-container-high transition-colors flex items-center gap-1">
-<span class="material-symbols-outlined text-[14px]">link</span>
-<span>Mount sFTP Ingress</span>
-</button>
-</div>
-</div>
-<!-- Ingestion Schema Directives -->
-<div class="mt-space-sm grid grid-cols-2 gap-space-xs text-label-sm font-label-sm text-on-surface-variant">
-<div class="p-space-xs bg-surface-container rounded border border-outline-variant">
-<span class="font-semibold block text-primary">Supported Schemas:</span>
+                <button
+                  class="h-7 px-space-md bg-surface-container border border-outline-variant text-on-surface font-label-sm text-label-sm rounded hover:bg-surface-container-high transition-colors flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">link</span>
+                  <span>Mount sFTP Ingress</span>
+                </button>
+              </div>
+            </div>
+            <!-- Ingestion Schema Directives -->
+            <div class="mt-space-sm grid grid-cols-2 gap-space-xs text-label-sm font-label-sm text-on-surface-variant">
+              <div class="p-space-xs bg-surface-container rounded border border-outline-variant">
+                <span class="font-semibold block text-primary">Supported Schemas:</span>
                 ISO 20022 (pacs.008), Fedwire FAIM, SWIFT MT103
               </div>
-<div class="p-space-xs bg-surface-container rounded border border-outline-variant">
-<span class="font-semibold block text-primary">Ingest Verification:</span>
+              <div class="p-space-xs bg-surface-container rounded border border-outline-variant">
+                <span class="font-semibold block text-primary">Ingest Verification:</span>
                 Deterministic Schema Proof &amp; Timestamp Attestation
               </div>
-</div>
-</div>
-<!-- Synthetic Fraud Simulation Trigger Box -->
-<div class="bg-surface-container-lowest border border-outline-variant rounded p-space-md shadow-none flex flex-col justify-between">
-<div>
-<div class="flex items-center gap-space-xs pb-space-xs border-b border-outline-variant mb-space-sm">
-<span class="material-symbols-outlined text-primary text-[18px]">science</span>
-<h3 class="text-headline-sm font-headline-sm text-on-surface">Synthetic Fraud Simulation</h3>
-</div>
-<p class="text-body-sm font-body-sm text-on-surface-variant mb-space-sm">
-                Execute non-destructive dry runs by replaying generated transaction topologies through active rules without alerting institutional correspondents.
+            </div>
+          </div>
+          <!-- Synthetic Fraud Simulation Trigger Box -->
+          <div
+            class="bg-surface-container-lowest border border-outline-variant rounded p-space-md shadow-none flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-space-xs pb-space-xs border-b border-outline-variant mb-space-sm">
+                <span class="material-symbols-outlined text-primary text-[18px]">science</span>
+                <h3 class="text-headline-sm font-headline-sm text-on-surface">Synthetic Fraud Simulation</h3>
+              </div>
+              <p class="text-body-sm font-body-sm text-on-surface-variant mb-space-sm">
+                Execute non-destructive dry runs by replaying generated transaction topologies through active rules
+                without alerting institutional correspondents.
               </p>
-<div class="space-y-space-xs mb-space-sm font-body-sm text-body-sm">
-<div class="flex justify-between items-center py-1 border-b border-surface-variant">
-<span class="text-on-surface-variant">Active Target Graph:</span>
-<span class="font-code-sm font-semibold text-primary">Topology #ST-7801 (Complex Smurfing)</span>
-</div>
-<div class="flex justify-between items-center py-1 border-b border-surface-variant">
-<span class="text-on-surface-variant">Synthetic Accounts:</span>
-<span class="font-code-sm font-semibold">1,240 entities</span>
-</div>
-<div class="flex justify-between items-center py-1">
-<span class="text-on-surface-variant">Synthesized Volume:</span>
-<span class="font-code-sm font-semibold">$14,280,000 USD</span>
-</div>
-</div>
-</div>
-<button class="w-full h-8 px-space-md bg-primary-container text-on-primary font-label-md text-label-md rounded hover:bg-primary transition-colors flex items-center justify-center gap-space-xs">
-<span class="material-symbols-outlined text-[16px]">play_circle</span>
-<span>Run Pattern Simulation (Verify rule activation against synthetic multi-hop laundering topology)</span>
-</button>
-</div>
-</div>
-<!-- Right: Batch Import History Table (7 Cols) -->
-<div class="lg:col-span-7 bg-surface-container-lowest border border-outline-variant rounded p-space-md shadow-none flex flex-col justify-between">
-<div>
-<div class="flex items-center justify-between pb-space-xs border-b border-outline-variant mb-space-sm">
-<div class="flex items-center gap-space-xs">
-<span class="material-symbols-outlined text-primary text-[18px]">receipt_long</span>
-<h3 class="text-headline-sm font-headline-sm text-on-surface">Batch Import History</h3>
-</div>
-<div class="flex items-center gap-space-xs">
-<span class="font-code-sm text-[11px] text-outline">AUTO-COMMITTED</span>
-<button class="p-1 text-on-surface-variant hover:text-primary transition-colors" title="Export Ledger Manifest">
-<span class="material-symbols-outlined text-[16px]">download</span>
-</button>
-</div>
-</div>
-<!-- Import History Dense Table -->
-<div class="overflow-x-auto border border-outline-variant rounded">
-<table class="w-full border-collapse text-left">
-<thead>
-<tr class="bg-surface-container text-secondary text-label-sm font-label-sm uppercase tracking-wider h-7 border-b border-outline-variant">
-<th class="py-1 px-space-sm font-semibold">Batch ID</th>
-<th class="py-1 px-space-sm font-semibold">Source</th>
-<th class="py-1 px-space-sm font-semibold text-right">Total</th>
-<th class="py-1 px-space-sm font-semibold text-right">Accepted</th>
-<th class="py-1 px-space-sm font-semibold text-right">Rejected</th>
-<th class="py-1 px-space-sm font-semibold text-center">Status</th>
-<th class="py-1 px-space-sm font-semibold text-right">Audit Manifest</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-outline-variant font-body-sm text-body-sm text-on-surface">
-<!-- Batch #9021 (from user spec) -->
-<tr class="hover:bg-surface-container-low transition-colors duration-100 h-9">
-<td class="py-1 px-space-sm font-code-sm font-semibold text-primary">Batch #9021</td>
-<td class="py-1 px-space-sm">Core Banking Fedwire</td>
-<td class="py-1 px-space-sm text-right font-code-sm tabular-nums">450,000 txns</td>
-<td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-primary font-semibold">449,982</td>
-<td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-error font-semibold">18</td>
-<td class="py-1 px-space-sm text-center">
-<span class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border" style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
+              <div class="space-y-space-xs mb-space-sm font-body-sm text-body-sm">
+                <div class="flex justify-between items-center py-1 border-b border-surface-variant">
+                  <span class="text-on-surface-variant">Active Target Graph:</span>
+                  <span class="font-code-sm font-semibold text-primary">Topology #ST-7801 (Complex Smurfing)</span>
+                </div>
+                <div class="flex justify-between items-center py-1 border-b border-surface-variant">
+                  <span class="text-on-surface-variant">Synthetic Accounts:</span>
+                  <span class="font-code-sm font-semibold">1,240 entities</span>
+                </div>
+                <div class="flex justify-between items-center py-1">
+                  <span class="text-on-surface-variant">Synthesized Volume:</span>
+                  <span class="font-code-sm font-semibold">$14,280,000 USD</span>
+                </div>
+              </div>
+            </div>
+            <button
+              class="w-full h-8 px-space-md bg-primary-container text-on-primary font-label-md text-label-md rounded hover:bg-primary transition-colors flex items-center justify-center gap-space-xs">
+              <span class="material-symbols-outlined text-[16px]">play_circle</span>
+              <span>Run Pattern Simulation (Verify rule activation against synthetic multi-hop laundering
+                topology)</span>
+            </button>
+          </div>
+        </div>
+        <!-- Right: Batch Import History Table (7 Cols) -->
+        <div
+          class="lg:col-span-7 bg-surface-container-lowest border border-outline-variant rounded p-space-md shadow-none flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-space-xs border-b border-outline-variant mb-space-sm">
+              <div class="flex items-center gap-space-xs">
+                <span class="material-symbols-outlined text-primary text-[18px]">receipt_long</span>
+                <h3 class="text-headline-sm font-headline-sm text-on-surface">Batch Import History</h3>
+              </div>
+              <div class="flex items-center gap-space-xs">
+                <span class="font-code-sm text-[11px] text-outline">AUTO-COMMITTED</span>
+                <button class="p-1 text-on-surface-variant hover:text-primary transition-colors"
+                  title="Export Ledger Manifest">
+                  <span class="material-symbols-outlined text-[16px]">download</span>
+                </button>
+              </div>
+            </div>
+            <!-- Import History Dense Table -->
+            <div class="overflow-x-auto border border-outline-variant rounded">
+              <table class="w-full border-collapse text-left">
+                <thead>
+                  <tr
+                    class="bg-surface-container text-secondary text-label-sm font-label-sm uppercase tracking-wider h-7 border-b border-outline-variant">
+                    <th class="py-1 px-space-sm font-semibold">Batch ID</th>
+                    <th class="py-1 px-space-sm font-semibold">Source</th>
+                    <th class="py-1 px-space-sm font-semibold text-right">Total</th>
+                    <th class="py-1 px-space-sm font-semibold text-right">Accepted</th>
+                    <th class="py-1 px-space-sm font-semibold text-right">Rejected</th>
+                    <th class="py-1 px-space-sm font-semibold text-center">Status</th>
+                    <th class="py-1 px-space-sm font-semibold text-right">Audit Manifest</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant font-body-sm text-body-sm text-on-surface">
+                  <!-- Batch #9021 (from user spec) -->
+                  <tr class="hover:bg-surface-container-low transition-colors duration-100 h-9">
+                    <td class="py-1 px-space-sm font-code-sm font-semibold text-primary">Batch #9021</td>
+                    <td class="py-1 px-space-sm">Core Banking Fedwire</td>
+                    <td class="py-1 px-space-sm text-right font-code-sm tabular-nums">450,000 txns</td>
+                    <td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-primary font-semibold">449,982
+                    </td>
+                    <td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-error font-semibold">18</td>
+                    <td class="py-1 px-space-sm text-center">
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border"
+                        style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
                         Ingested
                       </span>
-</td>
-<td class="py-1 px-space-sm text-right">
-<button class="font-code-sm text-primary hover:underline text-[11px]">SHA-256 Check</button>
-</td>
-</tr>
-<!-- Additional Historical Record 1 -->
-<tr class="hover:bg-surface-container-low transition-colors duration-100 h-9">
-<td class="py-1 px-space-sm font-code-sm font-semibold text-primary">Batch #9020</td>
-<td class="py-1 px-space-sm">SWIFT MT103 Nostro Ingress</td>
-<td class="py-1 px-space-sm text-right font-code-sm tabular-nums">185,420 txns</td>
-<td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-primary font-semibold">185,420</td>
-<td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-outline">0</td>
-<td class="py-1 px-space-sm text-center">
-<span class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border" style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
+                    </td>
+                    <td class="py-1 px-space-sm text-right">
+                      <button class="font-code-sm text-primary hover:underline text-[11px]">SHA-256 Check</button>
+                    </td>
+                  </tr>
+                  <!-- Additional Historical Record 1 -->
+                  <tr class="hover:bg-surface-container-low transition-colors duration-100 h-9">
+                    <td class="py-1 px-space-sm font-code-sm font-semibold text-primary">Batch #9020</td>
+                    <td class="py-1 px-space-sm">SWIFT MT103 Nostro Ingress</td>
+                    <td class="py-1 px-space-sm text-right font-code-sm tabular-nums">185,420 txns</td>
+                    <td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-primary font-semibold">185,420
+                    </td>
+                    <td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-outline">0</td>
+                    <td class="py-1 px-space-sm text-center">
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border"
+                        style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
                         Ingested
                       </span>
-</td>
-<td class="py-1 px-space-sm text-right">
-<button class="font-code-sm text-primary hover:underline text-[11px]">SHA-256 Check</button>
-</td>
-</tr>
-<!-- Additional Historical Record 2 -->
-<tr class="hover:bg-surface-container-low transition-colors duration-100 h-9">
-<td class="py-1 px-space-sm font-code-sm font-semibold text-primary">Batch #9019</td>
-<td class="py-1 px-space-sm">ACH Real-Time Clearinghouse</td>
-<td class="py-1 px-space-sm text-right font-code-sm tabular-nums">820,115 txns</td>
-<td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-primary font-semibold">820,091</td>
-<td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-error font-semibold">24</td>
-<td class="py-1 px-space-sm text-center">
-<span class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border" style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
+                    </td>
+                    <td class="py-1 px-space-sm text-right">
+                      <button class="font-code-sm text-primary hover:underline text-[11px]">SHA-256 Check</button>
+                    </td>
+                  </tr>
+                  <!-- Additional Historical Record 2 -->
+                  <tr class="hover:bg-surface-container-low transition-colors duration-100 h-9">
+                    <td class="py-1 px-space-sm font-code-sm font-semibold text-primary">Batch #9019</td>
+                    <td class="py-1 px-space-sm">ACH Real-Time Clearinghouse</td>
+                    <td class="py-1 px-space-sm text-right font-code-sm tabular-nums">820,115 txns</td>
+                    <td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-primary font-semibold">820,091
+                    </td>
+                    <td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-error font-semibold">24</td>
+                    <td class="py-1 px-space-sm text-center">
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border"
+                        style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
                         Ingested
                       </span>
-</td>
-<td class="py-1 px-space-sm text-right">
-<button class="font-code-sm text-primary hover:underline text-[11px]">SHA-256 Check</button>
-</td>
-</tr>
-<!-- Additional Historical Record 3 -->
-<tr class="hover:bg-surface-container-low transition-colors duration-100 h-9">
-<td class="py-1 px-space-sm font-code-sm font-semibold text-primary">Batch #9018</td>
-<td class="py-1 px-space-sm">Card Settlement MasterFeed</td>
-<td class="py-1 px-space-sm text-right font-code-sm tabular-nums">2,410,000 txns</td>
-<td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-primary font-semibold">2,409,880</td>
-<td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-error font-semibold">120</td>
-<td class="py-1 px-space-sm text-center">
-<span class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border" style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
+                    </td>
+                    <td class="py-1 px-space-sm text-right">
+                      <button class="font-code-sm text-primary hover:underline text-[11px]">SHA-256 Check</button>
+                    </td>
+                  </tr>
+                  <!-- Additional Historical Record 3 -->
+                  <tr class="hover:bg-surface-container-low transition-colors duration-100 h-9">
+                    <td class="py-1 px-space-sm font-code-sm font-semibold text-primary">Batch #9018</td>
+                    <td class="py-1 px-space-sm">Card Settlement MasterFeed</td>
+                    <td class="py-1 px-space-sm text-right font-code-sm tabular-nums">2,410,000 txns</td>
+                    <td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-primary font-semibold">
+                      2,409,880</td>
+                    <td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-error font-semibold">120</td>
+                    <td class="py-1 px-space-sm text-center">
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border"
+                        style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
                         Ingested
                       </span>
-</td>
-<td class="py-1 px-space-sm text-right">
-<button class="font-code-sm text-primary hover:underline text-[11px]">SHA-256 Check</button>
-</td>
-</tr>
-<!-- Additional Historical Record 4 -->
-<tr class="hover:bg-surface-container-low transition-colors duration-100 h-9">
-<td class="py-1 px-space-sm font-code-sm font-semibold text-primary">Batch #9017</td>
-<td class="py-1 px-space-sm">SEPA Euro Instant Gate</td>
-<td class="py-1 px-space-sm text-right font-code-sm tabular-nums">98,200 txns</td>
-<td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-primary font-semibold">98,200</td>
-<td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-outline">0</td>
-<td class="py-1 px-space-sm text-center">
-<span class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border" style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
+                    </td>
+                    <td class="py-1 px-space-sm text-right">
+                      <button class="font-code-sm text-primary hover:underline text-[11px]">SHA-256 Check</button>
+                    </td>
+                  </tr>
+                  <!-- Additional Historical Record 4 -->
+                  <tr class="hover:bg-surface-container-low transition-colors duration-100 h-9">
+                    <td class="py-1 px-space-sm font-code-sm font-semibold text-primary">Batch #9017</td>
+                    <td class="py-1 px-space-sm">SEPA Euro Instant Gate</td>
+                    <td class="py-1 px-space-sm text-right font-code-sm tabular-nums">98,200 txns</td>
+                    <td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-primary font-semibold">98,200
+                    </td>
+                    <td class="py-1 px-space-sm text-right font-code-sm tabular-nums text-outline">0</td>
+                    <td class="py-1 px-space-sm text-center">
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 text-[11px] font-label-sm font-medium rounded border"
+                        style="background-color: #EAEFE7; color: #46573C; border-color: #D2DDD0;">
                         Ingested
                       </span>
-</td>
-<td class="py-1 px-space-sm text-right">
-<button class="font-code-sm text-primary hover:underline text-[11px]">SHA-256 Check</button>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<!-- Invalidation Log Brief -->
-<div class="mt-space-sm p-space-sm bg-surface-container-low rounded border border-outline-variant flex items-center justify-between text-body-sm font-body-sm">
-<div class="flex items-center gap-space-xs text-on-surface-variant">
-<span class="material-symbols-outlined text-outline text-[16px]">rule_folder</span>
-<span>18 rejected records in Batch #9021 segregated into quarantine queue due to missing ISO country codes.</span>
-</div>
-<button class="text-primary font-label-sm text-label-sm hover:underline flex-shrink-0">
+                    </td>
+                    <td class="py-1 px-space-sm text-right">
+                      <button class="font-code-sm text-primary hover:underline text-[11px]">SHA-256 Check</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!-- Invalidation Log Brief -->
+            <div
+              class="mt-space-sm p-space-sm bg-surface-container-low rounded border border-outline-variant flex items-center justify-between text-body-sm font-body-sm">
+              <div class="flex items-center gap-space-xs text-on-surface-variant">
+                <span class="material-symbols-outlined text-outline text-[16px]">rule_folder</span>
+                <span>18 rejected records in Batch #9021 segregated into quarantine queue due to missing ISO country
+                  codes.</span>
+              </div>
+              <button class="text-primary font-label-sm text-label-sm hover:underline flex-shrink-0">
                 Inspect 18 Errors
               </button>
-</div>
-</div>
-<!-- Bottom Summary Status bar -->
-<div class="mt-space-sm pt-space-xs border-t border-outline-variant flex justify-between items-center text-label-sm font-label-sm text-on-surface-variant">
-<span>SHOWING 5 OF 1,842 INGESTED BATCHES</span>
-<div class="flex items-center gap-1">
-<button class="px-2 py-0.5 border border-outline-variant bg-surface-container rounded hover:bg-surface-container-high transition-colors disabled:opacity-50" disabled="">Previous</button>
-<button class="px-2 py-0.5 border border-outline-variant bg-surface-container rounded hover:bg-surface-container-high transition-colors">Next</button>
-</div>
-</div>
-</div>
-</section>
-</main>
-</div>
-</body></html>
+            </div>
+          </div>
+          <!-- Bottom Summary Status bar -->
+          <div
+            class="mt-space-sm pt-space-xs border-t border-outline-variant flex justify-between items-center text-label-sm font-label-sm text-on-surface-variant">
+            <span>SHOWING 5 OF 1,842 INGESTED BATCHES</span>
+            <div class="flex items-center gap-1">
+              <button
+                class="px-2 py-0.5 border border-outline-variant bg-surface-container rounded hover:bg-surface-container-high transition-colors disabled:opacity-50"
+                disabled="">Previous</button>
+              <button
+                class="px-2 py-0.5 border border-outline-variant bg-surface-container rounded hover:bg-surface-container-high transition-colors">Next</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+
+</html>

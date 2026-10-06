@@ -32,7 +32,11 @@ export async function apiRequest<T>(
     (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(endpoint, {
+  const rawBase = import.meta.env.VITE_API_BASE_URL || '';
+  const baseUrl = rawBase.replace(/\/+$/, '');
+  const url = endpoint.startsWith('http') ? endpoint : `${baseUrl}${endpoint}`;
+
+  const response = await fetch(url, {
     ...options,
     headers,
   });

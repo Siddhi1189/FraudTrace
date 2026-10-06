@@ -32,7 +32,7 @@ colors:
   error: '#ba1a1a'
   on-error: '#ffffff'
   error-container: '#ffdad6'
-  on-error-container: '#93000a'
+  on-error-container: '#95000a'
   primary-fixed: '#cce6fa'
   primary-fixed-dim: '#b0cadd'
   on-primary-fixed: '#011e2d'

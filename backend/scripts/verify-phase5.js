@@ -1,8 +1,18 @@
+import 'dotenv/config';
 import http from 'http';
+import { formatAmount } from '../src/utils/format.js';
+
+const TARGET_PORT = parseInt(process.env.PORT || '5000', 10);
+const TARGET_HOST = process.env.HOST || 'localhost';
 
 function request(options, data = null) {
+  const reqOptions = {
+    hostname: TARGET_HOST,
+    port: TARGET_PORT,
+    ...options,
+  };
   return new Promise((resolve, reject) => {
-    const req = http.request(options, (res) => {
+    const req = http.request(reqOptions, (res) => {
       let body = '';
       res.on('data', (chunk) => (body += chunk));
       res.on('end', () => {
@@ -100,7 +110,7 @@ async function runVerification() {
     throw new Error(`Expected exactly 5 rings after Run 1, but found: ${ringsRun1.length}`);
   }
   ringsRun1.forEach((r) => {
-    console.log(`     [${r.label}] FP: ${r.fingerprint} | Score: ${r.score} | Members: ${r.memberCount} | Total Flow: $${r.totalFlow}`);
+    console.log(`     [${r.label}] FP: ${r.fingerprint} | Score: ${r.score} | Members: ${r.memberCount} | Total Flow: ${formatAmount(r.totalFlow)}`);
   });
 
   // 5. GET /api/alerts (Fetch alerts and patch one to REVIEWING)
@@ -114,8 +124,9 @@ async function runVerification() {
   });
   const alertsRun1 = alerts1Res.body.alerts || [];
   console.log(`  -> Current Alert Count after Run 1: ${alertsRun1.length}`);
-  if (alertsRun1.length !== 7) {
-    throw new Error(`Expected 7 alerts after Run 1, but found: ${alertsRun1.length}`);
+  // D3 update: Subsumed strict subset detections for MERCHANT_CASHOUT for same merchant in overlapping window; expected 6 alerts: 1 CF, 1 FIFO, 2 SHDEV, 1 PTP, 1 MCO
+  if (alertsRun1.length !== 6) {
+    throw new Error(`Expected 6 alerts after Run 1 (1 CF, 1 FIFO, 2 SHDEV, 1 PTP, 1 MCO), but found: ${alertsRun1.length}`);
   }
 
   const alertToPatch = alertsRun1[0];
@@ -233,8 +244,9 @@ async function runVerification() {
   });
   const alertsRun2 = alerts2Res.body.alerts || [];
   console.log(`  -> Alert Count after Run 2: ${alertsRun2.length}`);
-  if (alertsRun2.length !== 7) {
-    throw new Error(`Expected 7 alerts after Run 2, but found: ${alertsRun2.length}`);
+  // D3 update: Subsumed strict subset detections for MERCHANT_CASHOUT for same merchant in overlapping window; expected 6 alerts: 1 CF, 1 FIFO, 2 SHDEV, 1 PTP, 1 MCO
+  if (alertsRun2.length !== 6) {
+    throw new Error(`Expected 6 alerts after Run 2 (1 CF, 1 FIFO, 2 SHDEV, 1 PTP, 1 MCO), but found: ${alertsRun2.length}`);
   }
   const preservedAlert = alertsRun2.find((a) => a.fingerprint === alertToPatch.fingerprint);
   console.log(`  -> Patched Alert (${alertToPatch.fingerprint}) Triage Status: ${preservedAlert?.triageStatus}`);
@@ -257,7 +269,7 @@ async function runVerification() {
   console.log('  -> Risk Score:', sampleRing.score);
   console.log('  -> Member Count:', sampleRing.members?.length);
   sampleRing.members?.forEach((m) => {
-    const extId = m.entityId?.externalAccountId || m.entityId?.externalDeviceId || m.entityId?.externalMerchantId || m.entityId?._id;
+    const extId = m.entityId?.externalId || m.entityId?.externalAccountId || m.entityId?.externalDeviceId || m.entityId?.externalMerchantId || m.entityId?._id;
     console.log(`     * Member: ${m.entityType} | ID: ${extId}`);
   });
   console.log('  -> Associated Alerts:', sampleRing.alerts?.length);
@@ -300,7 +312,7 @@ async function runVerification() {
   console.log(`  -> Retrieved ${txs.length} transactions (Total count: ${txRes.body.count || txs.length})`);
   if (txs.length > 0) {
     const t0 = txs[0];
-    console.log(`     Sample Tx: ${t0.externalTransactionId} | Amount: $${t0.amount} | Time: ${t0.timestamp}`);
+    console.log(`     Sample Tx: ${t0.externalTransactionId} | Amount: ${formatAmount(t0.amount)} | Time: ${t0.timestamp}`);
   }
 
   console.log('\n================================================================');

@@ -109,13 +109,15 @@ export async function executeAiQuery({ type, evidenceSnapshot, question }) {
   // LLM path: call Google Gemini REST endpoint using Node native fetch
   try {
     const prompt = type === 'QA' ? buildQaPrompt(question, evidenceSnapshot) : buildBriefPrompt(evidenceSnapshot);
-    const endpointUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+    const endpointUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent`;
 
     const response = await fetch(endpointUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
       },
+      signal: AbortSignal.timeout(15000),
       body: JSON.stringify({
         contents: [
           {
@@ -141,7 +143,31 @@ export async function executeAiQuery({ type, evidenceSnapshot, question }) {
       throw new Error('Gemini API returned empty response candidate');
     }
 
-    const parsedOutput = JSON.parse(textOutput);
+    // Strip code fences if present (I7)
+    let cleanJson = textOutput.trim();
+    if (cleanJson.startsWith('```json')) {
+      cleanJson = cleanJson.slice(7);
+    } else if (cleanJson.startsWith('```')) {
+      cleanJson = cleanJson.slice(3);
+    }
+    if (cleanJson.endsWith('```')) {
+      cleanJson = cleanJson.slice(0, -3);
+    }
+    cleanJson = cleanJson.trim();
+
+    const parsedOutput = JSON.parse(cleanJson);
+
+    // Validate response shape (I7)
+    if (!parsedOutput || typeof parsedOutput !== 'object') {
+      throw new Error('Gemini response is not a valid JSON object');
+    }
+    if (type === 'QA' && typeof parsedOutput.answer !== 'string') {
+      throw new Error('Gemini QA response missing required "answer" property');
+    }
+    if (type === 'BRIEF' && (!Array.isArray(parsedOutput.findings) || typeof parsedOutput.executiveSummary !== 'string')) {
+      throw new Error('Gemini Brief response missing required "findings" or "executiveSummary"');
+    }
+
     return {
       structuredOutput: parsedOutput,
       model: modelName,

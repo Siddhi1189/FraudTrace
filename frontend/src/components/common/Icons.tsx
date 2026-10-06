@@ -37,6 +37,8 @@ import {
   ZoomOut,
   Maximize2,
   Trash2,
+  Eye,
+  EyeOff,
   LucideProps,
 } from 'lucide-react';
 
@@ -82,6 +84,8 @@ const ICON_MAP = {
   zoomOut: ZoomOut,
   maximize: Maximize2,
   trash: Trash2,
+  eye: Eye,
+  eyeOff: EyeOff,
 } as const;
 
 export type IconName = keyof typeof ICON_MAP;

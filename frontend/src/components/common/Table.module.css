@@ -4,24 +4,26 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background-color: var(--surface);
+  box-shadow: var(--shadow-card);
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-family: var(--font-body);
-  font-size: 12px;
+  font-family: var(--font-ui);
+  font-size: 14px;
 }
 
 .th {
   background-color: var(--surface-2);
   color: var(--text-2);
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-weight: 500;
   font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 8px 12px;
+  letter-spacing: 0.08em;
+  padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border-strong);
   white-space: nowrap;
   position: sticky;
@@ -30,9 +32,13 @@
 }
 
 .tr {
-  height: 32px;
+  height: 42px;
   border-bottom: 1px solid var(--border);
-  transition: background-color 120ms ease;
+  transition: background-color var(--d-fast) var(--ease-out);
+}
+
+.tr:last-child {
+  border-bottom: none;
 }
 
 .tr:hover {
@@ -40,13 +46,16 @@
 }
 
 .td {
-  padding: 6px 12px;
+  padding: var(--space-3) var(--space-4);
   color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
   white-space: nowrap;
 }
 
 .tdNumber {
   text-align: right;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum';
+  font-feature-settings: 'tnum' 1;
 }

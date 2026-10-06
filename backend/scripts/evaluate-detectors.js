@@ -3,6 +3,7 @@ import { connectDB } from '../src/config/db.js';
 import { buildInMemoryGraph } from '../src/services/graph/graphBuilder.js';
 import { runAllDetectors } from '../src/services/detectors/index.js';
 import { generateSimulationTransactions } from '../src/simulation/generator.js';
+import { formatAmount } from '../src/utils/format.js';
 import mongoose from 'mongoose';
 
 async function evaluate() {

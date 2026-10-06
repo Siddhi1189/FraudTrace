@@ -31,6 +31,10 @@ export interface AlertEventPayload {
   alert: unknown;
 }
 
+export interface AlertCreatedPayload {
+  alert: any;
+}
+
 export interface CaseEventPayload {
   caseId: string;
   status?: string;
@@ -65,8 +69,11 @@ export function getSocket(): Socket | null {
     return socketInstance;
   }
 
-  // Connect relative to current origin, matching the API client
-  socketInstance = io({
+  // Connect to backend URL or relative origin proxied by Vite
+  const rawSocketUrl = import.meta.env.VITE_SOCKET_URL;
+  const socketUrl = rawSocketUrl ? rawSocketUrl.replace(/\/+$/, '') : undefined;
+
+  socketInstance = io(socketUrl, {
     auth: { token },
     transports: ['websocket', 'polling'],
     reconnection: true,

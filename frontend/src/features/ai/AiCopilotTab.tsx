@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AIBriefItem,
   createAiBrief,
+  fetchAiBrief,
   updateAiBrief,
   askCaseQuestion,
   AnalystDecision,
 } from '../../api/aiApi';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
+import { Banner } from '../../components/Banner';
 import { Icon } from '../../components/common/Icons';
+import { formatDateTime } from '../../lib/format';
 import styles from './AiCopilotTab.module.css';
 
 interface AiCopilotTabProps {
@@ -33,6 +36,29 @@ export const AiCopilotTab: React.FC<AiCopilotTabProps> = ({
   const selectedBrief =
     investigationBriefs.find((b) => b._id === activeBriefId) ||
     (investigationBriefs.length > 0 ? investigationBriefs[0] : null);
+
+  // Full brief state (with evidenceSnapshot loaded from GET /api/ai/briefs/:id if needed)
+  const [fullBrief, setFullBrief] = useState<AIBriefItem | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (selectedBrief?._id) {
+      if (selectedBrief.evidenceSnapshot) {
+        setFullBrief(selectedBrief);
+      } else {
+        fetchAiBrief(selectedBrief._id)
+          .then((b) => {
+            if (isMounted) setFullBrief(b);
+          })
+          .catch((err) => console.error('Failed to load brief snapshot:', err));
+      }
+    } else {
+      setFullBrief(null);
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedBrief?._id, selectedBrief?.evidenceSnapshot]);
 
   // Brief Generation State
   const [generatingBrief, setGeneratingBrief] = useState(false);
@@ -144,18 +170,29 @@ export const AiCopilotTab: React.FC<AiCopilotTabProps> = ({
   };
 
   const briefEvidenceTokens = selectedBrief ? getBriefEvidenceIds(selectedBrief) : [];
+  const catalog = fullBrief?.evidenceSnapshot?.evidenceCatalog || [];
 
   return (
     <div className={styles.container}>
       {/* Investigation Brief Section */}
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <h2 className={styles.sectionTitle}>Investigation Brief</h2>
             {selectedBrief && (
-              <Badge variant={selectedBrief.verificationStatus === 'VERIFIED' ? 'low' : 'medium'}>
-                {selectedBrief.verificationStatus}
-              </Badge>
+              <div className={styles.badgeSlideIn}>
+                <Badge
+                  variant={
+                    selectedBrief.verificationStatus === 'VERIFIED'
+                      ? 'low'
+                      : selectedBrief.verificationStatus === 'PARTIALLY_VERIFIED'
+                        ? 'medium'
+                        : 'high'
+                  }
+                >
+                  {selectedBrief.verificationStatus}
+                </Badge>
+              </div>
             )}
           </div>
 
@@ -180,18 +217,21 @@ export const AiCopilotTab: React.FC<AiCopilotTabProps> = ({
           )}
         </div>
 
-        {briefError && (
-          <div style={{ color: 'var(--sev-high-text)', backgroundColor: 'var(--sev-high-bg)', padding: '8px 12px', borderRadius: '2px', fontSize: '11px' }}>
-            {briefError}
-          </div>
+        {/* Fallback notification for unverified outcome */}
+        {selectedBrief?.verificationStatus === 'UNVERIFIED' && (
+          <Banner variant="warning" title="Deterministic Fallback Activated">
+            The generated briefing failed post-generation factual grounding checks and was replaced by the rule-based deterministic evidence template.
+          </Banner>
         )}
+
+        {briefError && <Banner variant="error">{briefError}</Banner>}
 
         {selectedBrief ? (
           <div className={styles.briefCard}>
             <div className={styles.briefHeader}>
               <div className={styles.briefMeta}>
                 <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>
-                  Generated {new Date(selectedBrief.createdAt).toLocaleString()}
+                  Generated {formatDateTime(selectedBrief.createdAt)}
                 </span>
                 {selectedBrief.model && (
                   <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>
@@ -199,49 +239,23 @@ export const AiCopilotTab: React.FC<AiCopilotTabProps> = ({
                   </span>
                 )}
               </div>
-
-              {/* Version selector if multiple briefs */}
-              {investigationBriefs.length > 1 && (
-                <div style={{ display: 'flex', gap: '4px' }}>
-                  {investigationBriefs.map((b, i) => (
-                    <button
-                      key={b._id}
-                      onClick={() => {
-                        setActiveBriefId(b._id);
-                        setIsEditing(false);
-                      }}
-                      style={{
-                        padding: '2px 6px',
-                        fontSize: '11px',
-                        background: activeBriefId === b._id ? 'var(--primary)' : 'var(--surface)',
-                        color: activeBriefId === b._id ? 'var(--surface)' : 'var(--text-2)',
-                        border: '1px solid var(--border)',
-                        borderRadius: '2px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      v{investigationBriefs.length - i}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
 
-            {/* Brief Text / Edit Area */}
+            {/* Brief Body or Edit Area */}
             {isEditing ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                 <textarea
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
                   className={styles.editTextarea}
-                  aria-label="Edit investigation brief"
                 />
-                <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                  <Button variant="secondary" compact onClick={() => setIsEditing(false)}>
-                    <span>Cancel</span>
-                  </Button>
+                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                   <Button variant="primary" compact onClick={handleSaveEdit} disabled={savingEdit}>
-                    <span>{savingEdit ? 'Saving...' : 'Save edit'}</span>
+                    <Icon name="check" size={12} />
+                    <span>Save Edits</span>
+                  </Button>
+                  <Button variant="secondary" compact onClick={() => setIsEditing(false)} disabled={savingEdit}>
+                    <span>Cancel</span>
                   </Button>
                 </div>
               </div>
@@ -251,146 +265,135 @@ export const AiCopilotTab: React.FC<AiCopilotTabProps> = ({
               </div>
             )}
 
-            {/* Evidence ID Chips */}
+            {/* Cited Evidence IDs */}
             {briefEvidenceTokens.length > 0 && (
               <div>
-                <span style={{ fontSize: '10px', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Cited Evidence IDs
+                <span style={{ fontSize: '11px', color: 'var(--text-3)', fontFamily: 'var(--font-mono)' }}>
+                  Cited Evidence Grounding:
                 </span>
                 <div className={styles.chipList}>
-                  {briefEvidenceTokens.map((token, idx) => (
-                    <span key={idx} className={styles.evidenceChip}>
-                      {token}
+                  {briefEvidenceTokens.map((tok) => (
+                    <span key={tok} className={styles.evidenceChip}>
+                      {tok}
                     </span>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Analyst Review & Decision Controls */}
-            {!isEditing && (
-              <div className={styles.decisionControls}>
-                <Button
-                  variant={selectedBrief.analystDecision === 'ACCEPTED' ? 'primary' : 'secondary'}
-                  compact
-                  onClick={() => handleDecision('ACCEPTED')}
-                  disabled={savingEdit}
-                >
-                  <Icon name="check" size={12} />
-                  <span>Accept</span>
-                </Button>
-
-                <Button
-                  variant="secondary"
-                  compact
-                  onClick={() => {
-                    setEditText(selectedBrief.editedText || getBriefText(selectedBrief));
-                    setIsEditing(true);
-                  }}
-                  disabled={savingEdit}
-                >
-                  <Icon name="edit" size={12} />
-                  <span>Edit</span>
-                </Button>
-
-                <Button
-                  variant={selectedBrief.analystDecision === 'DISCARDED' ? 'primary' : 'secondary'}
-                  compact
-                  onClick={() => handleDecision('DISCARDED')}
-                  disabled={savingEdit}
-                >
-                  <Icon name="trash" size={12} />
-                  <span>Discard</span>
-                </Button>
-              </div>
+            {/* Full Evidence Snapshot Catalog */}
+            {catalog.length > 0 && (
+              <details style={{ marginTop: 'var(--space-2)' }}>
+                <summary style={{ fontSize: '11px', color: 'var(--primary)', cursor: 'pointer', fontFamily: 'var(--font-mono)' }}>
+                  Inspect Evidence Catalog ({catalog.length} items)
+                </summary>
+                <table className={styles.catalogTable}>
+                  <thead>
+                    <tr>
+                      <th>Token</th>
+                      <th>Type</th>
+                      <th>Entity ID</th>
+                      <th>Summary</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {catalog.map((item: any) => (
+                      <tr key={item.token}>
+                        <td style={{ fontFamily: 'var(--font-mono)' }}>{item.token}</td>
+                        <td>{item.type}</td>
+                        <td style={{ fontFamily: 'var(--font-mono)' }}>{item.entityId}</td>
+                        <td>{item.summary}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </details>
             )}
+
+            {/* Analyst Governance Decision Controls */}
+            <div className={styles.decisionControls}>
+              <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>Analyst Governance:</span>
+              <Button
+                variant={selectedBrief.analystDecision === 'ACCEPTED' ? 'primary' : 'secondary'}
+                compact
+                onClick={() => handleDecision('ACCEPTED')}
+                disabled={savingEdit}
+              >
+                Accept Brief
+              </Button>
+              <Button
+                variant="secondary"
+                compact
+                onClick={() => {
+                  setEditText(getBriefText(selectedBrief));
+                  setIsEditing(true);
+                }}
+                disabled={savingEdit}
+              >
+                Edit Content
+              </Button>
+              <Button
+                variant={selectedBrief.analystDecision === 'DISCARDED' ? 'primary' : 'secondary'}
+                compact
+                onClick={() => handleDecision('DISCARDED')}
+                disabled={savingEdit}
+              >
+                Discard Brief
+              </Button>
+            </div>
           </div>
         ) : (
-          <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-3)', fontSize: '12px', backgroundColor: 'var(--surface-2)', borderRadius: '2px', border: '1px solid var(--border)' }}>
-            No investigation brief generated yet. Click &ldquo;Generate investigation brief&rdquo; to summarize case evidence.
+          <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--text-3)', fontSize: '12px' }}>
+            No investigation brief has been generated for this case yet. Click &quot;Generate investigation brief&quot; to synthesize evidence.
           </div>
         )}
       </div>
 
-      {/* Case Investigation Q&A Section */}
+      {/* Case Forensic Q&A Section */}
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Case Investigation Q&amp;A</h2>
+          <h2 className={styles.sectionTitle}>Forensic Case Q&amp;A</h2>
         </div>
 
         <form onSubmit={handleAskQuestion} className={styles.qaForm}>
           <input
             type="text"
-            placeholder="Ask a question about this case (e.g. What accounts share devices?)..."
+            placeholder="Ask question about topology, evidence, or amounts..."
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             disabled={askingQuestion}
             className={styles.qaInput}
-            aria-label="Ask a question about this case"
+            aria-label="Case inquiry question"
           />
           <Button variant="primary" compact type="submit" disabled={askingQuestion || !question.trim()}>
-            <Icon name="send" size={12} />
-            <span>{askingQuestion ? 'Submitting...' : 'Ask'}</span>
+            <span>{askingQuestion ? 'Querying...' : 'Ask Copilot'}</span>
           </Button>
         </form>
 
-        {qaError && (
-          <div style={{ color: 'var(--sev-high-text)', backgroundColor: 'var(--sev-high-bg)', padding: '8px 12px', borderRadius: '2px', fontSize: '11px' }}>
-            {qaError}
-          </div>
-        )}
+        {qaError && <Banner variant="error">{qaError}</Banner>}
 
-        {/* Q&A List */}
-        {qaBriefs.length > 0 ? (
-          <div className={styles.qaList}>
-            {qaBriefs.map((qa) => {
-              const isInsufficient =
-                qa.structuredOutput?.confidence === 'INSUFFICIENT_EVIDENCE' ||
-                qa.verificationStatus === 'FALLBACK';
-
-              const qaEvidenceTokens = qa.structuredOutput?.evidenceIds || [];
-
-              return (
-                <div key={qa._id} className={styles.qaItem}>
-                  <div className={styles.qaQuestion}>
-                    Q: {qa.question || 'Case Question'}
-                  </div>
-
-                  <div className={styles.qaAnswer}>
-                    {isInsufficient
-                      ? 'Insufficient evidence available for this question.'
-                      : qa.editedText || qa.structuredOutput?.answer || ''}
-                  </div>
-
-                  <div className={styles.qaAssessment}>
-                    <span>
-                      Evidence assessment: {isInsufficient ? 'Insufficient' : 'Grounded'}
-                    </span>
-                    <span>&bull;</span>
-                    <span className="tabular-nums">
-                      {new Date(qa.createdAt).toLocaleTimeString()}
-                    </span>
-                  </div>
-
-                  {qaEvidenceTokens.length > 0 && !isInsufficient && (
-                    <div className={styles.chipList}>
-                      {qaEvidenceTokens.map((tok, idx) => (
-                        <span key={idx} className={styles.evidenceChip}>
-                          {tok}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-3)', fontSize: '12px' }}>
-            No questions asked yet. Ask a specific case question to verify grounded facts.
-          </div>
-        )}
+        <div className={styles.qaList}>
+          {qaBriefs.map((qa) => (
+            <div key={qa._id} className={styles.qaItem}>
+              <div className={styles.qaQuestion}>Q: {qa.question}</div>
+              <div className={styles.qaAnswer}>
+                {qa.structuredOutput?.answer || 'No response recorded.'}
+              </div>
+              <div className={styles.qaAssessment}>
+                <span>Assessed: {qa.structuredOutput?.confidence || 'GROUNDED'}</span>
+                {qa.verificationStatus && (
+                  <Badge variant={qa.verificationStatus === 'VERIFIED' ? 'low' : 'medium'}>
+                    {qa.verificationStatus}
+                  </Badge>
+                )}
+                <span>&bull; {formatDateTime(qa.createdAt)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 };
+
+export default AiCopilotTab;

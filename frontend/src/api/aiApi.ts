@@ -52,28 +52,28 @@ export interface AIBriefItem {
 }
 
 export async function createAiBrief(caseId: string): Promise<AIBriefItem> {
-  return apiRequest<AIBriefItem>('/ai/briefs', {
+  return apiRequest<AIBriefItem>('/api/ai/briefs', {
     method: 'POST',
     body: JSON.stringify({ caseId }),
   });
 }
 
 export async function fetchAiBrief(id: string): Promise<AIBriefItem> {
-  return apiRequest<AIBriefItem>(`/ai/briefs/${id}`);
+  return apiRequest<AIBriefItem>(`/api/ai/briefs/${id}`);
 }
 
 export async function updateAiBrief(
   id: string,
   updates: { analystDecision?: AnalystDecision; editedText?: string | null }
 ): Promise<AIBriefItem> {
-  return apiRequest<AIBriefItem>(`/ai/briefs/${id}`, {
+  return apiRequest<AIBriefItem>(`/api/ai/briefs/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(updates),
   });
 }
 
 export async function askCaseQuestion(caseId: string, question: string): Promise<AIBriefItem> {
-  return apiRequest<AIBriefItem>(`/ai/cases/${caseId}/ask`, {
+  return apiRequest<AIBriefItem>(`/api/ai/cases/${caseId}/ask`, {
     method: 'POST',
     body: JSON.stringify({ question }),
   });

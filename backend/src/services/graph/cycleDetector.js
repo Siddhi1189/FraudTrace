@@ -12,10 +12,12 @@ export function detectTimeOrderedCycles(
   {
     minLength = 3,
     maxLength = 5,
-    maxWindowMs = 24 * 60 * 60 * 1000, // 24 hours
+    maxWindowMs,
+    maxTimeWindowMs,
     maxCycles = 50,
   } = {}
 ) {
+  const windowMs = maxTimeWindowMs || maxWindowMs || (24 * 60 * 60 * 1000);
   const accountKeys = Array.from(graph.nodes.keys()).filter((k) => k.startsWith('ACCOUNT:'));
   const foundCycles = [];
   const seenCycleFingerprints = new Set();
@@ -42,7 +44,7 @@ export function detectTimeOrderedCycles(
 
           const firstEdge = pathEdges[0];
           const elapsedMs = edge.timestamp.getTime() - firstEdge.timestamp.getTime();
-          if (elapsedMs > maxWindowMs) {
+          if (elapsedMs > windowMs) {
             continue; // Exceeds time window
           }
         }
