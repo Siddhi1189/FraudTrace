@@ -1,7 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import cytoscape, { Core, EventObject } from 'cytoscape';
-import { ZoomIn, ZoomOut, Maximize2, RotateCcw } from 'lucide-react';
 import { GraphNodeData, GraphEdgeData } from '../api/graphApi';
+import { graphTokens } from '../lib/tokens';
+import { Icon } from './common/Icons';
+import styles from './CytoscapeGraph.module.css';
 
 interface CytoscapeGraphProps {
   nodes: GraphNodeData[];
@@ -26,10 +28,16 @@ export const CytoscapeGraph: React.FC<CytoscapeGraphProps> = ({
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Transform nodes and edges into Cytoscape elements format
-    const cyElements: cytoscape.ElementDefinition[] = [];
+    // Resolve color tokens from :root CSS variables via graphTokens helper
+    const nodeAccountColor = graphTokens.nodeAccount;
+    const nodeDeviceColor = graphTokens.nodeDevice;
+    const nodeMerchantColor = graphTokens.nodeMerchant;
+    const edgeDefaultColor = graphTokens.edgeDefault;
+    const edgeSuspiciousColor = graphTokens.edgeSuspicious;
+    const textPrimaryColor = graphTokens.textPrimary;
+    const borderStrongColor = graphTokens.borderStrong;
 
-    // Map all identifier variants to a single canonical node ID
+    // Canonical ID mapping to prevent disconnected edge drops
     const idToCanonical = new Map<string, string>();
 
     nodes.forEach((n) => {
@@ -46,19 +54,21 @@ export const CytoscapeGraph: React.FC<CytoscapeGraphProps> = ({
       }
     });
 
+    const cyElements: cytoscape.ElementDefinition[] = [];
+
     nodes.forEach((n) => {
       const canonicalId = n.externalId || n.id || n.key;
       if (!canonicalId) return;
 
-      let color = '#38bdf8'; // Blue for Account
+      let color = nodeAccountColor;
       let shape: cytoscape.Css.NodeShape = 'ellipse';
 
       if (n.entityType === 'DEVICE') {
-        color = '#c084fc'; // Purple for Device
-        shape = 'diamond';
+        color = nodeDeviceColor;
+        shape = 'hexagon';
       } else if (n.entityType === 'MERCHANT') {
-        color = '#34d399'; // Emerald for Merchant
-        shape = 'round-rectangle';
+        color = nodeMerchantColor;
+        shape = 'rectangle';
       }
 
       const isHighlight =
@@ -73,289 +83,194 @@ export const CytoscapeGraph: React.FC<CytoscapeGraphProps> = ({
           id: canonicalId,
           label: n.externalId || n.id || canonicalId,
           entityType: n.entityType,
-          color: isHighlight ? '#ff007f' : color,
+          color,
           shape,
-          size: isHighlight ? 44 : 34,
+          size: isHighlight ? 36 : 28,
+          borderWidth: isHighlight ? 2 : 0,
+          borderColor: borderStrongColor,
           raw: n,
         },
       });
     });
 
-    edges.forEach((e, idx) => {
-      const sourceKey = (e as any).sourceKey;
-      const targetKey = (e as any).targetKey;
+    edges.forEach((e) => {
+      const sourceKey = (e as Record<string, unknown>).sourceKey as string | undefined;
+      const targetKey = (e as Record<string, unknown>).targetKey as string | undefined;
       const resolvedSource = idToCanonical.get(e.source) || (sourceKey ? idToCanonical.get(sourceKey) : undefined);
       const resolvedTarget = idToCanonical.get(e.target) || (targetKey ? idToCanonical.get(targetKey) : undefined);
 
-      // Only add edge if both endpoints exist in the node set
       if (!resolvedSource || !resolvedTarget) {
         return;
       }
 
-      let lineColor = 'rgba(148, 163, 184, 0.4)';
-      let lineStyle: cytoscape.Css.LineStyle = 'solid';
-
-      if (e.type === 'TRANSFER') {
-        lineColor = 'rgba(56, 189, 248, 0.6)';
-      } else if (e.type === 'PAYMENT') {
-        lineColor = 'rgba(52, 211, 153, 0.6)';
-      } else if (e.type === 'USED_DEVICE') {
-        lineColor = 'rgba(192, 132, 252, 0.5)';
-        lineStyle = 'dashed';
-      }
+      const isSuspicious =
+        Boolean(e.isSuspicious) ||
+        Boolean((e as Record<string, unknown>).alertId);
 
       cyElements.push({
         group: 'edges',
         data: {
-          id: e.id || `${resolvedSource}->${resolvedTarget}:${idx}`,
+          id: e.id || `${resolvedSource}->${resolvedTarget}`,
           source: resolvedSource,
           target: resolvedTarget,
           type: e.type,
-          amount: e.amount,
-          timestamp: e.timestamp,
-          externalTransactionId: e.externalTransactionId,
-          lineColor,
-          lineStyle,
+          lineColor: isSuspicious ? edgeSuspiciousColor : edgeDefaultColor,
+          lineWidth: isSuspicious ? 2 : 1.5,
           raw: e,
         },
       });
     });
 
-    // Initialize Cytoscape core
+    // Initialize cytoscape instance
+    if (cyRef.current) {
+      cyRef.current.destroy();
+    }
+
     const cy = cytoscape({
       container: containerRef.current,
       elements: cyElements,
+      boxSelectionEnabled: false,
+      autounselectify: false,
       style: [
         {
           selector: 'node',
           style: {
             'background-color': 'data(color)',
-            label: 'data(label)',
-            'font-family': 'JetBrains Mono, monospace',
-            'font-size': '11px',
-            color: '#f8fafc',
-            'text-valign': 'bottom',
-            'text-margin-y': 6,
-            'text-outline-color': '#0a0d14',
-            'text-outline-width': 2,
+            shape: 'data(shape)' as any,
             width: 'data(size)',
             height: 'data(size)',
-            shape: 'data(shape)' as any,
-            'border-width': 2,
-            'border-color': 'rgba(255, 255, 255, 0.3)',
-            'transition-property': 'background-color, border-color, border-width, width, height',
-            'transition-duration': 0.2,
-          },
-        },
-        {
-          selector: 'node:selected',
-          style: {
-            'border-width': 4,
-            'border-color': '#00d2ff',
-            'background-color': '#38bdf8',
+            label: 'data(label)',
+            'font-family': 'Inter, sans-serif',
+            'font-size': '10px',
+            'font-weight': 500,
+            color: textPrimaryColor,
+            'text-valign': 'bottom',
+            'text-margin-y': 5,
+            'border-width': 'data(borderWidth)',
+            'border-color': 'data(borderColor)',
+            'text-background-color': graphTokens.surface || 'white',
+            'text-background-opacity': 0.8,
+            'text-background-padding': '2px',
+            'text-background-shape': 'roundrectangle',
           },
         },
         {
           selector: 'edge',
           style: {
-            width: 2,
+            width: 'data(lineWidth)',
             'line-color': 'data(lineColor)',
             'target-arrow-color': 'data(lineColor)',
             'target-arrow-shape': 'triangle',
             'curve-style': 'bezier',
-            'arrow-scale': 1.2,
-            'line-style': 'data(lineStyle)' as any,
+            'arrow-scale': 0.8,
             opacity: 0.85,
           },
         },
         {
-          selector: 'edge:selected',
+          selector: 'node:selected',
           style: {
-            width: 4,
-            'line-color': '#00d2ff',
-            'target-arrow-color': '#00d2ff',
-            opacity: 1,
+            'border-width': 2,
+            'border-color': textPrimaryColor,
           },
         },
       ],
       layout: {
         name: 'cose',
-        animate: true,
-        animationDuration: 500,
+        animate: false,
         nodeDimensionsIncludeLabels: true,
         randomize: false,
-        componentSpacing: 100,
-        nodeRepulsion: () => 450000,
+        nodeRepulsion: () => 6000,
         idealEdgeLength: () => 80,
-      } as any,
-      minZoom: 0.2,
-      maxZoom: 3,
+      },
     });
 
-    // Node click handler
     cy.on('tap', 'node', (evt: EventObject) => {
-      const node = evt.target;
-      const rawData = node.data('raw');
-      if (onNodeClick) onNodeClick(rawData);
+      const nodeData = evt.target.data('raw');
+      if (nodeData && onNodeClick) {
+        onNodeClick(nodeData);
+      }
     });
 
-    // Edge click handler
     cy.on('tap', 'edge', (evt: EventObject) => {
-      const edge = evt.target;
-      const rawData = edge.data('raw');
-      if (onEdgeClick) onEdgeClick(rawData);
+      const edgeData = evt.target.data('raw');
+      if (edgeData && onEdgeClick) {
+        onEdgeClick(edgeData);
+      }
     });
 
     cyRef.current = cy;
 
     return () => {
-      cy.destroy();
-      cyRef.current = null;
+      if (cyRef.current) {
+        cyRef.current.destroy();
+        cyRef.current = null;
+      }
     };
   }, [nodes, edges, highlightNodeId]);
 
   const handleZoomIn = () => {
-    cyRef.current?.zoom(cyRef.current.zoom() * 1.25);
+    if (cyRef.current) {
+      cyRef.current.zoom(cyRef.current.zoom() * 1.25);
+    }
   };
 
   const handleZoomOut = () => {
-    cyRef.current?.zoom(cyRef.current.zoom() * 0.8);
+    if (cyRef.current) {
+      cyRef.current.zoom(cyRef.current.zoom() * 0.8);
+    }
   };
 
   const handleFit = () => {
-    cyRef.current?.fit(undefined, 30);
+    if (cyRef.current) {
+      cyRef.current.fit(undefined, 30);
+    }
   };
 
-  const handleResetLayout = () => {
-    cyRef.current
-      ?.layout({
-        name: 'cose',
-        animate: true,
-        animationDuration: 400,
-      } as any)
-      .run();
+  const handleReset = () => {
+    if (cyRef.current) {
+      cyRef.current.layout({ name: 'cose', animate: false }).run();
+      cyRef.current.fit(undefined, 30);
+    }
   };
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        width: '100%',
-        height,
-        backgroundColor: '#070a0f',
-        borderRadius: 'var(--radius-md)',
-        overflow: 'hidden',
-        border: '1px solid var(--border-color)',
-      }}
-    >
-      <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
+    <div className={styles.wrapper} style={{ height }}>
+      <div ref={containerRef} className={styles.cyContainer} />
 
-      {/* Floating Graph Controls */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '12px',
-          right: '12px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '6px',
-          backgroundColor: 'rgba(15, 23, 42, 0.85)',
-          backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '8px',
-          padding: '6px',
-          zIndex: 10,
-        }}
-      >
-        <button
-          onClick={handleZoomIn}
-          title="Zoom In"
-          style={{
-            background: 'none',
-            color: '#94a3b8',
-            padding: '6px',
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <ZoomIn size={16} />
+      {/* Canvas Viewport Controls */}
+      <div className={styles.controls} aria-label="Graph canvas navigation controls">
+        <button className={styles.controlBtn} onClick={handleZoomIn} aria-label="Zoom in" title="Zoom in">
+          <Icon name="zoomIn" size={14} />
         </button>
-        <button
-          onClick={handleZoomOut}
-          title="Zoom Out"
-          style={{
-            background: 'none',
-            color: '#94a3b8',
-            padding: '6px',
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <ZoomOut size={16} />
+        <button className={styles.controlBtn} onClick={handleZoomOut} aria-label="Zoom out" title="Zoom out">
+          <Icon name="zoomOut" size={14} />
         </button>
-        <button
-          onClick={handleFit}
-          title="Fit Graph"
-          style={{
-            background: 'none',
-            color: '#94a3b8',
-            padding: '6px',
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Maximize2 size={16} />
+        <button className={styles.controlBtn} onClick={handleFit} aria-label="Fit to viewport" title="Fit to viewport">
+          <Icon name="maximize" size={14} />
         </button>
-        <button
-          onClick={handleResetLayout}
-          title="Recalculate Layout"
-          style={{
-            background: 'none',
-            color: '#94a3b8',
-            padding: '6px',
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <RotateCcw size={16} />
+        <button className={styles.controlBtn} onClick={handleReset} aria-label="Reset layout" title="Reset layout">
+          <Icon name="refresh" size={14} />
         </button>
       </div>
 
-      {/* Legend */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '12px',
-          left: '12px',
-          display: 'flex',
-          gap: '12px',
-          backgroundColor: 'rgba(15, 23, 42, 0.85)',
-          backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '8px',
-          padding: '6px 12px',
-          fontSize: '0.75rem',
-          color: '#cbd5e1',
-          zIndex: 10,
-        }}
-      >
-        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#38bdf8' }} /> Account
-        </span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ width: 10, height: 10, transform: 'rotate(45deg)', background: '#c084fc' }} /> Device
-        </span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ width: 10, height: 10, borderRadius: '2px', background: '#34d399' }} /> Merchant
-        </span>
+      {/* Topology Legend */}
+      <div className={styles.legendBox}>
+        <div className={styles.legendItem}>
+          <span className={styles.legendShapeCircle} />
+          <span>Account</span>
+        </div>
+        <div className={styles.legendItem}>
+          <span className={styles.legendShapeHexagon} />
+          <span>Device</span>
+        </div>
+        <div className={styles.legendItem}>
+          <span className={styles.legendShapeSquare} />
+          <span>Merchant</span>
+        </div>
+        <div className={styles.legendItem}>
+          <span className={styles.legendLineSuspicious} />
+          <span>Suspicious Edge</span>
+        </div>
       </div>
     </div>
   );

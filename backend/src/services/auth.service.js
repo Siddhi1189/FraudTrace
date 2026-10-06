@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/user.model.js';
+import { getJwtSecret, JWT_ALGORITHM } from '../config/jwt.js';
 
 export async function loginUser({ email, password }) {
   if (!email || !password) {
@@ -28,7 +29,7 @@ export async function loginUser({ email, password }) {
     throw error;
   }
 
-  const jwtSecret = process.env.JWT_SECRET || 'dev_secret_change_in_production';
+  const jwtSecret = getJwtSecret();
   // PLACEHOLDER(FT-1): 24h JWT token expiry
   const jwtExpiry = process.env.JWT_EXPIRY || '24h';
 
@@ -39,7 +40,10 @@ export async function loginUser({ email, password }) {
       role: user.role,
     },
     jwtSecret,
-    { expiresIn: jwtExpiry }
+    {
+      expiresIn: jwtExpiry,
+      algorithm: JWT_ALGORITHM,
+    }
   );
 
   return {

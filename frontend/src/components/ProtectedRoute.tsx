@@ -1,9 +1,10 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../app/AuthContext';
 
 export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading } = useAuth();
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -12,15 +13,15 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
         alignItems: 'center',
         justifyContent: 'center',
         height: '100vh',
-        color: 'var(--text-secondary)'
+        color: 'var(--text-2)'
       }}>
-        <div>Verifying security session...</div>
+        <div>Verifying analyst session...</div>
       </div>
     );
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
   return <>{children}</>;

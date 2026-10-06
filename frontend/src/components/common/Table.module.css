@@ -1,0 +1,52 @@
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 12px;
+}
+
+.th {
+  background-color: var(--surface-2);
+  color: var(--text-2);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-strong);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tr {
+  height: 32px;
+  border-bottom: 1px solid var(--border);
+  transition: background-color 120ms ease;
+}
+
+.tr:hover {
+  background-color: var(--surface-2);
+}
+
+.td {
+  padding: 6px 12px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.tdNumber {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}

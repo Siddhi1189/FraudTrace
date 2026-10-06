@@ -210,5 +210,8 @@ Code locations corresponding to these items are marked with `PLACEHOLDER(FT-<n>)
 - **Reason**: Preserves historical evidence integrity while enabling the analyst review/editing workflow per Sections 10.1 (Step 6) and 14.
 - **Status**: APPROVED
 
-
-
+### FT-26: CORS Allowed Origins
+- **Item**: Allowed origins for Express HTTP and Socket.IO CORS configuration.
+- **Value Chosen**: Origins parsed from `process.env.CORS_ORIGINS` (comma-separated list), defaulting to `['http://localhost:5173']` in development mode (`process.env.NODE_ENV !== 'production'`), and empty array / no default in production.
+- **Reason**: Replaces wildcard `*` CORS in HTTP and Socket.IO with explicit origin whitelisting per BE-AUTH-4.
+- **Status**: APPROVED

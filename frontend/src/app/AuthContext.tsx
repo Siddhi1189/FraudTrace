@@ -1,13 +1,15 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { apiRequest, getStoredToken, removeStoredToken, setStoredToken } from '../api/client';
+import { queryClient } from '../lib/queryClient';
+import { getSocket, disconnectSocket } from '../lib/socket';
 
 export interface User {
-  _id: string;
+  _id?: string;
   name: string;
   email: string;
   role: 'ANALYST' | 'ADMIN';
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface LoginResponse {
@@ -40,10 +42,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       try {
         const res = await apiRequest<{ user: User }>('/api/auth/me');
-        setUser(res.user);
+        setUser({
+          name: res.user.name,
+          email: res.user.email,
+          role: res.user.role,
+        });
         setToken(stored);
+        getSocket();
       } catch {
         removeStoredToken();
+        disconnectSocket();
         setUser(null);
         setToken(null);
       } finally {
@@ -62,11 +70,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setStoredToken(res.token);
     setToken(res.token);
-    setUser(res.user);
+    setUser({
+      name: res.user.name,
+      email: res.user.email,
+      role: res.user.role,
+    });
+    getSocket();
   };
 
   const logout = () => {
+    disconnectSocket();
     removeStoredToken();
+    queryClient.clear();
     setToken(null);
     setUser(null);
   };

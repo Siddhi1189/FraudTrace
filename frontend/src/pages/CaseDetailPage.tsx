@@ -1,22 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import {
-  ArrowLeft,
-  ShieldAlert,
-  Clock,
-  User,
-  CheckCircle,
-  FileText,
-  Plus,
-  Send,
-  History,
-  ExternalLink,
-  X,
-  AlertTriangle,
-  FolderOpen,
-  Bot,
-} from 'lucide-react';
-import { AiCopilotTab } from '../features/cases/AiCopilotTab';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   fetchCaseById,
   updateCase,
@@ -25,37 +8,45 @@ import {
   CaseDetailResponse,
   CaseStatus,
   CaseDisposition,
+  AttachedAlertItem,
 } from '../api/casesApi';
 import { fetchAlerts, AlertItem } from '../api/alertsApi';
 import { CaseStatusBadge } from '../components/CaseStatusBadge';
 import { CaseDispositionBadge } from '../components/CaseDispositionBadge';
 import { SeverityBadge } from '../components/SeverityBadge';
 import { RiskBadge } from '../components/RiskBadge';
+import { Button } from '../components/common/Button';
+import { Table, Column } from '../components/common/Table';
+import { Tabs } from '../components/common/Tabs';
+import { StateView } from '../components/common/StateView';
+import { Icon } from '../components/common/Icons';
+import { AiCopilotTab } from '../features/cases/AiCopilotTab';
+import styles from './CaseDetailPage.module.css';
 
 export const CaseDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const [data, setData] = useState<CaseDetailResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Tabs
-  const [activeTab, setActiveTab] = useState<'alerts' | 'notes' | 'copilot' | 'audit'>('alerts');
+  // Tabs: Evidence, Notes, Audit trail, Investigation brief
+  const [activeTab, setActiveTab] = useState('evidence');
 
   // New Note
-  const [newNoteContent, setNewNoteContent] = useState<string>('');
-  const [submittingNote, setSubmittingNote] = useState<boolean>(false);
+  const [newNoteContent, setNewNoteContent] = useState('');
+  const [submittingNote, setSubmittingNote] = useState(false);
   const [noteError, setNoteError] = useState<string | null>(null);
 
   // Close Case Modal
-  const [showCloseModal, setShowCloseModal] = useState<boolean>(false);
+  const [showCloseModal, setShowCloseModal] = useState(false);
   const [closeDisposition, setCloseDisposition] = useState<CaseDisposition>('CONFIRMED_FRAUD');
-  const [closeNote, setCloseNote] = useState<string>('');
-  const [closing, setClosing] = useState<boolean>(false);
+  const [closeNote, setCloseNote] = useState('');
+  const [closing, setClosing] = useState(false);
 
   // Attach Alert Modal
-  const [showAttachModal, setShowAttachModal] = useState<boolean>(false);
+  const [showAttachModal, setShowAttachModal] = useState(false);
   const [allAlerts, setAllAlerts] = useState<AlertItem[]>([]);
   const [attachingAlertId, setAttachingAlertId] = useState<string | null>(null);
   const [attachError, setAttachError] = useState<string | null>(null);
@@ -67,8 +58,12 @@ export const CaseDetailPage: React.FC = () => {
       setError(null);
       const res = await fetchCaseById(id);
       setData(res);
-    } catch (err: any) {
-      setError(err.error || 'Failed to load case');
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'error' in err) {
+        setError((err as { error: string }).error);
+      } else {
+        setError('Failed to load case workspace.');
+      }
     } finally {
       setLoading(false);
     }
@@ -88,8 +83,8 @@ export const CaseDetailPage: React.FC = () => {
     try {
       await updateCase(id, { status: newStatus });
       await loadCase();
-    } catch (err: any) {
-      alert(err.error || 'Failed to update status');
+    } catch (err: unknown) {
+      console.error('Failed to update status:', err);
     }
   };
 
@@ -99,31 +94,21 @@ export const CaseDetailPage: React.FC = () => {
 
     try {
       setClosing(true);
-      if (closeNote.trim()) {
-        await addCaseNote(id, `Case Closure Note: ${closeNote.trim()}`);
-      }
       await updateCase(id, {
         status: 'CLOSED',
         disposition: closeDisposition,
       });
+
+      if (closeNote.trim()) {
+        await addCaseNote(id, `Case closed with disposition ${closeDisposition}. Note: ${closeNote.trim()}`);
+      }
+
       setShowCloseModal(false);
       await loadCase();
-    } catch (err: any) {
-      alert(err.error || 'Failed to close case');
+    } catch (err: unknown) {
+      console.error('Failed to close case:', err);
     } finally {
       setClosing(false);
-    }
-  };
-
-  const handleReopenCase = async () => {
-    if (!id) return;
-    if (window.confirm('Reopen this investigation case? Status will be changed to INVESTIGATING.')) {
-      try {
-        await updateCase(id, { status: 'INVESTIGATING' });
-        await loadCase();
-      } catch (err: any) {
-        alert(err.error || 'Failed to reopen case');
-      }
     }
   };
 
@@ -137,9 +122,12 @@ export const CaseDetailPage: React.FC = () => {
       await addCaseNote(id, newNoteContent.trim());
       setNewNoteContent('');
       await loadCase();
-      setActiveTab('notes');
-    } catch (err: any) {
-      setNoteError(err.error || 'Failed to add note');
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'error' in err) {
+        setNoteError((err as { error: string }).error);
+      } else {
+        setNoteError('Failed to record note.');
+      }
     } finally {
       setSubmittingNote(false);
     }
@@ -147,811 +135,381 @@ export const CaseDetailPage: React.FC = () => {
 
   const openAttachModal = async () => {
     setShowAttachModal(true);
+    setAttachingAlertId(null);
     setAttachError(null);
     try {
       const res = await fetchAlerts();
-      setAllAlerts(res.alerts || []);
-    } catch (err: any) {
-      setAttachError(err.error || 'Failed to load available alerts');
+      // Filter out alerts already attached
+      const currentAttachedIds = new Set((data?.alerts || []).map((a) => a._id));
+      setAllAlerts((res.alerts || []).filter((a) => !currentAttachedIds.has(a._id)));
+    } catch {
+      // Non-fatal
     }
   };
 
-  const handleAttachAlert = async (alertId: string) => {
+  const handleAttachSubmit = async (alertId: string) => {
     if (!id) return;
     try {
       setAttachingAlertId(alertId);
       setAttachError(null);
       await attachAlertToCase(id, alertId);
-      await loadCase();
       setShowAttachModal(false);
-    } catch (err: any) {
-      setAttachError(err.error || 'Failed to attach alert');
+      await loadCase();
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'error' in err) {
+        setAttachError((err as { error: string }).error);
+      } else {
+        setAttachError('Failed to attach alert.');
+      }
     } finally {
       setAttachingAlertId(null);
     }
   };
 
-  if (loading) {
-    return (
-      <div style={{ padding: '80px', textAlign: 'center', color: 'var(--text-muted)' }}>
-        Loading investigation case workspace...
-      </div>
-    );
+  const alertColumns: Column<AttachedAlertItem>[] = [
+    {
+      key: 'pattern',
+      title: 'Pattern',
+      render: (a) => (
+        <span style={{ fontWeight: 600, color: 'var(--text)' }}>
+          {a.pattern.replace(/_/g, ' ')}
+        </span>
+      ),
+    },
+    {
+      key: 'severity',
+      title: 'Severity',
+      width: '90px',
+      render: (a) => <SeverityBadge severity={a.severity} />,
+    },
+    {
+      key: 'score',
+      title: 'Score',
+      width: '70px',
+      render: (a) => <RiskBadge score={a.score} />,
+    },
+    {
+      key: 'summary',
+      title: 'Evidence Summary',
+      render: (a) => (
+        <span style={{ fontSize: '11px', color: 'var(--text-2)' }}>
+          {a.evidence?.summary || a.fingerprint.slice(0, 24)}
+        </span>
+      ),
+    },
+    {
+      key: 'attachedAt',
+      title: 'Attached Date',
+      width: '120px',
+      render: (a) => (
+        <span className="tabular-nums" style={{ color: 'var(--text-3)' }}>
+          {a.attachedAt ? new Date(a.attachedAt).toLocaleDateString() : '-'}
+        </span>
+      ),
+    },
+    {
+      key: 'actions',
+      title: '',
+      width: '70px',
+      align: 'right',
+      render: () => (
+        <Button
+          variant="ghost"
+          compact
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate('/alerts');
+          }}
+          aria-label="View alert queue"
+        >
+          <span>View</span>
+        </Button>
+      ),
+    },
+  ];
+
+  if (loading && !data) {
+    return <StateView type="loading" title="Loading case investigation workspace..." />;
   }
 
   if (error || !data) {
     return (
-      <div
-        style={{
-          padding: '30px',
-          backgroundColor: 'rgba(255, 77, 79, 0.1)',
-          border: '1px solid rgba(255, 77, 79, 0.3)',
-          borderRadius: 'var(--radius-md)',
-          maxWidth: '480px',
-          margin: '40px auto',
-          textAlign: 'center',
-          color: '#ff7875',
-        }}
-      >
-        <AlertTriangle size={32} style={{ margin: '0 auto 10px auto' }} />
-        <p style={{ fontWeight: 600 }}>{error || 'Case not found'}</p>
-        <button
-          onClick={() => navigate('/cases')}
-          style={{
-            marginTop: '16px',
-            padding: '8px 16px',
-            backgroundColor: 'var(--bg-surface-elevated)',
-            color: '#fff',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: '0.82rem',
-            cursor: 'pointer',
-          }}
-        >
-          Back to Cases
-        </button>
-      </div>
+      <StateView
+        type="error"
+        title="Case not found"
+        description={error || 'The requested case could not be located.'}
+        onRetry={() => navigate('/cases')}
+      />
     );
   }
 
-  const { case: c, alerts, notes, events, briefs = [] } = data;
-  const attachedAlertIds = new Set(alerts.map((a) => a._id));
-  const unattachedAlerts = allAlerts.filter((a) => !attachedAlertIds.has(a._id));
+  const currentCase = data.case;
+  const isClosed = currentCase.status === 'CLOSED';
+
+  const tabs = [
+    { key: 'evidence', label: `Evidence (${data.alerts?.length || 0})` },
+    { key: 'notes', label: `Notes (${data.notes?.length || 0})` },
+    { key: 'audit', label: `Audit trail (${data.events?.length || 0})` },
+    { key: 'brief', label: 'Investigation brief' },
+  ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Back button */}
-      <div>
-        <Link
-          to="/cases"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            fontSize: '0.82rem',
-            fontWeight: 600,
-            color: 'var(--text-secondary)',
-            textDecoration: 'none',
-          }}
-        >
-          <ArrowLeft size={14} /> Back to Cases
-        </Link>
-      </div>
-
-      {/* Main Case Header Card */}
-      <div
-        style={{
-          backgroundColor: 'var(--bg-surface)',
-          border: '1px solid var(--border-color)',
-          borderRadius: 'var(--radius-md)',
-          padding: '24px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '18px',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.9rem',
-                  fontWeight: 700,
-                  color: 'var(--accent-cyan)',
-                  backgroundColor: 'rgba(0, 210, 255, 0.12)',
-                  border: '1px solid rgba(0, 210, 255, 0.25)',
-                  padding: '3px 10px',
-                  borderRadius: 'var(--radius-sm)',
-                }}
-              >
-                {c.caseNumber}
-              </span>
-              <CaseStatusBadge status={c.status} />
-              <CaseDispositionBadge disposition={c.disposition} />
-            </div>
-
-            <h1 style={{ fontSize: '1.65rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em' }}>
-              {c.title}
-            </h1>
+    <div className={styles.container}>
+      {/* Header */}
+      <div className={styles.headerRow}>
+        <div className={styles.titleArea}>
+          <div className={styles.breadcrumbs}>
+            <button className={styles.backBtn} onClick={() => navigate('/cases')}>
+              <Icon name="arrowLeft" size={12} />
+              <span>All Cases</span>
+            </button>
+            <span>/</span>
+            <span>{currentCase.caseNumber}</span>
           </div>
 
-          {/* Action buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            {c.status === 'OPEN' && (
-              <button
-                onClick={() => handleStatusChange('INVESTIGATING')}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 16px',
-                  backgroundColor: 'rgba(255, 171, 0, 0.2)',
-                  color: '#ffab00',
-                  border: '1px solid rgba(255, 171, 0, 0.4)',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: '0.82rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-              >
-                <Clock size={14} />
-                Start Investigation
-              </button>
-            )}
-
-            {c.status === 'INVESTIGATING' && (
-              <>
-                <button
-                  onClick={() => handleStatusChange('OPEN')}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 14px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                    color: 'var(--text-secondary)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: '0.82rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
-                >
-                  <FolderOpen size={14} />
-                  Mark Open
-                </button>
-                <button
-                  onClick={() => setShowCloseModal(true)}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 16px',
-                    backgroundColor: 'rgba(0, 230, 118, 0.15)',
-                    color: '#00e676',
-                    border: '1px solid rgba(0, 230, 118, 0.4)',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: '0.82rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                  }}
-                >
-                  <CheckCircle size={14} />
-                  Close Case
-                </button>
-              </>
-            )}
-
-            {c.status === 'CLOSED' && (
-              <button
-                onClick={handleReopenCase}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 14px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.06)',
-                  color: 'var(--text-primary)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: '0.82rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                <History size={14} />
-                Reopen Case
-              </button>
-            )}
-
-            <button
-              onClick={openAttachModal}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 16px',
-                background: 'var(--accent-gradient)',
-                color: '#070a0f',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '0.82rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              <Plus size={14} />
-              Attach Alert
-            </button>
+          <div className={styles.titleWithBadges}>
+            <span className={styles.caseNumber}>{currentCase.caseNumber}</span>
+            <h1 className={styles.title}>{currentCase.title}</h1>
+            <CaseStatusBadge status={currentCase.status} />
+            <CaseDispositionBadge disposition={currentCase.disposition} />
           </div>
         </div>
 
-        {/* Metadata Grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: '14px',
-            paddingTop: '16px',
-            borderTop: '1px solid var(--border-color)',
-            fontSize: '0.8rem',
-          }}
-        >
-          <div>
-            <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.74rem', marginBottom: '3px' }}>Created By</span>
-            <span style={{ fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <User size={13} color="var(--text-muted)" />
-              {c.createdBy?.name || 'Unknown'} ({c.createdBy?.role || 'ANALYST'})
-            </span>
-          </div>
-
-          <div>
-            <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.74rem', marginBottom: '3px' }}>Created Date</span>
-            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-              {new Date(c.createdAt).toLocaleDateString()} {new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </span>
-          </div>
-
-          <div>
-            <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.74rem', marginBottom: '3px' }}>Closure Date</span>
-            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-              {c.closedAt
-                ? `${new Date(c.closedAt).toLocaleDateString()} ${new Date(c.closedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                : 'Active / Not Closed'}
-            </span>
-          </div>
-
-          <div>
-            <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.74rem', marginBottom: '3px' }}>Attached Alerts</span>
-            <span style={{ fontWeight: 600, color: '#ffab00' }}>
-              {alerts.length} alert{alerts.length === 1 ? '' : 's'} linked
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', gap: '20px' }}>
-        {[
-          { key: 'alerts', label: `Attached Alerts (${alerts.length})`, icon: ShieldAlert },
-          { key: 'notes', label: `Investigation Notes (${notes.length})`, icon: FileText },
-          { key: 'copilot', label: `AI Copilot (${briefs.length})`, icon: Bot },
-          { key: 'audit', label: `Audit Trail (${events.length})`, icon: History },
-        ].map((t) => {
-          const Icon = t.icon;
-          const isActive = activeTab === t.key;
-          return (
-            <button
-              key={t.key}
-              onClick={() => setActiveTab(t.key as any)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                paddingBottom: '12px',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                color: isActive ? 'var(--accent-cyan)' : 'var(--text-secondary)',
-                borderBottom: isActive ? '2px solid var(--accent-cyan)' : '2px solid transparent',
-                backgroundColor: 'transparent',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <Icon size={15} />
-              {t.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Tab 1: Attached Alerts */}
-      {activeTab === 'alerts' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Linked Fraud Evidence & Detector Findings
-            </h2>
-            <button
-              onClick={openAttachModal}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                backgroundColor: 'var(--bg-surface)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border-color)',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '0.78rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              <Plus size={13} />
-              Attach Another Alert
-            </button>
-          </div>
-
-          {alerts.length === 0 ? (
-            <div
-              style={{
-                padding: '50px',
-                backgroundColor: 'var(--bg-surface)',
-                border: '1px solid var(--border-color)',
-                borderRadius: 'var(--radius-md)',
-                textAlign: 'center',
-                color: 'var(--text-muted)',
-              }}
-            >
-              <ShieldAlert size={36} color="var(--text-muted)" style={{ margin: '0 auto 10px auto', opacity: 0.5 }} />
-              <p style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>No alerts attached to this case</p>
-              <p style={{ fontSize: '0.8rem', marginTop: '4px' }}>
-                Attach relevant alerts to aggregate evidence and transaction provenance.
-              </p>
-              <button
-                onClick={openAttachModal}
-                style={{
-                  marginTop: '14px',
-                  padding: '8px 16px',
-                  background: 'var(--accent-gradient)',
-                  color: '#070a0f',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: '0.82rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
+        <div className={styles.actionsArea}>
+          {!isClosed ? (
+            <>
+              {currentCase.status === 'OPEN' && (
+                <Button
+                  variant="secondary"
+                  compact
+                  onClick={() => handleStatusChange('INVESTIGATING')}
+                >
+                  <span>Start investigation</span>
+                </Button>
+              )}
+              <Button
+                variant="primary"
+                compact
+                onClick={() => setShowCloseModal(true)}
               >
-                Attach Alert Now
-              </button>
-            </div>
+                <span>Close case</span>
+              </Button>
+            </>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {alerts.map((al) => (
-                <div
-                  key={al._id}
-                  style={{
-                    backgroundColor: 'var(--bg-surface)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-md)',
-                    padding: '18px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '12px',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                      <SeverityBadge severity={al.severity} />
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.84rem', fontWeight: 600, color: 'var(--accent-cyan)' }}>
-                        {al.pattern}
-                      </span>
-                      <RiskBadge score={al.score} size="sm" />
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      {al.ringId && (
-                        <button
-                          onClick={() => {
-                            const rId = typeof al.ringId === 'object' && al.ringId !== null ? al.ringId._id : al.ringId;
-                            navigate(`/rings/${rId}`);
-                          }}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '5px',
-                            padding: '4px 10px',
-                            backgroundColor: 'rgba(0, 210, 255, 0.1)',
-                            color: 'var(--accent-cyan)',
-                            border: '1px solid rgba(0, 210, 255, 0.25)',
-                            borderRadius: 'var(--radius-sm)',
-                            fontSize: '0.76rem',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                          }}
-                        >
-                          View Fraud Ring <ExternalLink size={12} />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => navigate('/alerts')}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '5px',
-                          padding: '4px 10px',
-                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                          color: 'var(--text-secondary)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: 'var(--radius-sm)',
-                          fontSize: '0.76rem',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Inspect in Queue <ExternalLink size={12} />
-                      </button>
-                    </div>
-                  </div>
-
-                  <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                    {al.evidence?.summary || 'No summary available for this alert.'}
-                  </p>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                    <span>Fingerprint: <code style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{al.fingerprint}</code></span>
-                    {al.evidence?.transactions && (
-                      <span>Transactions: <strong style={{ color: '#fff' }}>{al.evidence.transactions.length}</strong></span>
-                    )}
-                    {al.attachedAt && (
-                      <span>Attached: {new Date(al.attachedAt).toLocaleTimeString()}</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <Button
+              variant="secondary"
+              compact
+              onClick={() => handleStatusChange('INVESTIGATING')}
+            >
+              <span>Reopen case</span>
+            </Button>
           )}
+
+          <Button variant="secondary" compact onClick={openAttachModal} disabled={isClosed}>
+            <Icon name="plus" size={12} />
+            <span>Attach alert</span>
+          </Button>
         </div>
-      )}
+      </div>
 
-      {/* Tab 2: Investigation Notes */}
-      {activeTab === 'notes' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Analyst Investigation Notes
-            </h2>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{notes.length} note{notes.length === 1 ? '' : 's'} recorded</span>
-          </div>
+      {/* Meta Grid */}
+      <div className={styles.metaGrid}>
+        <div className={styles.metaBox}>
+          <span className={styles.metaLabel}>Investigator</span>
+          <span className={styles.metaValue}>{currentCase.createdBy?.name || 'Analyst'}</span>
+        </div>
+        <div className={styles.metaBox}>
+          <span className={styles.metaLabel}>Created Date</span>
+          <span className="tabular-nums" style={{ color: 'var(--text-2)' }}>
+            {new Date(currentCase.createdAt).toLocaleDateString()}
+          </span>
+        </div>
+        <div className={styles.metaBox}>
+          <span className={styles.metaLabel}>Attached Alerts</span>
+          <span className="tabular-nums" style={{ fontSize: '15px', fontWeight: 700 }}>
+            {data.alerts?.length || 0}
+          </span>
+        </div>
+        <div className={styles.metaBox}>
+          <span className={styles.metaLabel}>Investigation Status</span>
+          <span className={styles.metaValue}>{currentCase.status}</span>
+        </div>
+      </div>
 
-          {/* New Note Composer */}
-          <form
-            onSubmit={handleAddNote}
-            style={{
-              backgroundColor: 'var(--bg-surface)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-md)',
-              padding: '18px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '12px',
-            }}
-          >
-            <label style={{ fontSize: '0.76rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-              Add Investigation Note
-            </label>
-            <textarea
-              rows={3}
-              placeholder="Record findings, interview notes, corroborating documents, or merchant verifications..."
-              value={newNoteContent}
-              onChange={(e) => setNewNoteContent(e.target.value)}
-              style={{
-                width: '100%',
-                backgroundColor: 'var(--bg-surface-elevated)',
-                border: '1px solid var(--border-color)',
-                borderRadius: 'var(--radius-sm)',
-                color: 'var(--text-primary)',
-                padding: '10px 14px',
-                fontSize: '0.84rem',
-                fontFamily: 'inherit',
-                resize: 'vertical',
-              }}
-            />
-            {noteError && (
-              <p style={{ fontSize: '0.8rem', color: 'var(--danger)' }}>{noteError}</p>
-            )}
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button
-                type="submit"
-                disabled={submittingNote || !newNoteContent.trim()}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 18px',
-                  background: 'var(--accent-gradient)',
-                  color: '#070a0f',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: '0.82rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  opacity: submittingNote || !newNoteContent.trim() ? 0.5 : 1,
-                }}
-              >
-                <Send size={13} />
-                {submittingNote ? 'Posting...' : 'Post Note'}
-              </button>
+      {/* Workspace Navigation Tabs */}
+      <div className={styles.card}>
+        <Tabs tabs={tabs} activeKey={activeTab} onChange={setActiveTab} />
+
+        {/* Tab 1: Evidence */}
+        {activeTab === 'evidence' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>
+                Attached Alert Evidence
+              </h2>
+              <Button variant="secondary" compact onClick={openAttachModal} disabled={isClosed}>
+                <Icon name="plus" size={12} />
+                <span>Attach alert</span>
+              </Button>
             </div>
-          </form>
 
-          {/* Notes Thread */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {notes.length === 0 ? (
-              <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                No notes posted yet. Use the composer above to add the first investigation note.
-              </div>
-            ) : (
-              notes.map((n) => (
-                <div
-                  key={n._id}
-                  style={{
-                    backgroundColor: 'var(--bg-surface)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-md)',
-                    padding: '16px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px', fontSize: '0.8rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontWeight: 600, color: '#fff' }}>{n.authorId?.name || 'Analyst'}</span>
-                      <span style={{ color: 'var(--text-muted)', fontSize: '0.74rem' }}>({n.authorId?.role || 'ANALYST'})</span>
+            <Table
+              columns={alertColumns}
+              data={data.alerts || []}
+              keyExtractor={(a) => a._id}
+              emptyMessage="No alerts attached to this case yet. Click 'Attach alert' to add evidence."
+            />
+          </div>
+        )}
+
+        {/* Tab 2: Notes */}
+        {activeTab === 'notes' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className={styles.notesList}>
+              {data.notes && data.notes.length > 0 ? (
+                data.notes.map((n) => (
+                  <div key={n._id} className={styles.noteItem}>
+                    <div className={styles.noteHeader}>
+                      <span className={styles.noteAuthor}>{n.authorId?.name || 'Investigator'}</span>
+                      <span className={styles.noteDate}>
+                        {new Date(n.createdAt).toLocaleString()}
+                      </span>
                     </div>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.74rem' }}>
-                      {new Date(n.createdAt).toLocaleDateString()} {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
+                    <div className={styles.noteContent}>{n.content}</div>
                   </div>
-                  <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>
-                    {n.content}
-                  </p>
+                ))
+              ) : (
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-3)', fontSize: '12px' }}>
+                  No case notes logged. Enter an investigation note below.
                 </div>
-              ))
+              )}
+            </div>
+
+            {!isClosed && (
+              <form onSubmit={handleAddNote} className={styles.addNoteBox}>
+                <label htmlFor="newNote" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text)' }}>
+                  Add Investigation Note
+                </label>
+                <textarea
+                  id="newNote"
+                  placeholder="Record evidence observation, hypothesis, or interview log..."
+                  value={newNoteContent}
+                  onChange={(e) => setNewNoteContent(e.target.value)}
+                  className={styles.textarea}
+                  disabled={submittingNote}
+                />
+                {noteError && (
+                  <div style={{ color: 'var(--sev-high-text)', fontSize: '11px' }}>{noteError}</div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <Button variant="primary" compact type="submit" disabled={submittingNote || !newNoteContent.trim()}>
+                    <Icon name="send" size={12} />
+                    <span>{submittingNote ? 'Saving note...' : 'Add note'}</span>
+                  </Button>
+                </div>
+              </form>
             )}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Tab: AI Investigation Copilot */}
-      {activeTab === 'copilot' && (
-        <AiCopilotTab
-          caseId={c._id}
-          caseNumber={c.caseNumber}
-          briefs={briefs}
-          onRefresh={loadCase}
-        />
-      )}
-
-      {/* Tab 3: Audit Trail */}
-      {activeTab === 'audit' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Immutable Case Audit Log
+        {/* Tab 3: Audit Trail */}
+        {activeTab === 'audit' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <h2 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>
+              Case Audit Trail
             </h2>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Lifecycle events recorded in MongoDB</span>
-          </div>
 
-          <div
-            style={{
-              backgroundColor: 'var(--bg-surface)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-md)',
-              overflow: 'hidden',
-            }}
-          >
-            {events.length === 0 ? (
-              <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                No audit events recorded for this case.
-              </div>
-            ) : (
-              events.map((ev) => (
-                <div
-                  key={ev._id}
-                  style={{
-                    padding: '16px 20px',
-                    borderBottom: '1px solid var(--border-color)',
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '14px',
-                  }}
-                >
-                  <div
-                    style={{
-                      padding: '8px',
-                      borderRadius: 'var(--radius-sm)',
-                      backgroundColor: 'rgba(0, 210, 255, 0.1)',
-                      color: 'var(--accent-cyan)',
-                      marginTop: '2px',
-                    }}
-                  >
-                    <History size={15} />
-                  </div>
-
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.82rem', color: '#fff' }}>
-                        {ev.eventType}
-                      </span>
-                      <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                        {new Date(ev.createdAt).toLocaleDateString()} {new Date(ev.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-
-                    <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span>Action by:</span>
-                      <strong style={{ color: '#fff' }}>{ev.createdBy?.name || 'System'}</strong>
-                      {ev.createdBy?.role && (
-                        <span
-                          style={{
-                            fontSize: '0.7rem',
-                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                            padding: '1px 6px',
-                            borderRadius: '4px',
-                            color: 'var(--text-muted)',
-                          }}
-                        >
-                          {ev.createdBy.role}
+            <div className={styles.auditList}>
+              {data.events && data.events.length > 0 ? (
+                data.events.map((e) => (
+                  <div key={e._id} className={styles.auditItem}>
+                    <div className={styles.auditDot} />
+                    <div className={styles.auditContent}>
+                      <div className={styles.auditType}>
+                        {e.eventType.replace(/_/g, ' ')}
+                      </div>
+                      <div className={styles.auditMeta}>
+                        <span>{e.createdBy?.name || 'System'}</span> &bull;{' '}
+                        <span className="tabular-nums">
+                          {new Date(e.createdAt).toLocaleString()}
                         </span>
+                      </div>
+                      {e.metadata && Object.keys(e.metadata).length > 0 && (
+                        <div style={{ fontSize: '10px', color: 'var(--text-3)', marginTop: '2px', fontFamily: 'var(--font-body)' }}>
+                          {JSON.stringify(e.metadata)}
+                        </div>
                       )}
                     </div>
-
-                    {ev.metadata && Object.keys(ev.metadata).length > 0 && (
-                      <div
-                        style={{
-                          marginTop: '6px',
-                          padding: '8px 12px',
-                          backgroundColor: 'var(--bg-surface-elevated)',
-                          borderRadius: 'var(--radius-sm)',
-                          border: '1px solid var(--border-color)',
-                          fontFamily: 'var(--font-mono)',
-                          fontSize: '0.76rem',
-                          color: 'var(--accent-cyan)',
-                        }}
-                      >
-                        {JSON.stringify(ev.metadata)}
-                      </div>
-                    )}
                   </div>
+                ))
+              ) : (
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-3)', fontSize: '12px' }}>
+                  No audit trail events recorded.
                 </div>
-              ))
-            )}
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Tab 4: Investigation Brief & Copilot */}
+        {activeTab === 'brief' && (
+          <AiCopilotTab
+            caseId={currentCase._id}
+            caseNumber={currentCase.caseNumber}
+            briefs={data.briefs || []}
+            onRefresh={loadCase}
+          />
+        )}
+      </div>
 
       {/* Close Case Modal */}
       {showCloseModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 100,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '16px',
-            backgroundColor: 'rgba(5, 7, 12, 0.85)',
-            backdropFilter: 'blur(4px)',
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: 'var(--bg-surface-elevated)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-md)',
-              maxWidth: '480px',
-              width: '100%',
-              padding: '24px',
-              boxShadow: 'var(--shadow-subtle)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '18px',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <CheckCircle size={20} color="#00e676" />
-                Close Investigation Case
-              </h3>
-              <button
-                onClick={() => setShowCloseModal(false)}
-                style={{ backgroundColor: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' }}
-              >
-                <X size={18} />
-              </button>
+        <div className={styles.modalOverlay} onClick={() => setShowCloseModal(false)}>
+          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Close Case {currentCase.caseNumber}</h2>
+              <Button variant="ghost" compact onClick={() => setShowCloseModal(false)} aria-label="Close modal">
+                <Icon name="close" size={14} />
+              </Button>
             </div>
 
-            <form onSubmit={handleCloseCaseSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                  Final Investigation Disposition <span style={{ color: 'var(--danger)' }}>*</span>
+            <form onSubmit={handleCloseCaseSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div className={styles.field}>
+                <label htmlFor="dispositionSelect" className={styles.fieldLabel}>
+                  Investigation Disposition *
                 </label>
                 <select
+                  id="dispositionSelect"
                   value={closeDisposition}
                   onChange={(e) => setCloseDisposition(e.target.value as CaseDisposition)}
-                  style={{
-                    width: '100%',
-                    backgroundColor: 'var(--bg-surface)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-sm)',
-                    color: 'var(--text-primary)',
-                    padding: '9px 12px',
-                    fontSize: '0.84rem',
-                    cursor: 'pointer',
-                  }}
+                  style={{ height: '32px', padding: '0 8px', fontSize: '12px' }}
                 >
-                  <option value="CONFIRMED_FRAUD">CONFIRMED_FRAUD (Fraud pattern validated)</option>
-                  <option value="FALSE_POSITIVE">FALSE_POSITIVE (Legitimate activity)</option>
-                  <option value="INCONCLUSIVE">INCONCLUSIVE (Insufficient evidence)</option>
+                  <option value="CONFIRMED_FRAUD">Confirmed Fraud</option>
+                  <option value="FALSE_POSITIVE">False Positive</option>
+                  <option value="INCONCLUSIVE">Inconclusive</option>
                 </select>
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                  Closure Summary / Note (Optional)
+              <div className={styles.field}>
+                <label htmlFor="closureNote" className={styles.fieldLabel}>
+                  Closure Summary Note
                 </label>
                 <textarea
-                  rows={3}
-                  placeholder="Summarize the evidence and rationale for this final disposition..."
+                  id="closureNote"
+                  placeholder="Record summary reason for closing this investigation..."
                   value={closeNote}
                   onChange={(e) => setCloseNote(e.target.value)}
-                  style={{
-                    width: '100%',
-                    backgroundColor: 'var(--bg-surface)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-sm)',
-                    color: 'var(--text-primary)',
-                    padding: '9px 12px',
-                    fontSize: '0.84rem',
-                    fontFamily: 'inherit',
-                  }}
+                  className={styles.textarea}
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '12px', borderTop: '1px solid var(--border-color)' }}>
-                <button
-                  type="button"
-                  onClick={() => setShowCloseModal(false)}
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-                    color: 'var(--text-secondary)',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: '0.82rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={closing}
-                  style={{
-                    padding: '8px 18px',
-                    backgroundColor: 'rgba(0, 230, 118, 0.2)',
-                    color: '#00e676',
-                    border: '1px solid rgba(0, 230, 118, 0.4)',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: '0.82rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    opacity: closing ? 0.6 : 1,
-                  }}
-                >
-                  {closing ? 'Closing...' : 'Confirm Closure'}
-                </button>
+              <div className={styles.modalFooter}>
+                <Button variant="secondary" compact type="button" onClick={() => setShowCloseModal(false)}>
+                  <span>Cancel</span>
+                </Button>
+                <Button variant="primary" compact type="submit" disabled={closing}>
+                  <span>{closing ? 'Closing...' : 'Confirm case closure'}</span>
+                </Button>
               </div>
             </form>
           </div>
@@ -960,133 +518,60 @@ export const CaseDetailPage: React.FC = () => {
 
       {/* Attach Alert Modal */}
       {showAttachModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 100,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '16px',
-            backgroundColor: 'rgba(5, 7, 12, 0.85)',
-            backdropFilter: 'blur(4px)',
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: 'var(--bg-surface-elevated)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-md)',
-              maxWidth: '620px',
-              width: '100%',
-              maxHeight: '85vh',
-              padding: '24px',
-              boxShadow: 'var(--shadow-subtle)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <ShieldAlert size={20} color="var(--accent-cyan)" />
-                Attach Alert to Case {c.caseNumber}
-              </h3>
-              <button
-                onClick={() => setShowAttachModal(false)}
-                style={{ backgroundColor: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' }}
-              >
-                <X size={18} />
-              </button>
+        <div className={styles.modalOverlay} onClick={() => setShowAttachModal(false)}>
+          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Attach Alert to Case</h2>
+              <Button variant="ghost" compact onClick={() => setShowAttachModal(false)} aria-label="Close modal">
+                <Icon name="close" size={14} />
+              </Button>
             </div>
 
             {attachError && (
-              <div
-                style={{
-                  padding: '10px 14px',
-                  backgroundColor: 'rgba(255, 77, 79, 0.12)',
-                  border: '1px solid rgba(255, 77, 79, 0.35)',
-                  borderRadius: 'var(--radius-sm)',
-                  color: '#ff7875',
-                  fontSize: '0.8rem',
-                }}
-              >
+              <div style={{ color: 'var(--sev-high-text)', backgroundColor: 'var(--sev-high-bg)', padding: '8px 12px', borderRadius: '2px', fontSize: '11px' }}>
                 {attachError}
               </div>
             )}
 
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '4px' }}>
-              {unattachedAlerts.length === 0 ? (
-                <div style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.84rem' }}>
-                  All current system alerts are already attached to this case.
-                </div>
-              ) : (
-                unattachedAlerts.map((al) => (
+            <div style={{ maxHeight: '360px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {allAlerts.length > 0 ? (
+                allAlerts.map((a) => (
                   <div
-                    key={al._id}
+                    key={a._id}
                     style={{
-                      padding: '12px',
-                      backgroundColor: 'var(--bg-surface)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-sm)',
                       display: 'flex',
-                      justifyContent: 'space-between',
                       alignItems: 'center',
-                      gap: '12px',
+                      justifyContent: 'space-between',
+                      padding: '8px 10px',
+                      backgroundColor: 'var(--surface-2)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '2px',
                     }}
                   >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <SeverityBadge severity={al.severity} />
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', fontWeight: 600, color: '#fff' }}>
-                          {al.pattern}
-                        </span>
-                        <RiskBadge score={al.score} size="sm" />
-                      </div>
-                      <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '420px' }}>
-                        {al.evidence?.summary || al.fingerprint}
-                      </p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <span style={{ fontWeight: 600, fontSize: '12px' }}>
+                        {a.pattern.replace(/_/g, ' ')}
+                      </span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>
+                        Score: {a.score} &bull; {a.severity}
+                      </span>
                     </div>
 
-                    <button
-                      onClick={() => handleAttachAlert(al._id)}
-                      disabled={attachingAlertId === al._id}
-                      style={{
-                        padding: '6px 12px',
-                        background: 'var(--accent-gradient)',
-                        color: '#070a0f',
-                        borderRadius: 'var(--radius-sm)',
-                        fontSize: '0.78rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap',
-                        opacity: attachingAlertId === al._id ? 0.6 : 1,
-                      }}
+                    <Button
+                      variant="primary"
+                      compact
+                      onClick={() => handleAttachSubmit(a._id)}
+                      disabled={attachingAlertId === a._id}
                     >
-                      {attachingAlertId === al._id ? 'Attaching...' : 'Attach'}
-                    </button>
+                      <span>{attachingAlertId === a._id ? 'Attaching...' : 'Attach'}</span>
+                    </Button>
                   </div>
                 ))
+              ) : (
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-3)', fontSize: '12px' }}>
+                  No unattached alerts available in queue.
+                </div>
               )}
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '12px', borderTop: '1px solid var(--border-color)' }}>
-              <button
-                type="button"
-                onClick={() => setShowAttachModal(false)}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.06)',
-                  color: 'var(--text-secondary)',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: '0.82rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                Close
-              </button>
             </div>
           </div>
         </div>

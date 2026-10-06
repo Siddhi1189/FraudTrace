@@ -1,23 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Filter,
-  Search,
-  ArrowRight,
-  ExternalLink,
-  X,
-  Briefcase,
-} from 'lucide-react';
 import { fetchAlerts, updateAlertTriage, Alert } from '../../api/alertsApi';
 import { createCase, fetchCases, attachAlertToCase, CaseItem } from '../../api/casesApi';
 import { SeverityBadge } from '../../components/SeverityBadge';
 import { RiskBadge } from '../../components/RiskBadge';
 import { TriageStatusBadge } from '../../components/TriageStatusBadge';
+import { Button } from '../../components/common/Button';
+import { Table, Column } from '../../components/common/Table';
+import { Drawer } from '../../components/common/Drawer';
+import { StateView } from '../../components/common/StateView';
+import { Icon } from '../../components/common/Icons';
+import styles from './AlertsPage.module.css';
 
 export const AlertsPage: React.FC = () => {
   const navigate = useNavigate();
+
   const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
 
   // Filters
@@ -26,9 +26,19 @@ export const AlertsPage: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Case escalation modal
+  const [showCaseModal, setShowCaseModal] = useState(false);
+  const [caseActionType, setCaseActionType] = useState<'create' | 'attach'>('create');
+  const [newCaseTitle, setNewCaseTitle] = useState('');
+  const [selectedCaseId, setSelectedCaseId] = useState('');
+  const [openCases, setOpenCases] = useState<CaseItem[]>([]);
+  const [submittingCase, setSubmittingCase] = useState(false);
+  const [caseModalError, setCaseModalError] = useState<string | null>(null);
+
   const loadAlerts = async () => {
     try {
       setLoading(true);
+      setError(null);
       const res = await fetchAlerts({
         severity: filterSeverity !== 'ALL' ? filterSeverity : undefined,
         pattern: filterPattern !== 'ALL' ? filterPattern : undefined,
@@ -36,11 +46,12 @@ export const AlertsPage: React.FC = () => {
       });
       setAlerts(res.alerts || []);
       if (selectedAlert) {
-        const refreshed = res.alerts.find((a) => a._id === selectedAlert._id);
+        const refreshed = (res.alerts || []).find((a) => a._id === selectedAlert._id);
         if (refreshed) setSelectedAlert(refreshed);
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to load alerts:', err);
+      setError('Unable to load alerts from backend.');
     } finally {
       setLoading(false);
     }
@@ -56,29 +67,26 @@ export const AlertsPage: React.FC = () => {
       const res = await updateAlertTriage(selectedAlert._id, newStatus);
       setSelectedAlert(res.alert);
       setAlerts((prev) => prev.map((a) => (a._id === res.alert._id ? res.alert : a)));
-    } catch (err: any) {
-      alert(`Triage update failed: ${err.message || 'Unknown error'}`);
+    } catch (err: unknown) {
+      console.error('Triage update failed:', err);
     }
   };
 
-  // Case escalation modal state
-  const [showCaseModal, setShowCaseModal] = useState(false);
-  const [caseActionType, setCaseActionType] = useState<'create' | 'attach'>('create');
-  const [newCaseTitle, setNewCaseTitle] = useState('');
-  const [selectedCaseId, setSelectedCaseId] = useState('');
-  const [openCases, setOpenCases] = useState<CaseItem[]>([]);
-  const [submittingCase, setSubmittingCase] = useState(false);
-  const [caseModalError, setCaseModalError] = useState<string | null>(null);
-
   const handleOpenCaseModal = async () => {
     setShowCaseModal(true);
-    setNewCaseTitle(selectedAlert ? `Investigation into ${selectedAlert.pattern} alert (${selectedAlert.fingerprint.slice(0, 24)})` : '');
+    setNewCaseTitle(
+      selectedAlert
+        ? `Investigation: ${selectedAlert.pattern.replace(/_/g, ' ')} (${selectedAlert.fingerprint.slice(0, 16)})`
+        : ''
+    );
     setSelectedCaseId('');
     setCaseModalError(null);
     try {
-      const res = await fetchCases({ status: 'OPEN' });
-      const investigating = await fetchCases({ status: 'INVESTIGATING' });
-      setOpenCases([...(res.cases || []), ...(investigating.cases || [])]);
+      const [openRes, investigatingRes] = await Promise.all([
+        fetchCases({ status: 'OPEN' }),
+        fetchCases({ status: 'INVESTIGATING' }),
+      ]);
+      setOpenCases([...(openRes.cases || []), ...(investigatingRes.cases || [])]);
     } catch {
       // Non-fatal
     }
@@ -87,6 +95,7 @@ export const AlertsPage: React.FC = () => {
   const handleCaseSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedAlert) return;
+
     try {
       setSubmittingCase(true);
       setCaseModalError(null);
@@ -112,77 +121,176 @@ export const AlertsPage: React.FC = () => {
         setShowCaseModal(false);
         navigate(`/cases/${selectedCaseId}`);
       }
-    } catch (err: any) {
-      setCaseModalError(err.error || 'Failed to link alert to case');
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'error' in err) {
+        setCaseModalError((err as { error: string }).error);
+      } else {
+        setCaseModalError('Failed to link alert to case');
+      }
       setSubmittingCase(false);
     }
   };
 
-  // Search filter
-  const filteredAlerts = alerts.filter((a) => {
-    if (!searchTerm) return true;
-    const term = searchTerm.toLowerCase();
-    const patternMatch = a.pattern.toLowerCase().includes(term);
-    const idMatch = a._id.toLowerCase().includes(term);
-    const fpMatch = a.fingerprint.toLowerCase().includes(term);
-    return patternMatch || idMatch || fpMatch;
-  });
+  // Search filtering
+  const filteredAlerts = useMemo(() => {
+    return alerts.filter((a) => {
+      if (!searchTerm) return true;
+      const term = searchTerm.toLowerCase();
+      const patternMatch = a.pattern.toLowerCase().includes(term);
+      const idMatch = a._id.toLowerCase().includes(term);
+      const fpMatch = a.fingerprint.toLowerCase().includes(term);
+      return patternMatch || idMatch || fpMatch;
+    });
+  }, [alerts, searchTerm]);
+
+  const columns: Column<Alert>[] = [
+    {
+      key: 'createdAt',
+      title: 'Detected',
+      width: '130px',
+      render: (item) => (
+        <span className="tabular-nums" style={{ color: 'var(--text-2)' }}>
+          {new Date(item.createdAt).toLocaleString(undefined, {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        </span>
+      ),
+    },
+    {
+      key: 'pattern',
+      title: 'Pattern',
+      render: (item) => (
+        <span style={{ fontWeight: 600, color: 'var(--text)' }}>
+          {item.pattern.replace(/_/g, ' ')}
+        </span>
+      ),
+    },
+    {
+      key: 'severity',
+      title: 'Severity',
+      width: '90px',
+      render: (item) => <SeverityBadge severity={item.severity} />,
+    },
+    {
+      key: 'score',
+      title: 'Score',
+      width: '70px',
+      render: (item) => <RiskBadge score={item.score} />,
+    },
+    {
+      key: 'triageStatus',
+      title: 'Triage Status',
+      width: '110px',
+      render: (item) => <TriageStatusBadge status={item.triageStatus} />,
+    },
+    {
+      key: 'ringId',
+      title: 'Fraud Ring',
+      width: '110px',
+      render: (item) => {
+        if (!item.ringId) return <span style={{ color: 'var(--text-3)' }}>Unassigned</span>;
+        const ringObj = typeof item.ringId === 'object' ? item.ringId : null;
+        const ringIdStr = ringObj ? ringObj._id : item.ringId;
+        const label = ringObj?.label || 'View Ring';
+        return (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/rings/${ringIdStr}`);
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              color: 'var(--primary)',
+              cursor: 'pointer',
+              fontWeight: 500,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+          >
+            <span>{label}</span>
+            <Icon name="arrowRight" size={11} />
+          </button>
+        );
+      },
+    },
+    {
+      key: 'actions',
+      title: '',
+      width: '70px',
+      align: 'right',
+      render: (item) => (
+        <Button
+          variant="ghost"
+          compact
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedAlert(item);
+          }}
+          aria-label="Inspect alert"
+        >
+          <span>Inspect</span>
+        </Button>
+      ),
+    },
+  ];
+
+  if (loading && alerts.length === 0) {
+    return <StateView type="loading" title="Loading alerts queue..." />;
+  }
+
+  if (error && alerts.length === 0) {
+    return <StateView type="error" title="Alerts error" description={error} onRetry={loadAlerts} />;
+  }
+
+  const ringInfo = selectedAlert?.ringId && typeof selectedAlert.ringId === 'object'
+    ? selectedAlert.ringId
+    : null;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className={styles.container}>
       {/* Header */}
-      <div>
-        <h1 style={{ fontSize: '1.65rem', fontWeight: 700, color: '#fff' }}>Alerts Triage Queue</h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '4px' }}>
-          Prioritized fraud signals from the graph engine. Review evidence, inspect entity networks, and assign triage dispositions.
-        </p>
+      <div className={styles.headerRow}>
+        <div className={styles.titleArea}>
+          <h1 className={styles.title}>Alerts Triage Queue</h1>
+          <p className={styles.subtitle}>
+            Prioritized fraud signals from the graph engine. Review evidence, inspect entity networks, and assign triage dispositions.
+          </p>
+        </div>
+
+        <Button variant="secondary" compact onClick={loadAlerts}>
+          <Icon name="refresh" size={13} />
+          <span>Refresh</span>
+        </Button>
       </div>
 
       {/* Filter Bar */}
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '12px',
-          alignItems: 'center',
-          backgroundColor: 'var(--bg-card)',
-          padding: '14px 18px',
-          borderRadius: 'var(--radius-md)',
-          border: '1px solid var(--border-color)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: '220px' }}>
-          <Search size={16} color="var(--text-muted)" />
+      <div className={styles.filterBar}>
+        <div className={styles.searchBox}>
+          <Icon name="search" size={14} />
           <input
             type="text"
             placeholder="Search alerts by pattern or fingerprint..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              backgroundColor: 'transparent',
-              border: 'none',
-              color: '#fff',
-              fontSize: '0.88rem',
-              width: '100%',
-            }}
+            className={styles.searchInput}
+            aria-label="Search alerts"
           />
         </div>
 
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <Filter size={15} color="var(--text-muted)" />
+        <div className={styles.selectGroup}>
+          <Icon name="filter" size={14} />
 
-          {/* Severity Filter */}
           <select
             value={filterSeverity}
             onChange={(e) => setFilterSeverity(e.target.value)}
-            style={{
-              backgroundColor: 'var(--bg-surface-elevated)',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '6px 12px',
-              fontSize: '0.82rem',
-            }}
+            className={styles.select}
+            aria-label="Filter by severity"
           >
             <option value="ALL">All Severities</option>
             <option value="CRITICAL">Critical</option>
@@ -191,41 +299,27 @@ export const AlertsPage: React.FC = () => {
             <option value="LOW">Low</option>
           </select>
 
-          {/* Pattern Filter */}
           <select
             value={filterPattern}
             onChange={(e) => setFilterPattern(e.target.value)}
-            style={{
-              backgroundColor: 'var(--bg-surface-elevated)',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '6px 12px',
-              fontSize: '0.82rem',
-            }}
+            className={styles.select}
+            aria-label="Filter by detection pattern"
           >
             <option value="ALL">All Patterns</option>
             <option value="CIRCULAR_FLOW">Circular Flow</option>
-            <option value="FAN_IN_FAN_OUT">Fan-In / Fan-Out</option>
+            <option value="FAN_IN_FAN_OUT">Fan-in / Fan-out</option>
             <option value="SHARED_DEVICE">Shared Device</option>
             <option value="PASS_THROUGH">Pass-Through</option>
-            <option value="MERCHANT_CASHOUT">Merchant Cash-Out</option>
+            <option value="MERCHANT_CASHOUT">Merchant Cash-out</option>
           </select>
 
-          {/* Triage Status Filter */}
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            style={{
-              backgroundColor: 'var(--bg-surface-elevated)',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '6px 12px',
-              fontSize: '0.82rem',
-            }}
+            className={styles.select}
+            aria-label="Filter by triage status"
           >
-            <option value="ALL">All Triage Statuses</option>
+            <option value="ALL">All Statuses</option>
             <option value="NEW">New</option>
             <option value="REVIEWING">Reviewing</option>
             <option value="ESCALATED">Escalated</option>
@@ -234,482 +328,288 @@ export const AlertsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Grid: Alert List + Detail Inspector */}
-      <div style={{ display: 'grid', gridTemplateColumns: selectedAlert ? '1fr 480px' : '1fr', gap: '20px' }}>
-        {/* Table of Alerts */}
-        <div
-          style={{
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-color)',
-            borderRadius: 'var(--radius-md)',
-            overflow: 'hidden',
-          }}
-        >
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem' }}>
-            <thead>
-              <tr style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border-color)' }}>
-                <th style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontWeight: 600 }}>Pattern</th>
-                <th style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontWeight: 600 }}>Severity</th>
-                <th style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontWeight: 600 }}>Risk Score</th>
-                <th style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontWeight: 600 }}>Fraud Ring</th>
-                <th style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontWeight: 600 }}>Status</th>
-                <th style={{ padding: '14px 16px', textAlign: 'right', color: 'var(--text-secondary)', fontWeight: 600 }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredAlerts.length === 0 ? (
-                <tr>
-                  <td colSpan={6} style={{ padding: '36px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                    No alerts found matching filter criteria.
-                  </td>
-                </tr>
-              ) : (
-                filteredAlerts.map((alert) => {
-                  const isSelected = selectedAlert?._id === alert._id;
-                  const ringObj = typeof alert.ringId === 'object' && alert.ringId !== null ? alert.ringId : null;
+      {/* Alerts Table */}
+      <div className={styles.card}>
+        <Table
+          columns={columns}
+          data={filteredAlerts}
+          keyExtractor={(item) => item._id}
+          onRowClick={(item) => setSelectedAlert(item)}
+          emptyMessage="No alerts found matching filter criteria."
+        />
+      </div>
 
-                  return (
-                    <tr
-                      key={alert._id}
-                      onClick={() => setSelectedAlert(alert)}
-                      style={{
-                        borderBottom: '1px solid var(--border-color)',
-                        backgroundColor: isSelected ? 'rgba(0, 210, 255, 0.06)' : 'transparent',
-                        cursor: 'pointer',
-                        transition: 'background-color 0.15s',
-                      }}
-                    >
-                      <td style={{ padding: '14px 16px' }}>
-                        <div style={{ fontWeight: 600, color: '#fff' }}>{alert.pattern.replace(/_/g, ' ')}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                          {alert.fingerprint.slice(0, 36)}...
-                        </div>
-                      </td>
-
-                      <td style={{ padding: '14px 16px' }}>
-                        <SeverityBadge severity={alert.severity} size="sm" />
-                      </td>
-
-                      <td style={{ padding: '14px 16px' }}>
-                        <RiskBadge score={alert.score} size="sm" />
-                      </td>
-
-                      <td style={{ padding: '14px 16px' }}>
-                        {ringObj ? (
-                          <span
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/rings/${ringObj._id}`);
-                            }}
-                            style={{
-                              color: 'var(--accent-cyan)',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                            }}
-                          >
-                            <span>{ringObj.label}</span>
-                            <ExternalLink size={12} />
-                          </span>
-                        ) : (
-                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>None</span>
-                        )}
-                      </td>
-
-                      <td style={{ padding: '14px 16px' }}>
-                        <TriageStatusBadge status={alert.triageStatus} />
-                      </td>
-
-                      <td style={{ padding: '14px 16px', textAlign: 'right' }}>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedAlert(alert);
-                          }}
-                          style={{
-                            padding: '4px 10px',
-                            borderRadius: '4px',
-                            backgroundColor: isSelected ? 'var(--accent-cyan)' : 'var(--bg-surface-elevated)',
-                            color: isSelected ? '#000' : 'var(--text-primary)',
-                            fontSize: '0.78rem',
-                            fontWeight: 600,
-                            border: '1px solid var(--border-color)',
-                          }}
-                        >
-                          Inspect
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Selected Alert Evidence Detail Inspector */}
+      {/* Alert Inspection Drawer */}
+      <Drawer
+        isOpen={Boolean(selectedAlert)}
+        onClose={() => setSelectedAlert(null)}
+        title={
+          selectedAlert ? (
+            <span>Alert: {selectedAlert.pattern.replace(/_/g, ' ')}</span>
+          ) : (
+            'Alert Detail'
+          )
+        }
+      >
         {selectedAlert && (
-          <div
-            style={{
-              backgroundColor: 'var(--bg-card)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-md)',
-              padding: '24px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '20px',
-              position: 'sticky',
-              top: '88px',
-              maxHeight: 'calc(100vh - 120px)',
-              overflowY: 'auto',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fff' }}>
-                    {selectedAlert.pattern.replace(/_/g, ' ')}
-                  </h2>
-                  <SeverityBadge severity={selectedAlert.severity} size="sm" />
-                </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                  Alert ID: {selectedAlert._id}
-                </div>
+          <div className={styles.drawerContent}>
+            {/* Meta attributes */}
+            <div className={styles.metaGrid}>
+              <div className={styles.metaItem}>
+                <span className={styles.metaLabel}>Severity</span>
+                <div><SeverityBadge severity={selectedAlert.severity} /></div>
               </div>
-
-              <button
-                onClick={() => setSelectedAlert(null)}
-                style={{ background: 'none', color: 'var(--text-muted)', padding: '4px' }}
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Score & Disposition Overview */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '12px',
-                padding: '14px',
-                backgroundColor: 'var(--bg-surface-elevated)',
-                borderRadius: 'var(--radius-sm)',
-              }}
-            >
-              <div>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Investigative Risk</span>
-                <div style={{ marginTop: '4px' }}>
-                  <RiskBadge score={selectedAlert.score} />
-                </div>
+              <div className={styles.metaItem}>
+                <span className={styles.metaLabel}>Risk Score</span>
+                <div><RiskBadge score={selectedAlert.score} /></div>
               </div>
-              <div>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Current Triage</span>
-                <div style={{ marginTop: '4px' }}>
-                  <TriageStatusBadge status={selectedAlert.triageStatus} />
-                </div>
+              <div className={styles.metaItem}>
+                <span className={styles.metaLabel}>Triage Status</span>
+                <div><TriageStatusBadge status={selectedAlert.triageStatus} /></div>
+              </div>
+              <div className={styles.metaItem}>
+                <span className={styles.metaLabel}>Detected</span>
+                <span className={styles.metaValue}>
+                  {new Date(selectedAlert.createdAt).toLocaleDateString()}
+                </span>
               </div>
             </div>
 
             {/* Triage Actions */}
-            <div>
-              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                Update Triage Disposition:
-              </span>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
-                <button
-                  onClick={() => handleTriageAction('REVIEWING')}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: 'var(--radius-sm)',
-                    backgroundColor: 'rgba(234, 179, 8, 0.15)',
-                    color: '#fde047',
-                    border: '1px solid rgba(234, 179, 8, 0.4)',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                  }}
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>Triage Action</h3>
+              <div className={styles.triageActions}>
+                <div className={styles.triageBtnRow}>
+                  <Button
+                    variant={selectedAlert.triageStatus === 'REVIEWING' ? 'primary' : 'secondary'}
+                    compact
+                    onClick={() => handleTriageAction('REVIEWING')}
+                  >
+                    <span>Reviewing</span>
+                  </Button>
+                  <Button
+                    variant={selectedAlert.triageStatus === 'DISMISSED' ? 'primary' : 'secondary'}
+                    compact
+                    onClick={() => handleTriageAction('DISMISSED')}
+                  >
+                    <span>Dismiss</span>
+                  </Button>
+                  <Button
+                    variant={selectedAlert.triageStatus === 'ESCALATED' ? 'primary' : 'secondary'}
+                    compact
+                    onClick={() => handleTriageAction('ESCALATED')}
+                  >
+                    <span>Escalate</span>
+                  </Button>
+                </div>
+
+                <Button
+                  variant="primary"
+                  compact
+                  onClick={handleOpenCaseModal}
+                  fullWidth
                 >
-                  Mark Reviewing
-                </button>
-                <button
-                  onClick={() => handleTriageAction('ESCALATED')}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: 'var(--radius-sm)',
-                    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-                    color: '#fca5a5',
-                    border: '1px solid rgba(239, 68, 68, 0.4)',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                  }}
-                >
-                  Escalate Case
-                </button>
-                <button
-                  onClick={() => handleTriageAction('DISMISSED')}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: 'var(--radius-sm)',
-                    backgroundColor: 'rgba(148, 163, 184, 0.12)',
-                    color: '#cbd5e1',
-                    border: '1px solid rgba(148, 163, 184, 0.3)',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                  }}
-                >
-                  Dismiss Alert
-                </button>
+                  <Icon name="cases" size={13} />
+                  <span>Escalate to investigation case</span>
+                </Button>
               </div>
             </div>
 
-            {/* Navigation Shortcuts: Linked Fraud Ring */}
+            {/* Fraud Ring association */}
             {selectedAlert.ringId && (
-              <div
-                style={{
-                  padding: '12px',
-                  backgroundColor: 'rgba(0, 210, 255, 0.08)',
-                  border: '1px solid rgba(0, 210, 255, 0.25)',
-                  borderRadius: 'var(--radius-sm)',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Coordinated Syndicate</span>
-                  <div style={{ fontWeight: 600, color: '#fff', fontSize: '0.92rem' }}>
-                    {typeof selectedAlert.ringId === 'object' && selectedAlert.ringId !== null ? selectedAlert.ringId.label : 'Associated Ring'}
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>Fraud Ring</h3>
+                <div className={styles.evidenceSummary}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: 600 }}>{ringInfo?.label || 'Linked Ring'}</span>
+                    <Button
+                      variant="ghost"
+                      compact
+                      onClick={() => navigate(`/rings/${ringInfo ? ringInfo._id : selectedAlert.ringId}`)}
+                    >
+                      <span>View ring workspace</span>
+                      <Icon name="arrowRight" size={11} />
+                    </Button>
                   </div>
                 </div>
-
-                <button
-                  onClick={() => {
-                    const rId = typeof selectedAlert.ringId === 'object' && selectedAlert.ringId !== null ? selectedAlert.ringId._id : selectedAlert.ringId;
-                    if (rId) navigate(`/rings/${rId}`);
-                  }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    backgroundColor: 'var(--accent-cyan)',
-                    color: '#070a0f',
-                    padding: '6px 12px',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: '0.8rem',
-                    fontWeight: 700,
-                  }}
-                >
-                  <span>Investigate Ring</span>
-                  <ArrowRight size={14} />
-                </button>
               </div>
             )}
 
-            {/* Case Escalation Action */}
-            <div
-              style={{
-                padding: '12px',
-                backgroundColor: 'rgba(99, 102, 241, 0.08)',
-                border: '1px solid rgba(99, 102, 241, 0.25)',
-                borderRadius: 'var(--radius-sm)',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <div>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Investigation Workflow</span>
-                <div style={{ fontWeight: 600, color: '#fff', fontSize: '0.92rem' }}>
-                  Case Management
+            {/* Evidence Summary */}
+            {selectedAlert.evidence?.summary && (
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>Evidence Summary</h3>
+                <div className={styles.evidenceSummary}>
+                  {selectedAlert.evidence.summary}
                 </div>
               </div>
+            )}
 
-              <button
-                onClick={handleOpenCaseModal}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  backgroundColor: '#6366f1',
-                  color: '#fff',
-                  padding: '6px 12px',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: '0.8rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  border: 'none',
-                }}
-              >
-                <Briefcase size={14} />
-                <span>Escalate to Case</span>
-              </button>
+            {/* Involved Accounts */}
+            {(selectedAlert.evidence?.accounts || selectedAlert.evidence?.cycleAccounts) && (
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>Involved Accounts</h3>
+                <div className={styles.tagList}>
+                  {(selectedAlert.evidence.accounts || selectedAlert.evidence.cycleAccounts || []).map(
+                    (accId) => (
+                      <button
+                        key={accId}
+                        className={styles.tagLink}
+                        onClick={() => navigate(`/accounts/${accId}`)}
+                      >
+                        <Icon name="user" size={11} />
+                        <span>{accId}</span>
+                      </button>
+                    )
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Transactions Table */}
+            {selectedAlert.evidence?.transactions && selectedAlert.evidence.transactions.length > 0 && (
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>Transaction Evidence</h3>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--border)', textAlign: 'left', color: 'var(--text-3)' }}>
+                        <th style={{ padding: '6px 8px' }}>Amount</th>
+                        <th style={{ padding: '6px 8px' }}>From</th>
+                        <th style={{ padding: '6px 8px' }}>To</th>
+                        <th style={{ padding: '6px 8px' }}>Device</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedAlert.evidence.transactions.map((tx, idx) => (
+                        <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
+                          <td className="tabular-nums" style={{ padding: '6px 8px', fontWeight: 600 }}>
+                            ${Number(tx.amount || 0).toLocaleString()}
+                          </td>
+                          <td className="entity-id" style={{ padding: '6px 8px' }}>
+                            {tx.fromAccount ? (
+                              <button
+                                style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: 0 }}
+                                onClick={() => navigate(`/accounts/${tx.fromAccount}`)}
+                              >
+                                {tx.fromAccount}
+                              </button>
+                            ) : '-'}
+                          </td>
+                          <td className="entity-id" style={{ padding: '6px 8px' }}>
+                            {tx.toAccount ? (
+                              <button
+                                style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: 0 }}
+                                onClick={() => navigate(`/accounts/${tx.toAccount}`)}
+                              >
+                                {tx.toAccount}
+                              </button>
+                            ) : '-'}
+                          </td>
+                          <td style={{ padding: '6px 8px', color: 'var(--text-3)' }}>
+                            {tx.device || '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </Drawer>
+
+      {/* Case Escalation Modal */}
+      {showCaseModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowCaseModal(false)}>
+          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Escalate Alert to Case</h2>
+              <Button variant="ghost" compact onClick={() => setShowCaseModal(false)} aria-label="Close modal">
+                <Icon name="close" size={14} />
+              </Button>
             </div>
 
-            {/* Evidence & Transaction Provenance */}
-            <div>
-              <h3 style={{ fontSize: '0.92rem', fontWeight: 600, color: '#fff', marginBottom: '8px' }}>
-                Transaction Provenance Evidence
-              </h3>
+            {caseModalError && (
+              <div style={{ color: 'var(--sev-high-text)', backgroundColor: 'var(--sev-high-bg)', padding: '8px 12px', borderRadius: '2px', fontSize: '11px' }}>
+                {caseModalError}
+              </div>
+            )}
 
-              {selectedAlert.evidence?.transactions && selectedAlert.evidence.transactions.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {selectedAlert.evidence.transactions.map((tx, idx) => (
-                    <div
-                      key={tx.externalTransactionId || idx}
-                      style={{
-                        padding: '10px 12px',
-                        backgroundColor: 'var(--bg-surface-elevated)',
-                        borderRadius: 'var(--radius-sm)',
-                        border: '1px solid var(--border-color)',
-                        fontSize: '0.8rem',
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)', fontWeight: 600 }}>
-                          {tx.externalTransactionId}
-                        </span>
-                        <span style={{ fontWeight: 700, color: '#fff' }}>${tx.amount.toLocaleString()}</span>
-                      </div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '4px' }}>
-                        {tx.fromAccount} → {tx.toAccount || tx.merchant || 'N/A'}
-                        {tx.device ? ` · Device: ${tx.device}` : ''}
-                      </div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '2px' }}>
-                        Timestamp: {tx.timestamp}
-                      </div>
-                    </div>
-                  ))}
+            <form onSubmit={handleCaseSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div className={styles.radioGroup}>
+                <label className={styles.radioLabel}>
+                  <input
+                    type="radio"
+                    name="caseAction"
+                    value="create"
+                    checked={caseActionType === 'create'}
+                    onChange={() => setCaseActionType('create')}
+                  />
+                  <span>Create new case</span>
+                </label>
+                <label className={styles.radioLabel}>
+                  <input
+                    type="radio"
+                    name="caseAction"
+                    value="attach"
+                    checked={caseActionType === 'attach'}
+                    onChange={() => setCaseActionType('attach')}
+                  />
+                  <span>Attach to existing case</span>
+                </label>
+              </div>
+
+              {caseActionType === 'create' ? (
+                <div className={styles.inputGroup}>
+                  <label htmlFor="newCaseTitle" className={styles.inputLabel}>
+                    Case Title
+                  </label>
+                  <input
+                    id="newCaseTitle"
+                    type="text"
+                    required
+                    value={newCaseTitle}
+                    onChange={(e) => setNewCaseTitle(e.target.value)}
+                    style={{ height: '32px', padding: '0 8px', fontSize: '12px' }}
+                  />
                 </div>
               ) : (
-                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                  {JSON.stringify(selectedAlert.evidence, null, 2)}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Case Escalation Modal */}
-        {showCaseModal && selectedAlert && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-            <div className="bg-slate-900 border border-slate-800 rounded-xl max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <Briefcase className="w-5 h-5 text-indigo-400" />
-                  Escalate Alert to Investigation Case
-                </h3>
-                <button
-                  onClick={() => setShowCaseModal(false)}
-                  className="text-slate-400 hover:text-white transition-colors cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {caseModalError && (
-                <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-400 text-xs">
-                  {caseModalError}
+                <div className={styles.inputGroup}>
+                  <label htmlFor="selectCaseId" className={styles.inputLabel}>
+                    Select Open Case
+                  </label>
+                  <select
+                    id="selectCaseId"
+                    required
+                    value={selectedCaseId}
+                    onChange={(e) => setSelectedCaseId(e.target.value)}
+                    className={styles.select}
+                    style={{ height: '32px' }}
+                  >
+                    <option value="">-- Choose active case --</option>
+                    {openCases.map((c) => (
+                      <option key={c._id} value={c._id}>
+                        {c.caseNumber} - {c.title} ({c.status})
+                      </option>
+                    ))}
+                  </select>
                 </div>
               )}
 
-              {/* Action type tabs */}
-              <div className="flex gap-2 p-1 bg-slate-950 rounded-lg border border-slate-800 text-xs">
-                <button
-                  type="button"
-                  onClick={() => setCaseActionType('create')}
-                  className={`flex-1 py-1.5 font-semibold rounded transition-colors cursor-pointer ${
-                    caseActionType === 'create'
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  Create New Case
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCaseActionType('attach')}
-                  className={`flex-1 py-1.5 font-semibold rounded transition-colors cursor-pointer ${
-                    caseActionType === 'attach'
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  Attach to Existing Case ({openCases.length})
-                </button>
+              <div className={styles.modalFooter}>
+                <Button variant="secondary" compact type="button" onClick={() => setShowCaseModal(false)}>
+                  <span>Cancel</span>
+                </Button>
+                <Button variant="primary" compact type="submit" disabled={submittingCase}>
+                  <span>{submittingCase ? 'Saving...' : 'Confirm escalation'}</span>
+                </Button>
               </div>
-
-              <form onSubmit={handleCaseSubmit} className="space-y-4">
-                {caseActionType === 'create' ? (
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                      New Case Title <span className="text-rose-400">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Investigation into suspicious coordinated cashout"
-                      value={newCaseTitle}
-                      onChange={(e) => setNewCaseTitle(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg px-3 py-2.5 focus:outline-none focus:border-indigo-500 transition-colors"
-                    />
-                  </div>
-                ) : (
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                      Select Open Case <span className="text-rose-400">*</span>
-                    </label>
-                    {openCases.length === 0 ? (
-                      <p className="text-xs text-amber-400 bg-amber-500/10 p-2.5 rounded border border-amber-500/20">
-                        No active open cases found. Please create a new case instead.
-                      </p>
-                    ) : (
-                      <select
-                        value={selectedCaseId}
-                        onChange={(e) => setSelectedCaseId(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg px-3 py-2.5 focus:outline-none focus:border-indigo-500 cursor-pointer"
-                      >
-                        <option value="">-- Choose active case --</option>
-                        {openCases.map((oc) => (
-                          <option key={oc._id} value={oc._id}>
-                            [{oc.caseNumber}] {oc.title} ({oc.status})
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-                )}
-
-                <div className="p-3 bg-slate-950/60 rounded-lg border border-slate-800 text-xs text-slate-400 space-y-1">
-                  <div className="font-semibold text-slate-200 flex items-center gap-1.5">
-                    <span>Alert to be attached:</span>
-                    <span className="font-mono text-indigo-400">[{selectedAlert.severity}] {selectedAlert.pattern}</span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 truncate">{selectedAlert.fingerprint}</p>
-                </div>
-
-                <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
-                  <button
-                    type="button"
-                    onClick={() => setShowCaseModal(false)}
-                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submittingCase || (caseActionType === 'attach' && openCases.length === 0)}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
-                  >
-                    {submittingCase && <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-                    {caseActionType === 'create' ? 'Create & Open Case' : 'Attach & Open Case'}
-                  </button>
-                </div>
-              </form>
-            </div>
+            </form>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

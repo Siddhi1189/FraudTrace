@@ -1,10 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './app/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AppLayout } from './components/AppLayout';
+import { LandingPage } from './features/landing/LandingPage';
 import { LoginPage } from './features/login/LoginPage';
 import { DashboardPage } from './features/dashboard/DashboardPage';
 import { AlertsPage } from './features/alerts/AlertsPage';
@@ -16,9 +17,8 @@ import { RulesPage } from './features/rules/RulesPage';
 import { DataManagementPage } from './features/data/DataManagementPage';
 import { CasesListPage } from './pages/CasesListPage';
 import { CaseDetailPage } from './pages/CaseDetailPage';
+import { queryClient } from './lib/queryClient';
 import './index.css';
-
-const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -26,6 +26,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <AuthProvider>
         <BrowserRouter>
           <Routes>
+            {/* Public Landing Page */}
+            <Route path="/" element={<LandingPage />} />
+
+            {/* Public Login Route */}
             <Route path="/login" element={<LoginPage />} />
 
             {/* Protected Investigation Application */}
@@ -36,7 +40,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 </ProtectedRoute>
               }
             >
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/alerts" element={<AlertsPage />} />
               <Route path="/cases" element={<CasesListPage />} />
@@ -49,7 +52,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <Route path="/data" element={<DataManagementPage />} />
             </Route>
 
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            {/* Fallback to Public Landing */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

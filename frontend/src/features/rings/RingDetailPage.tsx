@@ -1,21 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  ArrowLeft,
-  ArrowRight,
-} from 'lucide-react';
-import { fetchRingById, FraudRingDetail } from '../../api/ringsApi';
+import { fetchRingById, FraudRingDetail, FraudRingMember } from '../../api/ringsApi';
+import { Alert } from '../../api/alertsApi';
 import { CytoscapeGraph } from '../../components/CytoscapeGraph';
 import { RiskBadge } from '../../components/RiskBadge';
+import { SeverityBadge } from '../../components/SeverityBadge';
+import { TriageStatusBadge } from '../../components/TriageStatusBadge';
+import { Badge } from '../../components/common/Badge';
+import { Button } from '../../components/common/Button';
+import { Table, Column } from '../../components/common/Table';
+import { StateView } from '../../components/common/StateView';
+import { Icon } from '../../components/common/Icons';
 import { GraphNodeData, GraphEdgeData } from '../../api/graphApi';
+import styles from './RingDetailPage.module.css';
 
 export const RingDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
   const [ring, setRing] = useState<FraudRingDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Graph state for the ring's entities
   const [graphNodes, setGraphNodes] = useState<GraphNodeData[]>([]);
   const [graphEdges, setGraphEdges] = useState<GraphEdgeData[]>([]);
 
@@ -25,16 +31,16 @@ export const RingDetailPage: React.FC = () => {
     async function loadRing() {
       try {
         setLoading(true);
+        setError(null);
         const res = await fetchRingById(id!);
         setRing(res.ring);
 
-        // Build subgraph from members and alert evidence transactions
+        // Build subgraph from members and alert evidence
         const nodesMap = new Map<string, GraphNodeData>();
         const edgesList: GraphEdgeData[] = [];
 
-        // Add member nodes
         (res.ring.members || []).forEach((m) => {
-          const entity = typeof m.entityId === 'object' ? m.entityId : null;
+          const entity = typeof m.entityId === 'object' ? (m.entityId as Record<string, string>) : null;
           const extId =
             entity?.externalAccountId ||
             entity?.externalDeviceId ||
@@ -55,14 +61,12 @@ export const RingDetailPage: React.FC = () => {
           }
         });
 
-        // Add edges from transactions in the related alerts
         (res.ring.alerts || []).forEach((a) => {
-          (a.evidence.transactions || []).forEach((tx: any) => {
+          (a.evidence.transactions || []).forEach((tx) => {
             const sourceKey = `ACCOUNT:${tx.fromAccount}`;
             const targetKey = tx.toAccount ? `ACCOUNT:${tx.toAccount}` : `MERCHANT:${tx.merchant}`;
 
-            // Ensure source node exists
-            if (!nodesMap.has(sourceKey)) {
+            if (tx.fromAccount && !nodesMap.has(sourceKey)) {
               nodesMap.set(sourceKey, {
                 id: tx.fromAccount,
                 key: sourceKey,
@@ -72,29 +76,30 @@ export const RingDetailPage: React.FC = () => {
               });
             }
 
-            // Ensure target node exists
-            if (!nodesMap.has(targetKey)) {
+            const targetId = tx.toAccount || tx.merchant;
+            if (targetId && !nodesMap.has(targetKey)) {
               nodesMap.set(targetKey, {
-                id: tx.toAccount || tx.merchant,
+                id: targetId,
                 key: targetKey,
-                mongoId: tx.toAccount || tx.merchant,
-                externalId: tx.toAccount || tx.merchant,
+                mongoId: targetId,
+                externalId: targetId,
                 entityType: tx.toAccount ? 'ACCOUNT' : 'MERCHANT',
               });
             }
 
-            edgesList.push({
-              id: tx.externalTransactionId,
-              source: sourceKey,
-              target: targetKey,
-              type: tx.toAccount ? 'TRANSFER' : 'PAYMENT',
-              amount: tx.amount,
-              timestamp: tx.timestamp,
-              externalTransactionId: tx.externalTransactionId,
-            });
+            if (tx.fromAccount && targetId) {
+              edgesList.push({
+                id: tx.externalTransactionId || `${sourceKey}->${targetKey}`,
+                source: sourceKey,
+                target: targetKey,
+                type: tx.toAccount ? 'TRANSFER' : 'PAYMENT',
+                amount: tx.amount,
+                timestamp: tx.timestamp,
+                externalTransactionId: tx.externalTransactionId,
+              });
+            }
 
-            // If device present, add device edge
-            if (tx.device) {
+            if (tx.device && tx.fromAccount) {
               const devKey = `DEVICE:${tx.device}`;
               if (!nodesMap.has(devKey)) {
                 nodesMap.set(devKey, {
@@ -106,7 +111,7 @@ export const RingDetailPage: React.FC = () => {
                 });
               }
               edgesList.push({
-                id: `${sourceKey}->${devKey}`,
+                id: `dev-${tx.fromAccount}-${tx.device}`,
                 source: sourceKey,
                 target: devKey,
                 type: 'USED_DEVICE',
@@ -117,8 +122,9 @@ export const RingDetailPage: React.FC = () => {
 
         setGraphNodes(Array.from(nodesMap.values()));
         setGraphEdges(edgesList);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Failed to load ring detail:', err);
+        setError('Unable to load fraud ring workspace.');
       } finally {
         setLoading(false);
       }
@@ -127,278 +133,215 @@ export const RingDetailPage: React.FC = () => {
     loadRing();
   }, [id]);
 
+  const memberColumns: Column<FraudRingMember>[] = [
+    {
+      key: 'entityType',
+      title: 'Type',
+      width: '100px',
+      render: (m) => (
+        <Badge variant={m.entityType === 'ACCOUNT' ? 'neutral' : 'medium'}>
+          {m.entityType}
+        </Badge>
+      ),
+    },
+    {
+      key: 'entityId',
+      title: 'Identifier',
+      render: (m) => {
+        const entity = typeof m.entityId === 'object' ? (m.entityId as Record<string, string>) : null;
+        const extId =
+          entity?.externalAccountId ||
+          entity?.externalDeviceId ||
+          entity?.externalMerchantId ||
+          entity?.externalId ||
+          String(m.entityId);
+        const mongoId = entity?._id || String(m.entityId);
+
+        if (m.entityType === 'ACCOUNT') {
+          return (
+            <button
+              onClick={() => navigate(`/accounts/${mongoId}`)}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                color: 'var(--primary)',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'var(--font-body)',
+              }}
+              className="entity-id"
+            >
+              {extId}
+            </button>
+          );
+        }
+        return <span className="entity-id">{extId}</span>;
+      },
+    },
+  ];
+
+  const alertColumns: Column<Alert>[] = [
+    {
+      key: 'pattern',
+      title: 'Pattern',
+      render: (a) => (
+        <span style={{ fontWeight: 600, color: 'var(--text)' }}>
+          {a.pattern.replace(/_/g, ' ')}
+        </span>
+      ),
+    },
+    {
+      key: 'severity',
+      title: 'Severity',
+      width: '90px',
+      render: (a) => <SeverityBadge severity={a.severity} />,
+    },
+    {
+      key: 'score',
+      title: 'Score',
+      width: '70px',
+      render: (a) => <RiskBadge score={a.score} />,
+    },
+    {
+      key: 'triageStatus',
+      title: 'Triage',
+      width: '100px',
+      render: (a) => <TriageStatusBadge status={a.triageStatus} />,
+    },
+    {
+      key: 'createdAt',
+      title: 'Detected',
+      width: '110px',
+      render: (a) => (
+        <span className="tabular-nums" style={{ color: 'var(--text-3)' }}>
+          {new Date(a.createdAt).toLocaleDateString()}
+        </span>
+      ),
+    },
+  ];
+
   if (loading) {
-    return <div style={{ padding: '40px', color: 'var(--text-muted)' }}>Loading fraud ring details...</div>;
+    return <StateView type="loading" title="Loading fraud ring details..." />;
   }
 
-  if (!ring) {
-    return <div style={{ padding: '40px', color: 'var(--danger)' }}>Fraud ring not found.</div>;
+  if (error || !ring) {
+    return (
+      <StateView
+        type="error"
+        title="Fraud ring not found"
+        description={error || 'The requested fraud ring record does not exist.'}
+        onRetry={() => navigate('/rings')}
+      />
+    );
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* Back button and Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <button
-          onClick={() => navigate('/rings')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            backgroundColor: 'var(--bg-surface-elevated)',
-            color: 'var(--text-secondary)',
-            border: '1px solid var(--border-color)',
-            padding: '6px 12px',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: '0.84rem',
-            fontWeight: 500,
-          }}
-        >
-          <ArrowLeft size={16} />
-          <span>Back to Rings</span>
-        </button>
+    <div className={styles.container}>
+      {/* Header */}
+      <div className={styles.headerRow}>
+        <div className={styles.titleArea}>
+          <div className={styles.breadcrumbs}>
+            <button className={styles.backBtn} onClick={() => navigate('/rings')}>
+              <Icon name="arrowLeft" size={12} />
+              <span>All Rings</span>
+            </button>
+            <span>/</span>
+            <span>{ring.label}</span>
+          </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <h1 style={{ fontSize: '1.65rem', fontWeight: 700, color: '#fff' }}>{ring.label}</h1>
-          <span
-            style={{
-              fontSize: '0.76rem',
-              fontWeight: 600,
-              padding: '2px 8px',
-              borderRadius: '4px',
-              backgroundColor: ring.status === 'ACTIVE' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(148, 163, 184, 0.15)',
-              color: ring.status === 'ACTIVE' ? '#10b981' : '#94a3b8',
-            }}
-          >
-            {ring.status}
+          <div className={styles.titleWithBadges}>
+            <h1 className={styles.title}>{ring.label}</h1>
+            <Badge variant={ring.status === 'ACTIVE' ? 'high' : 'neutral'}>
+              {ring.status}
+            </Badge>
+            <RiskBadge score={ring.score} />
+          </div>
+        </div>
+
+        <Button variant="secondary" compact onClick={() => navigate('/graph')}>
+          <Icon name="graph" size={13} />
+          <span>Open in Graph Explorer</span>
+        </Button>
+      </div>
+
+      {/* Meta Statistics Grid */}
+      <div className={styles.metaGrid}>
+        <div className={styles.metaBox}>
+          <span className={styles.metaLabel}>Coordinated Flow</span>
+          <span className={styles.metaValue}>
+            ${Number(ring.totalFlow || 0).toLocaleString()}
           </span>
-          <RiskBadge score={ring.score} size="md" />
+        </div>
+        <div className={styles.metaBox}>
+          <span className={styles.metaLabel}>Transactions</span>
+          <span className={styles.metaValue}>{ring.transactionCount || 0}</span>
+        </div>
+        <div className={styles.metaBox}>
+          <span className={styles.metaLabel}>Ring Members</span>
+          <span className={styles.metaValue}>{ring.members?.length || 0}</span>
+        </div>
+        <div className={styles.metaBox}>
+          <span className={styles.metaLabel}>Associated Alerts</span>
+          <span className={styles.metaValue}>{ring.alerts?.length || 0}</span>
         </div>
       </div>
 
-      {/* KPI Summary Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-        <div
-          style={{
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-color)',
-            borderRadius: 'var(--radius-md)',
-            padding: '16px',
-          }}
-        >
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Coordinated Money Flow</span>
-          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff', marginTop: '6px' }}>
-            ${ring.totalFlow.toLocaleString()}
-          </div>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Deduplicated across alerts</span>
+      {/* Ring Topology Subgraph */}
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Ring Network Topology</h2>
+          <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>
+            Interactive local cluster
+          </span>
         </div>
 
-        <div
-          style={{
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-color)',
-            borderRadius: 'var(--radius-md)',
-            padding: '16px',
-          }}
-        >
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Network Entities</span>
-          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff', marginTop: '6px' }}>
-            {ring.members.length}
-          </div>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Accounts, Devices & Merchants</span>
-        </div>
-
-        <div
-          style={{
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-color)',
-            borderRadius: 'var(--radius-md)',
-            padding: '16px',
-          }}
-        >
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Detected Patterns</span>
-          <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--accent-cyan)', marginTop: '8px' }}>
-            {ring.patterns.join(', ')}
-          </div>
-        </div>
-
-        <div
-          style={{
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-color)',
-            borderRadius: 'var(--radius-md)',
-            padding: '16px',
-          }}
-        >
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Unique Transactions</span>
-          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff', marginTop: '6px' }}>
-            {ring.transactionCount}
-          </div>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Evidence verified</span>
+        <div className={styles.graphContainer}>
+          <CytoscapeGraph
+            nodes={graphNodes}
+            edges={graphEdges}
+            onNodeClick={(node) => {
+              if (node.entityType === 'ACCOUNT') {
+                navigate(`/accounts/${node.mongoId || node.externalId}`);
+              }
+            }}
+          />
         </div>
       </div>
 
-      {/* Ring Graph Visualization */}
-      <div
-        style={{
-          backgroundColor: 'var(--bg-card)',
-          border: '1px solid var(--border-color)',
-          borderRadius: 'var(--radius-md)',
-          padding: '20px',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <div>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#fff' }}>Ring Network Subgraph</h2>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-              Interactive topology of accounts, devices, and cash-out points participating in this fraud ring.
-            </p>
+      {/* Details Grid: Members & Alerts */}
+      <div className={styles.detailGrid}>
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>Ring Members</h2>
+            <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>
+              {ring.members?.length || 0} linked entities
+            </span>
           </div>
+
+          <Table
+            columns={memberColumns}
+            data={ring.members || []}
+            keyExtractor={(m, idx) => `${m.entityType}-${idx}`}
+            emptyMessage="No member entities recorded in this ring."
+          />
         </div>
 
-        <CytoscapeGraph
-          nodes={graphNodes}
-          edges={graphEdges}
-          height="450px"
-          onNodeClick={(node) => {
-            if (node.entityType === 'ACCOUNT') {
-              navigate(`/accounts/${node.mongoId || node.externalId}`);
-            }
-          }}
-        />
-      </div>
-
-      {/* Two Column Section: Contributing Risk Signals & Members Roster */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))', gap: '20px' }}>
-        {/* Contributing Risk Signals Breakdown */}
-        <div
-          style={{
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-color)',
-            borderRadius: 'var(--radius-md)',
-            padding: '20px',
-          }}
-        >
-          <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', marginBottom: '16px' }}>
-            Explainable Risk Contributors
-          </h2>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {ring.contributors.map((c, idx) => (
-              <div
-                key={idx}
-                style={{
-                  padding: '12px 14px',
-                  backgroundColor: 'var(--bg-surface-elevated)',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1px solid var(--border-color)',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontWeight: 600, color: '#fff', fontSize: '0.88rem' }}>{c.signalName}</span>
-                  <span style={{ color: 'var(--accent-cyan)', fontWeight: 700, fontSize: '0.88rem' }}>
-                    +{c.score} pts
-                  </span>
-                </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                  {c.evidence}
-                </div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Category: {c.category} · Cap: {c.weight} pts
-                </div>
-              </div>
-            ))}
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>Correlated Alerts</h2>
+            <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>
+              {ring.alerts?.length || 0} alerts
+            </span>
           </div>
-        </div>
 
-        {/* Member Entities Roster */}
-        <div
-          style={{
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-color)',
-            borderRadius: 'var(--radius-md)',
-            padding: '20px',
-          }}
-        >
-          <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', marginBottom: '16px' }}>
-            Ring Members ({ring.members.length})
-          </h2>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {ring.members.map((m) => {
-              const entity = typeof m.entityId === 'object' ? m.entityId : null;
-              const extId =
-                entity?.externalAccountId ||
-                entity?.externalDeviceId ||
-                entity?.externalMerchantId ||
-                entity?.externalId ||
-                String(m.entityId);
-              const mongoId = entity?._id || String(m.entityId);
-
-              return (
-                <div
-                  key={m._id}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '10px 14px',
-                    backgroundColor: 'var(--bg-surface-elevated)',
-                    borderRadius: 'var(--radius-sm)',
-                    border: '1px solid var(--border-color)',
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span
-                        style={{
-                          fontSize: '0.7rem',
-                          fontWeight: 700,
-                          padding: '1px 6px',
-                          borderRadius: '4px',
-                          backgroundColor:
-                            m.entityType === 'ACCOUNT'
-                              ? 'rgba(56, 189, 248, 0.15)'
-                              : m.entityType === 'DEVICE'
-                              ? 'rgba(192, 132, 252, 0.15)'
-                              : 'rgba(52, 211, 153, 0.15)',
-                          color:
-                            m.entityType === 'ACCOUNT'
-                              ? '#38bdf8'
-                              : m.entityType === 'DEVICE'
-                              ? '#c084fc'
-                              : '#34d399',
-                        }}
-                      >
-                        {m.entityType}
-                      </span>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: '#fff', fontSize: '0.88rem' }}>
-                        {extId}
-                      </span>
-                    </div>
-                  </div>
-
-                  {m.entityType === 'ACCOUNT' && (
-                    <button
-                      onClick={() => navigate(`/accounts/${mongoId}`)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        backgroundColor: 'transparent',
-                        color: 'var(--accent-cyan)',
-                        fontSize: '0.78rem',
-                        fontWeight: 600,
-                      }}
-                    >
-                      <span>Investigate</span>
-                      <ArrowRight size={14} />
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          <Table
+            columns={alertColumns}
+            data={ring.alerts || []}
+            keyExtractor={(a) => a._id}
+            onRowClick={() => navigate('/alerts')}
+            emptyMessage="No alerts attached to this ring."
+          />
         </div>
       </div>
     </div>

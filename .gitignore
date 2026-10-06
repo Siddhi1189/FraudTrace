@@ -1,5 +1,18 @@
+# Dependencies
 node_modules/
+
+# Production builds
 dist/
-.DS_Store
+
+# Environment files (except .env.example)
+.env
+.env.*
+!.env.example
+
+# Build info and caches
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Logs & System
 *.log
-.env.local
+.DS_Store

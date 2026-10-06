@@ -1,13 +1,47 @@
 import { Server } from 'socket.io';
+import jwt from 'jsonwebtoken';
+import { getJwtSecret, JWT_ALGORITHM } from '../config/jwt.js';
 
 let ioInstance = null;
 
+// PLACEHOLDER(FT-26): CORS origins
+function getAllowedOrigins() {
+  if (process.env.CORS_ORIGINS) {
+    return process.env.CORS_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean);
+  }
+  return process.env.NODE_ENV !== 'production' ? ['http://localhost:5173'] : [];
+}
+
 export function initSocketIO(server) {
+  const allowedOrigins = getAllowedOrigins();
+
   ioInstance = new Server(server, {
     cors: {
-      origin: '*',
+      origin: allowedOrigins,
       methods: ['GET', 'POST', 'PATCH'],
+      credentials: true,
     },
+  });
+
+  // BE-AUTH-1: Authenticate Socket.IO handshake with JWT
+  ioInstance.use((socket, next) => {
+    const authHeader = socket.handshake.headers?.authorization;
+    let token = socket.handshake.auth?.token;
+    if (!token && authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+
+    if (!token) {
+      return next(new Error('Authentication token required'));
+    }
+
+    try {
+      const decoded = jwt.verify(token, getJwtSecret(), { algorithms: [JWT_ALGORITHM] });
+      socket.user = decoded;
+      next();
+    } catch (err) {
+      return next(new Error('Invalid or expired authentication token'));
+    }
   });
 
   ioInstance.on('connection', (socket) => {

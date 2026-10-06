@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { getJwtSecret, JWT_ALGORITHM } from '../config/jwt.js';
 
 // PLACEHOLDER(FT-2): Client transmits token in Authorization: Bearer <token>
 export function authenticateToken(req, res, next) {
@@ -13,9 +14,9 @@ export function authenticateToken(req, res, next) {
   }
 
   const token = parts[1];
-  const jwtSecret = process.env.JWT_SECRET || 'dev_secret_change_in_production';
+  const jwtSecret = getJwtSecret();
 
-  jwt.verify(token, jwtSecret, (err, decoded) => {
+  jwt.verify(token, jwtSecret, { algorithms: [JWT_ALGORITHM] }, (err, decoded) => {
     if (err) {
       return res.status(401).json({ error: 'Invalid or expired authentication token' });
     }

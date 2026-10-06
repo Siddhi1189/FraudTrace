@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Search,
-  ExternalLink,
-  RefreshCw,
-} from 'lucide-react';
 import { fetchNeighborhood, GraphNodeData, GraphEdgeData } from '../../api/graphApi';
 import { CytoscapeGraph } from '../../components/CytoscapeGraph';
+import { Button } from '../../components/common/Button';
+import { Badge } from '../../components/common/Badge';
+import { Icon } from '../../components/common/Icons';
+import { StateView } from '../../components/common/StateView';
+import styles from './GraphExplorerPage.module.css';
 
 export const GraphExplorerPage: React.FC = () => {
   const navigate = useNavigate();
+
   const [searchEntityId, setSearchEntityId] = useState('ACC-HUB-ALPHA');
   const [entityType, setEntityType] = useState<string>('ALL');
   const [depth, setDepth] = useState<number>(1);
@@ -22,8 +23,9 @@ export const GraphExplorerPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSearch = async () => {
-    if (!searchEntityId.trim()) return;
+  const handleSearch = async (targetId?: string) => {
+    const queryId = targetId || searchEntityId;
+    if (!queryId.trim()) return;
 
     try {
       setLoading(true);
@@ -32,7 +34,7 @@ export const GraphExplorerPage: React.FC = () => {
       setSelectedEdge(null);
 
       const res = await fetchNeighborhood({
-        entityId: searchEntityId.trim(),
+        entityId: queryId.trim(),
         entityType: entityType !== 'ALL' ? (entityType as any) : undefined,
         depth,
         limit,
@@ -42,16 +44,19 @@ export const GraphExplorerPage: React.FC = () => {
       setEdges(res.edges || []);
 
       if (res.nodes.length === 0) {
-        setError(`No graph nodes found matching entity "${searchEntityId}".`);
+        setError(`No graph nodes found matching entity "${queryId}".`);
       } else {
-        // Automatically select the central queried node if found
         const central = res.nodes.find(
-          (n) => n.externalId.toLowerCase() === searchEntityId.trim().toLowerCase()
+          (n) => n.externalId.toLowerCase() === queryId.trim().toLowerCase()
         );
         if (central) setSelectedNode(central);
       }
-    } catch (err: any) {
-      setError(err.error || err.message || 'Failed to query graph neighborhood');
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'error' in err) {
+        setError((err as { error: string }).error);
+      } else {
+        setError('Failed to query graph neighborhood.');
+      }
     } finally {
       setLoading(false);
     }
@@ -61,319 +66,242 @@ export const GraphExplorerPage: React.FC = () => {
     handleSearch();
   }, []);
 
+  const handleNodeClick = (node: GraphNodeData) => {
+    setSelectedNode(node);
+    setSelectedEdge(null);
+  };
+
+  const handleEdgeClick = (edge: GraphEdgeData) => {
+    setSelectedEdge(edge);
+    setSelectedNode(null);
+  };
+
+  const handleExpandFromNode = (node: GraphNodeData) => {
+    setSearchEntityId(node.externalId);
+    handleSearch(node.externalId);
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div>
-        <h1 style={{ fontSize: '1.65rem', fontWeight: 700, color: '#fff' }}>Graph Explorer</h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '4px' }}>
-          Explore the in-memory financial network. Expand neighborhoods, trace funds between accounts, and uncover shared infrastructure.
-        </p>
+    <div className={styles.container}>
+      {/* Header */}
+      <div className={styles.headerRow}>
+        <div className={styles.titleArea}>
+          <h1 className={styles.title}>Graph Explorer</h1>
+          <p className={styles.subtitle}>
+            Explore the in-memory financial network. Expand neighborhoods, trace funds between accounts, and uncover shared infrastructure.
+          </p>
+        </div>
+
+        <Button variant="secondary" compact onClick={() => handleSearch()}>
+          <Icon name="refresh" size={13} />
+          <span>Reload view</span>
+        </Button>
       </div>
 
-      {/* Control Bar */}
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '12px',
-          alignItems: 'center',
-          backgroundColor: 'var(--bg-card)',
-          padding: '14px 18px',
-          borderRadius: 'var(--radius-md)',
-          border: '1px solid var(--border-color)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: '220px' }}>
-          <Search size={16} color="var(--text-muted)" />
+      {/* Query Bar */}
+      <div className={styles.filterBar}>
+        <div className={styles.searchBox}>
+          <Icon name="search" size={14} />
           <input
             type="text"
             placeholder="Enter Entity ID (e.g. ACC-HUB-ALPHA, DEV-RING-SHARED-1)..."
             value={searchEntityId}
             onChange={(e) => setSearchEntityId(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            style={{
-              backgroundColor: 'transparent',
-              border: 'none',
-              color: '#fff',
-              fontSize: '0.88rem',
-              width: '100%',
-              fontFamily: 'var(--font-mono)',
-            }}
+            className={styles.searchInput}
+            aria-label="Search entity ID"
           />
         </div>
 
-        {/* Entity Type Filter */}
-        <select
-          value={entityType}
-          onChange={(e) => setEntityType(e.target.value)}
-          style={{
-            backgroundColor: 'var(--bg-surface-elevated)',
-            color: 'var(--text-primary)',
-            border: '1px solid var(--border-color)',
-            borderRadius: 'var(--radius-sm)',
-            padding: '6px 12px',
-            fontSize: '0.82rem',
-          }}
-        >
-          <option value="ALL">All Entity Types</option>
-          <option value="ACCOUNT">Accounts Only</option>
-          <option value="DEVICE">Devices Only</option>
-          <option value="MERCHANT">Merchants Only</option>
-        </select>
+        <div className={styles.controlsGroup}>
+          <select
+            value={entityType}
+            onChange={(e) => setEntityType(e.target.value)}
+            className={styles.select}
+            aria-label="Filter entity type"
+          >
+            <option value="ALL">All Types</option>
+            <option value="ACCOUNT">Account</option>
+            <option value="DEVICE">Device</option>
+            <option value="MERCHANT">Merchant</option>
+          </select>
 
-        {/* Depth Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-          <span>Depth:</span>
           <select
             value={depth}
             onChange={(e) => setDepth(Number(e.target.value))}
-            style={{
-              backgroundColor: 'var(--bg-surface-elevated)',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '6px 10px',
-              fontSize: '0.82rem',
-            }}
+            className={styles.select}
+            aria-label="Neighborhood depth"
           >
-            <option value={1}>1 Hop</option>
-            <option value={2}>2 Hops</option>
-            <option value={3}>3 Hops</option>
+            <option value={1}>Depth: 1 Hop</option>
+            <option value={2}>Depth: 2 Hops</option>
           </select>
-        </div>
 
-        {/* Limit Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-          <span>Limit:</span>
           <select
             value={limit}
             onChange={(e) => setLimit(Number(e.target.value))}
-            style={{
-              backgroundColor: 'var(--bg-surface-elevated)',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '6px 10px',
-              fontSize: '0.82rem',
-            }}
+            className={styles.select}
+            aria-label="Node limit"
           >
-            <option value={25}>25 nodes</option>
-            <option value={50}>50 nodes</option>
-            <option value={100}>100 nodes (Max)</option>
+            <option value={25}>Limit: 25</option>
+            <option value={50}>Limit: 50</option>
+            <option value={100}>Limit: 100</option>
           </select>
-        </div>
 
-        <button
-          onClick={handleSearch}
-          disabled={loading}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            backgroundColor: 'var(--accent-cyan)',
-            color: '#070a0f',
-            padding: '7px 16px',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: '0.84rem',
-            fontWeight: 700,
-          }}
-        >
-          <RefreshCw size={14} className={loading ? 'spin-animate' : ''} />
-          <span>Explore</span>
-        </button>
+          <Button variant="primary" compact onClick={() => handleSearch()} disabled={loading}>
+            <span>{loading ? 'Querying...' : 'Trace'}</span>
+          </Button>
+        </div>
       </div>
 
       {error && (
-        <div
-          style={{
-            padding: '12px 16px',
-            backgroundColor: 'rgba(239, 68, 68, 0.12)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            borderRadius: 'var(--radius-sm)',
-            color: '#fca5a5',
-            fontSize: '0.85rem',
-          }}
-        >
+        <div style={{ color: 'var(--sev-high-text)', backgroundColor: 'var(--sev-high-bg)', border: '1px solid var(--sev-high-border)', padding: '8px 12px', borderRadius: '2px', fontSize: '12px' }}>
           {error}
         </div>
       )}
 
-      {/* Main Canvas and Inspector Panel */}
-      <div style={{ display: 'grid', gridTemplateColumns: selectedNode || selectedEdge ? '1fr 380px' : '1fr', gap: '20px' }}>
-        <div
-          style={{
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-color)',
-            borderRadius: 'var(--radius-md)',
-            padding: '16px',
-          }}
-        >
-          <CytoscapeGraph
-            nodes={nodes}
-            edges={edges}
-            height="620px"
-            highlightNodeId={searchEntityId}
-            onNodeClick={(node) => {
-              setSelectedNode(node);
-              setSelectedEdge(null);
-            }}
-            onEdgeClick={(edge) => {
-              setSelectedEdge(edge);
-              setSelectedNode(null);
-            }}
-          />
-        </div>
+      {/* Main Workspace: Canvas + Right-Hand Inspector */}
+      <div className={styles.workspaceGrid}>
+        <div className={styles.canvasCard}>
+          <div className={styles.canvasTopBar}>
+            <span>
+              Topology View: {nodes.length} nodes, {edges.length} edges
+            </span>
+            <span className={styles.nodeLimitNote}>
+              Expansion limited to {limit} nodes for responsiveness.
+            </span>
+          </div>
 
-        {/* Selected Entity / Edge Inspector Panel */}
-        {(selectedNode || selectedEdge) && (
-          <div
-            style={{
-              backgroundColor: 'var(--bg-card)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-md)',
-              padding: '24px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '18px',
-            }}
-          >
-            {selectedNode && (
-              <>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span
-                      style={{
-                        fontSize: '0.72rem',
-                        fontWeight: 700,
-                        padding: '2px 8px',
-                        borderRadius: '4px',
-                        backgroundColor:
-                          selectedNode.entityType === 'ACCOUNT'
-                            ? 'rgba(56, 189, 248, 0.15)'
-                            : selectedNode.entityType === 'DEVICE'
-                            ? 'rgba(192, 132, 252, 0.15)'
-                            : 'rgba(52, 211, 153, 0.15)',
-                        color:
-                          selectedNode.entityType === 'ACCOUNT'
-                            ? '#38bdf8'
-                            : selectedNode.entityType === 'DEVICE'
-                            ? '#c084fc'
-                            : '#34d399',
-                      }}
-                    >
-                      {selectedNode.entityType}
-                    </span>
-                    <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#fff', fontFamily: 'var(--font-mono)' }}>
-                      {selectedNode.externalId}
-                    </h3>
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                    Internal Mongo ID: {selectedNode.mongoId}
-                  </div>
-                </div>
-
-                {selectedNode.entityType === 'ACCOUNT' && (
-                  <button
-                    onClick={() => navigate(`/accounts/${selectedNode.mongoId || selectedNode.externalId}`)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      padding: '10px 16px',
-                      borderRadius: 'var(--radius-sm)',
-                      backgroundColor: 'var(--accent-cyan)',
-                      color: '#070a0f',
-                      fontWeight: 700,
-                      fontSize: '0.84rem',
-                    }}
-                  >
-                    <span>Open Account Profile</span>
-                    <ExternalLink size={14} />
-                  </button>
-                )}
-
-                <button
-                  onClick={() => {
-                    setSearchEntityId(selectedNode.externalId);
-                    handleSearch();
-                  }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    padding: '8px 16px',
-                    borderRadius: 'var(--radius-sm)',
-                    backgroundColor: 'var(--bg-surface-elevated)',
-                    color: 'var(--text-primary)',
-                    border: '1px solid var(--border-color)',
-                    fontSize: '0.82rem',
-                    fontWeight: 600,
-                  }}
-                >
-                  <RefreshCw size={14} />
-                  <span>Center Graph on Node</span>
-                </button>
-              </>
-            )}
-
-            {selectedEdge && (
-              <>
-                <div>
-                  <span
-                    style={{
-                      fontSize: '0.72rem',
-                      fontWeight: 700,
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      backgroundColor: 'rgba(0, 210, 255, 0.15)',
-                      color: 'var(--accent-cyan)',
-                    }}
-                  >
-                    {selectedEdge.type}
-                  </span>
-                  <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#fff', marginTop: '6px' }}>
-                    Relationship Details
-                  </h3>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.84rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>From:</span>
-                    <span style={{ color: '#fff', fontFamily: 'var(--font-mono)' }}>{selectedEdge.source}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>To:</span>
-                    <span style={{ color: '#fff', fontFamily: 'var(--font-mono)' }}>{selectedEdge.target}</span>
-                  </div>
-                  {selectedEdge.amount !== null && selectedEdge.amount !== undefined && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Amount:</span>
-                      <span style={{ color: 'var(--accent-cyan)', fontWeight: 700 }}>
-                        ${selectedEdge.amount.toLocaleString()}
-                      </span>
-                    </div>
-                  )}
-                  {selectedEdge.externalTransactionId && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Transaction ID:</span>
-                      <span style={{ color: '#fff', fontFamily: 'var(--font-mono)' }}>
-                        {selectedEdge.externalTransactionId}
-                      </span>
-                    </div>
-                  )}
-                  {selectedEdge.timestamp && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Timestamp:</span>
-                      <span style={{ color: 'var(--text-secondary)' }}>{selectedEdge.timestamp}</span>
-                    </div>
-                  )}
-                </div>
-              </>
+          <div className={styles.canvasWrapper}>
+            {loading ? (
+              <StateView type="loading" title="Querying network neighborhood..." />
+            ) : nodes.length === 0 ? (
+              <StateView
+                type="empty"
+                title="No nodes in graph view"
+                description="Query an entity ID above to render its connected financial network."
+              />
+            ) : (
+              <CytoscapeGraph
+                nodes={nodes}
+                edges={edges}
+                onNodeClick={handleNodeClick}
+                onEdgeClick={handleEdgeClick}
+                highlightNodeId={selectedNode?.externalId}
+                height="100%"
+              />
             )}
           </div>
-        )}
+        </div>
+
+        {/* Right-Hand Inspector */}
+        <aside className={styles.inspectorCard} aria-label="Entity inspector">
+          <div className={styles.inspectorHeader}>
+            <span className={styles.inspectorTitle}>Inspector</span>
+            {selectedNode && (
+              <Badge variant={selectedNode.entityType === 'ACCOUNT' ? 'neutral' : 'medium'}>
+                {selectedNode.entityType}
+              </Badge>
+            )}
+            {selectedEdge && (
+              <Badge variant="neutral">{selectedEdge.type}</Badge>
+            )}
+          </div>
+
+          {selectedNode ? (
+            <div className={styles.attributeList}>
+              <div className={styles.attributeItem}>
+                <span className={styles.attributeLabel}>Identifier</span>
+                <span className="entity-id">{selectedNode.externalId}</span>
+              </div>
+
+              <div className={styles.attributeItem}>
+                <span className={styles.attributeLabel}>Entity Type</span>
+                <span className={styles.attributeValue}>{selectedNode.entityType}</span>
+              </div>
+
+              {selectedNode.metadata && Object.keys(selectedNode.metadata).length > 0 && (
+                <div className={styles.attributeItem}>
+                  <span className={styles.attributeLabel}>Attributes</span>
+                  <div style={{ fontSize: '11px', color: 'var(--text-2)', background: 'var(--surface-2)', padding: '6px 8px', borderRadius: '2px' }}>
+                    {Object.entries(selectedNode.metadata).map(([k, v]) => (
+                      <div key={k}><strong>{k}:</strong> {String(v)}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+                <Button
+                  variant="secondary"
+                  compact
+                  onClick={() => handleExpandFromNode(selectedNode)}
+                  fullWidth
+                >
+                  <Icon name="maximize" size={12} />
+                  <span>Expand neighborhood</span>
+                </Button>
+
+                {selectedNode.entityType === 'ACCOUNT' && (
+                  <Button
+                    variant="primary"
+                    compact
+                    onClick={() => navigate(`/accounts/${selectedNode.mongoId || selectedNode.externalId}`)}
+                    fullWidth
+                  >
+                    <Icon name="user" size={12} />
+                    <span>View account workspace</span>
+                  </Button>
+                )}
+              </div>
+            </div>
+          ) : selectedEdge ? (
+            <div className={styles.attributeList}>
+              <div className={styles.attributeItem}>
+                <span className={styles.attributeLabel}>Relationship Type</span>
+                <span className={styles.attributeValue}>{selectedEdge.type}</span>
+              </div>
+
+              <div className={styles.attributeItem}>
+                <span className={styles.attributeLabel}>Source</span>
+                <span className="entity-id">{selectedEdge.source}</span>
+              </div>
+
+              <div className={styles.attributeItem}>
+                <span className={styles.attributeLabel}>Target</span>
+                <span className="entity-id">{selectedEdge.target}</span>
+              </div>
+
+              {selectedEdge.amount !== undefined && (
+                <div className={styles.attributeItem}>
+                  <span className={styles.attributeLabel}>Transaction Amount</span>
+                  <span className="tabular-nums" style={{ fontSize: '13px', fontWeight: 700 }}>
+                    ${Number(selectedEdge.amount).toLocaleString()}
+                  </span>
+                </div>
+              )}
+
+              {selectedEdge.timestamp && (
+                <div className={styles.attributeItem}>
+                  <span className={styles.attributeLabel}>Timestamp</span>
+                  <span className="tabular-nums" style={{ fontSize: '11px', color: 'var(--text-2)' }}>
+                    {new Date(selectedEdge.timestamp).toLocaleString()}
+                  </span>
+                </div>
+              )}
+
+              {selectedEdge.externalTransactionId && (
+                <div className={styles.attributeItem}>
+                  <span className={styles.attributeLabel}>Transaction ID</span>
+                  <span className="entity-id">{selectedEdge.externalTransactionId}</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className={styles.emptyInspector}>
+              Select any node or edge on the network canvas to inspect attributes and connections.
+            </div>
+          )}
+        </aside>
       </div>
     </div>
   );

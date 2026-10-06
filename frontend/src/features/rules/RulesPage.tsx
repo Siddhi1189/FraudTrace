@@ -1,18 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { fetchActiveRules, DetectorRules } from '../../api/analysisApi';
+import { Badge } from '../../components/common/Badge';
+import { StateView } from '../../components/common/StateView';
+import styles from './RulesPage.module.css';
 
 export const RulesPage: React.FC = () => {
   const [rules, setRules] = useState<DetectorRules | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadRules() {
       try {
         setLoading(true);
+        setError(null);
         const res = await fetchActiveRules();
         setRules(res);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Failed to load rules:', err);
+        setError('Unable to load detector rules configuration.');
       } finally {
         setLoading(false);
       }
@@ -21,120 +27,144 @@ export const RulesPage: React.FC = () => {
   }, []);
 
   if (loading) {
-    return <div style={{ padding: '40px', color: 'var(--text-muted)' }}>Loading rules configuration...</div>;
+    return <StateView type="loading" title="Loading detector engine rules..." />;
   }
 
-  if (!rules) {
-    return <div style={{ padding: '40px', color: 'var(--danger)' }}>Failed to load detector rules.</div>;
+  if (error || !rules) {
+    return (
+      <StateView
+        type="error"
+        title="Rules configuration error"
+        description={error || 'Unable to retrieve active detector rules from engine.'}
+      />
+    );
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <h1 style={{ fontSize: '1.65rem', fontWeight: 700, color: '#fff' }}>Detection & Scoring Engine Rules</h1>
-          <span
-            style={{
-              padding: '2px 8px',
-              backgroundColor: 'rgba(0, 210, 255, 0.15)',
-              color: 'var(--accent-cyan)',
-              borderRadius: '4px',
-              fontWeight: 700,
-              fontSize: '0.75rem',
-              fontFamily: 'var(--font-mono)',
-            }}
-          >
-            {rules.ruleVersion}
-          </span>
+    <div className={styles.container}>
+      {/* Header */}
+      <div className={styles.headerRow}>
+        <div className={styles.titleArea}>
+          <div className={styles.titleWithBadge}>
+            <h1 className={styles.title}>Detection &amp; Scoring Rules</h1>
+            <Badge variant="neutral">{rules.ruleVersion}</Badge>
+          </div>
+          <p className={styles.subtitle}>
+            Deterministic thresholds and category caps governing pattern detection and explainable risk scores.
+          </p>
         </div>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '4px' }}>
-          Deterministic rule thresholds and category contribution caps governing pattern alerts and explainable risk scores.
-        </p>
       </div>
 
-      {/* Account Scoring Category Contribution Caps */}
-      <div
-        style={{
-          backgroundColor: 'var(--bg-card)',
-          border: '1px solid var(--border-color)',
-          borderRadius: 'var(--radius-md)',
-          padding: '20px',
-        }}
-      >
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#fff', marginBottom: '6px' }}>
-          Account Risk Scoring Configuration
-        </h2>
-        <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-          {rules.scoringWeights.account.explanation}
-        </p>
+      {/* Account Risk Scoring Configuration */}
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Account Scoring Category Caps</h2>
+          <span className={styles.cardSubtitle}>
+            {rules.scoringWeights.account.explanation}
+          </span>
+        </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
+        <div className={styles.capsGrid}>
           {Object.entries(rules.scoringWeights.account.categoryCaps).map(([key, cap]) => (
-            <div
-              key={key}
-              style={{
-                padding: '14px',
-                backgroundColor: 'var(--bg-surface-elevated)',
-                borderRadius: 'var(--radius-sm)',
-                border: '1px solid var(--border-color)',
-              }}
-            >
-              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textTransform: 'capitalize' }}>
+            <div key={key} className={styles.capBox}>
+              <span className={styles.capLabel}>
                 {key.replace(/([A-Z])/g, ' $1')}
               </span>
-              <div style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--accent-cyan)', marginTop: '4px' }}>
-                {cap} pts
-              </div>
-              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Maximum category cap</span>
+              <div className={styles.capValue}>{cap} pts</div>
+              <span className={styles.capNote}>Max category points</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Detector Thresholds Grid */}
-      <div
-        style={{
-          backgroundColor: 'var(--bg-card)',
-          border: '1px solid var(--border-color)',
-          borderRadius: 'var(--radius-md)',
-          padding: '20px',
-        }}
-      >
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#fff', marginBottom: '16px' }}>
-          Pattern Detector Thresholds
-        </h2>
+      {/* Fraud Ring Scoring Configuration */}
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Fraud Ring Scoring Category Caps</h2>
+          <span className={styles.cardSubtitle}>
+            {rules.scoringWeights.ring.explanation}
+          </span>
+        </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
-          {Object.entries(rules.detectorThresholds)
-            .filter(([k]) => typeof rules.detectorThresholds[k] === 'object')
-            .map(([detectorName, config]: [string, any]) => (
-              <div
-                key={detectorName}
-                style={{
-                  padding: '16px',
-                  backgroundColor: 'var(--bg-surface-elevated)',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1px solid var(--border-color)',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  <span style={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem', textTransform: 'uppercase' }}>
-                    {detectorName.replace(/([A-Z])/g, '_$1')}
-                  </span>
-                </div>
+        <div className={styles.capsGrid}>
+          {Object.entries(rules.scoringWeights.ring.categoryCaps).map(([key, cap]) => (
+            <div key={key} className={styles.capBox}>
+              <span className={styles.capLabel}>
+                {key.replace(/([A-Z])/g, ' $1')}
+              </span>
+              <div className={styles.capValue}>{cap} pts</div>
+              <span className={styles.capNote}>Max category points</span>
+            </div>
+          ))}
+        </div>
+      </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.82rem' }}>
-                  {Object.entries(config).map(([param, val]) => (
-                    <div key={param} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>{param}:</span>
-                      <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                        {String(val)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+      {/* Detector Thresholds */}
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Pattern Detector Thresholds</h2>
+          <span className={styles.cardSubtitle}>
+            Engine thresholds triggering structural fraud alerts
+          </span>
+        </div>
+
+        <div className={styles.thresholdsGrid}>
+          {Object.entries(rules.detectorThresholds).map(([detectorName, config]) => (
+            <div key={detectorName} className={styles.thresholdCard}>
+              <div className={styles.thresholdHeader}>
+                {detectorName.replace(/_/g, ' ')}
               </div>
-            ))}
+              <div className={styles.thresholdRows}>
+                {Object.entries(config as Record<string, unknown>).map(([k, v]) => (
+                  <div key={k} className={styles.thresholdRow}>
+                    <span className={styles.thresholdKey}>{k}</span>
+                    <span className={styles.thresholdVal}>{String(v)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Risk Tier Boundaries */}
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Risk Score Tier Boundaries</h2>
+          <span className={styles.cardSubtitle}>
+            Deterministic 0–100 score classification
+          </span>
+        </div>
+
+        <div className={styles.capsGrid}>
+          <div className={styles.capBox}>
+            <span className={styles.capLabel}>Low</span>
+            <div className={styles.capValue}>
+              {rules.riskThresholds.low[0]} &ndash; {rules.riskThresholds.low[1]}
+            </div>
+            <span className={styles.capNote}>Routine monitoring</span>
+          </div>
+          <div className={styles.capBox}>
+            <span className={styles.capLabel}>Medium</span>
+            <div className={styles.capValue}>
+              {rules.riskThresholds.medium[0]} &ndash; {rules.riskThresholds.medium[1]}
+            </div>
+            <span className={styles.capNote}>Standard review</span>
+          </div>
+          <div className={styles.capBox}>
+            <span className={styles.capLabel}>High</span>
+            <div className={styles.capValue}>
+              {rules.riskThresholds.high[0]} &ndash; {rules.riskThresholds.high[1]}
+            </div>
+            <span className={styles.capNote}>Priority investigation</span>
+          </div>
+          <div className={styles.capBox}>
+            <span className={styles.capLabel}>Critical</span>
+            <div className={styles.capValue}>
+              {rules.riskThresholds.critical[0]} &ndash; {rules.riskThresholds.critical[1]}
+            </div>
+            <span className={styles.capNote}>Immediate escalation</span>
+          </div>
         </div>
       </div>
     </div>

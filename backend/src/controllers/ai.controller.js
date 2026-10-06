@@ -3,7 +3,7 @@ import * as aiService from '../services/ai.service.js';
 export async function createBrief(req, res, next) {
   try {
     const { caseId } = req.body;
-    const userId = req.user?.id;
+    const userId = req.user?.sub;
 
     if (!caseId) {
       return res.status(400).json({ error: 'caseId is required' });
@@ -30,7 +30,7 @@ export async function updateBrief(req, res, next) {
   try {
     const { id } = req.params;
     const { analystDecision, editedText } = req.body;
-    const userId = req.user?.id;
+    const userId = req.user?.sub;
 
     const updated = await aiService.updateBrief(id, { analystDecision, editedText }, userId);
     return res.status(200).json(updated);
@@ -43,7 +43,7 @@ export async function askCaseQuestion(req, res, next) {
   try {
     const { id } = req.params;
     const { question } = req.body;
-    const userId = req.user?.id;
+    const userId = req.user?.sub;
 
     if (!question || typeof question !== 'string' || !question.trim()) {
       return res.status(400).json({ error: 'question is required' });

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Badge, BadgeVariant } from './common/Badge';
 
 interface RiskBadgeProps {
   score: number;
@@ -6,69 +7,25 @@ interface RiskBadgeProps {
   showLabel?: boolean;
 }
 
-export const RiskBadge: React.FC<RiskBadgeProps> = ({ score, size = 'md', showLabel = true }) => {
+export const RiskBadge: React.FC<RiskBadgeProps> = ({ score, showLabel = true }) => {
   let tier = 'LOW';
-  let color = '#10b981'; // Green
-  let bg = 'rgba(16, 185, 129, 0.15)';
-  let border = 'rgba(16, 185, 129, 0.3)';
+  let variant: BadgeVariant = 'low';
 
   if (score >= 85) {
     tier = 'CRITICAL';
-    color = '#ef4444'; // Red
-    bg = 'rgba(239, 68, 68, 0.15)';
-    border = 'rgba(239, 68, 68, 0.4)';
+    variant = 'critical';
   } else if (score >= 70) {
     tier = 'HIGH';
-    color = '#f97316'; // Orange
-    bg = 'rgba(249, 115, 22, 0.15)';
-    border = 'rgba(249, 115, 22, 0.4)';
+    variant = 'high';
   } else if (score >= 40) {
     tier = 'MEDIUM';
-    color = '#f59e0b'; // Amber
-    bg = 'rgba(245, 158, 11, 0.15)';
-    border = 'rgba(245, 158, 11, 0.4)';
+    variant = 'medium';
   }
 
-  const fontSizes = {
-    sm: '0.75rem',
-    md: '0.85rem',
-    lg: '1.1rem',
-  };
-
-  const paddings = {
-    sm: '2px 6px',
-    md: '4px 10px',
-    lg: '6px 14px',
-  };
-
   return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '6px',
-        backgroundColor: bg,
-        color,
-        border: `1px solid ${border}`,
-        borderRadius: '9999px',
-        padding: paddings[size],
-        fontSize: fontSizes[size],
-        fontWeight: 600,
-        fontFamily: 'var(--font-mono)',
-        whiteSpace: 'nowrap',
-      }}
-      title={`Investigative Risk Score: ${score}/100 (${tier})`}
-    >
-      <span
-        style={{
-          width: size === 'sm' ? '6px' : '8px',
-          height: size === 'sm' ? '6px' : '8px',
-          borderRadius: '50%',
-          backgroundColor: color,
-        }}
-      />
-      <span>{score}</span>
-      {showLabel && <span style={{ opacity: 0.85, fontWeight: 500, fontSize: '0.85em' }}>· {tier}</span>}
-    </span>
+    <Badge variant={variant} className="tabular-nums">
+      <span style={{ fontWeight: 600 }}>{score}</span>
+      {showLabel && <span style={{ opacity: 0.85, fontSize: '0.9em' }}>/ 100 {tier}</span>}
+    </Badge>
   );
 };

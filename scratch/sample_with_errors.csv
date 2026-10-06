@@ -1,0 +1,5 @@
+externalTransactionId,fromAccount,toAccount,merchant,device,amount,timestamp
+TX_ROW_001,,ACC_102,,DEV_11,100,2026-03-01T10:00:00Z
+TX_ROW_002,ACC_101,ACC_102,MERC_99,DEV_11,200,2026-03-01T10:00:00Z
+TX_ROW_003,ACC_101,,,,not_a_number,invalid_date
+TX_ROW_004,ACC_104,ACC_105,,DEV_14,500.00,2026-03-01T11:00:00Z
