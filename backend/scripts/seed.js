@@ -5,6 +5,7 @@ import { connectDB } from '../src/config/db.js';
 import { User } from '../src/models/user.model.js';
 import { DataBatch } from '../src/models/dataBatch.model.js';
 import { simulateData } from '../src/services/data.service.js';
+import { runFullAnalysis } from '../src/services/analysis.service.js';
 
 // PLACEHOLDER(FT-4): Minimum password length of 8 characters
 function validatePassword(password, label) {
@@ -70,6 +71,12 @@ export async function seedDemoData() {
   console.log(
     `[Seed] Created demo data batch ${result.batch._id}: ${result.batch.acceptedRows} transactions accepted, ${result.batch.duplicateRows} duplicates, ${result.batch.rejectedRows} rejected.`
   );
+
+  // Run initial topological detection, ring grouping, and risk scoring for the seed batch
+  console.log('[Seed] Running initial graph analysis on seed transactions...');
+  await runFullAnalysis({ trigger: 'SEED' });
+  console.log('[Seed] Initial graph analysis complete. Alerts and rings created.');
+
   return result.batch;
 }
 

@@ -25,7 +25,7 @@ import aiRoutes from './routes/ai.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { getJwtSecret } from './config/jwt.js';
 import { corsOriginDelegate } from './config/cors.js';
-import { seedUsers } from '../scripts/seed.js';
+import { seedUsers, seedDemoData } from '../scripts/seed.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -118,6 +118,9 @@ async function startServer() {
 
     // Ensure default Analyst and Admin users exist so analysts can sign in
     await seedUsers();
+
+    // Ensure baseline synthetic demonstration data and graph rings exist
+    await seedDemoData();
 
     server.listen(PORT, () => {
       console.log(`[Server] FraudTrace backend with Socket.IO running on port ${PORT}`);
