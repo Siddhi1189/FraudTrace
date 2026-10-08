@@ -44,6 +44,15 @@ app.use(express.text({ type: ['text/csv', 'text/plain'], limit: '10mb' }));
 app.use(express.json({ limit: '10mb' }));
 
 // Routes
+app.get('/', (req, res) => {
+  res.status(200).json({
+    name: 'FraudTrace API',
+    status: 'online',
+    version: '1.0.0',
+    health: '/api/health',
+  });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/data', dataRoutes);
 app.use('/api/graph', graphRoutes);
@@ -54,6 +63,7 @@ app.use('/api/accounts', accountRoutes);
 app.use('/api/cases', caseRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api', healthRoutes);
+app.use('/', healthRoutes);
 
 // Error Handling
 app.use(errorHandler);
