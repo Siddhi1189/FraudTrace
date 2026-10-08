@@ -25,6 +25,7 @@ import aiRoutes from './routes/ai.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { getJwtSecret } from './config/jwt.js';
 import { corsOriginDelegate } from './config/cors.js';
+import { seedUsers } from '../scripts/seed.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -114,6 +115,10 @@ async function startServer() {
     // BE-AUTH-2: Validate JWT_SECRET on boot (throws in production if missing)
     getJwtSecret();
     await connectDB();
+
+    // Ensure default Analyst and Admin users exist so analysts can sign in
+    await seedUsers();
+
     server.listen(PORT, () => {
       console.log(`[Server] FraudTrace backend with Socket.IO running on port ${PORT}`);
     });
